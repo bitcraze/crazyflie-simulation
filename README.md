@@ -8,7 +8,7 @@ Currently it contains low resolution meshes based on the design of the actual [c
 Currently contains:
 * Blender files
 * STL files
-* 
+
 So that looks a bit like this (not fully finished yet)
 
 
