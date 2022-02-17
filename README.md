@@ -23,3 +23,17 @@ Wish list (?):
 * Simple physics model
 * Deck models
 * ?? (let us know in the issue tracker for any feature requests)
+
+## Measurements Crazyflie Assembly
+
+The location of the parts
+
+* Propeller origin from center (0.031, 0.031, 0.022) m
+    * Mirrored in the x and y axis
+* Motor mount + motor mounts (0.031, 0.031, 0.014) m
+    * Mirrored in the x and y axis
+* Body origin height from center ( 0, 0, 0.015) m
+* Battery holder height ( 0, 0,0.025) m
+* Battery height (0,0,0.02) m
+* Pin headers (0, 0.011, 0.014) m
+    * Mirrored in the y axis
