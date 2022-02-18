@@ -1,0 +1,127 @@
+#VRML_SIM R2022a utf8
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.19675415092195278 0.23901827199080886 0.9508722678412223 0.8133042308658792
+  position -0.3127462647142433 -0.3245422646712619 0.19258789704244916
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+}
+Robot {
+  translation 0 0 0.015
+  children [
+    DEF m1 Propeller {
+      shaftAxis 0 0 1
+      centerOfThrust 0.031 -0.031 0.02
+      thrustConstants -0.002 0
+      torqueConstants 0.002 0
+      device RotationalMotor {
+        name "m1_motor"
+        maxVelocity 600
+        maxTorque 30
+      }
+      slowHelix Solid {
+        translation 0.031 -0.031 0.02
+        children [
+          Shape {
+            geometry Mesh {
+              url [
+                "../../meshes/cw_prop.stl"
+              ]
+            }
+          }
+        ]
+      }
+    }
+    DEF m2 Propeller {
+      shaftAxis 0 0 1
+      centerOfThrust -0.031 -0.031 0.2
+      thrustConstants 0.002 0
+      torqueConstants 0.002 0
+      device RotationalMotor {
+        name "m2_motor"
+        maxVelocity 600
+        maxTorque 30
+      }
+      slowHelix Solid {
+        translation -0.031 -0.031 0.02
+        children [
+          Shape {
+            geometry Mesh {
+              url [
+                "../../meshes/cw_prop.stl"
+              ]
+            }
+          }
+        ]
+      }
+    }
+    DEF m3 Propeller {
+      shaftAxis 0 0 1
+      centerOfThrust -0.031 0.031 0.02
+      thrustConstants -0.002 0
+      torqueConstants 0.002 0
+      device RotationalMotor {
+        name "m3_motor"
+        maxVelocity 600
+        maxTorque 30
+      }
+      slowHelix Solid {
+        translation -0.031 0.031 0.02
+        children [
+          Shape {
+            geometry Mesh {
+              url [
+                "../../meshes/cw_prop.stl"
+              ]
+            }
+          }
+        ]
+      }
+    }
+    DEF m4 Propeller {
+      shaftAxis 0 0 1
+      centerOfThrust 0.031 0.031 0.02
+      thrustConstants 0.002 0
+      torqueConstants 0.002 0
+      device RotationalMotor {
+        name "m4_motor"
+        maxVelocity 600
+        maxTorque 30
+      }
+      slowHelix DEF prop Solid {
+        translation 0.031 0.031 0.022
+        children [
+          DEF prop Shape {
+            geometry Mesh {
+              url [
+                "../../meshes/cw_prop.stl"
+              ]
+            }
+          }
+        ]
+      }
+    }
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+      }
+      geometry Mesh {
+        url [
+          "../../meshes/cf_body.stl"
+        ]
+      }
+    }
+  ]
+  boundingObject Cylinder {
+    height 0.05
+    radius 0.05
+  }
+  physics Physics {
+  }
+  controller "crazyflie_controller"
+}
