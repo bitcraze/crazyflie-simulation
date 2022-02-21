@@ -5,17 +5,20 @@ Hi! Welkom to the crazyflie simulation repo. This repo is still at the early sta
 Currently it contains low resolution meshes based on the design of the actual [crazyflie 2.1](https://www.bitcraze.io/products/crazyflie-2-1/) but heavily simplified to contain as little vertices as possible, so it can be used to simulate a lot of them!
 
 ## Content
+
 Currently contains:
 * Blender files
 * STL files
+* Webots simulation files
+    * Still needs better meshes
+    * Currently only attitude control with fixed height
 
-So that looks a bit like this (not fully finished yet)
+So the mesh files looks a bit like this:
 
 
 <img src="/meshes/blender_files/cf2_render.png" width="400" />
 
 Near future plans:
-* [Webots](https://www.cyberbotics.com/) proto files
 * [Gazebo ignition](https://ignitionrobotics.org/) urdf files
 
 Wish list (?):

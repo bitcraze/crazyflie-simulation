@@ -43,7 +43,7 @@
 ###
 ### ---- Compilation options ----
 ### if special compilation flags are necessary:
-### CFLAGS = -Wno-unused-result
+CFLAGS = -Wno-unused-variable
 ###
 ### ---- Linked libraries ----
 ### if your program needs additional libraries:

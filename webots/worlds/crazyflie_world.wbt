@@ -3,7 +3,8 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.19675415092195278 0.23901827199080886 0.9508722678412223 0.8133042308658792
-  position -0.3127462647142433 -0.3245422646712619 0.19258789704244916
+  position -0.19454673479155804 -0.21024131685563605 0.15333519697095507
+  follow "Crazyflie"
 }
 TexturedBackground {
 }
@@ -14,11 +15,17 @@ RectangleArena {
 Robot {
   translation 0 0 0.015
   children [
+    GPS {
+    }
+    Gyro {
+    }
+    InertialUnit {
+    }
     DEF m1 Propeller {
       shaftAxis 0 0 1
       centerOfThrust 0.031 -0.031 0.02
-      thrustConstants -0.002 0
-      torqueConstants 0.002 0
+      thrustConstants -4e-05 0
+      torqueConstants 2.4e-06 0
       device RotationalMotor {
         name "m1_motor"
         maxVelocity 600
@@ -40,8 +47,8 @@ Robot {
     DEF m2 Propeller {
       shaftAxis 0 0 1
       centerOfThrust -0.031 -0.031 0.2
-      thrustConstants 0.002 0
-      torqueConstants 0.002 0
+      thrustConstants 4e-05 0
+      torqueConstants 2.4e-06 0
       device RotationalMotor {
         name "m2_motor"
         maxVelocity 600
@@ -63,8 +70,8 @@ Robot {
     DEF m3 Propeller {
       shaftAxis 0 0 1
       centerOfThrust -0.031 0.031 0.02
-      thrustConstants -0.002 0
-      torqueConstants 0.002 0
+      thrustConstants -4e-05 0
+      torqueConstants 2.4e-06 0
       device RotationalMotor {
         name "m3_motor"
         maxVelocity 600
@@ -86,8 +93,8 @@ Robot {
     DEF m4 Propeller {
       shaftAxis 0 0 1
       centerOfThrust 0.031 0.031 0.02
-      thrustConstants 0.002 0
-      torqueConstants 0.002 0
+      thrustConstants 4e-05 0
+      torqueConstants 2.4e-06 0
       device RotationalMotor {
         name "m4_motor"
         maxVelocity 600
@@ -117,11 +124,14 @@ Robot {
       }
     }
   ]
+  name "Crazyflie"
   boundingObject Cylinder {
-    height 0.05
+    height 0.03
     radius 0.05
   }
   physics Physics {
+    density -1
+    mass 0.05
   }
   controller "crazyflie_controller"
 }
