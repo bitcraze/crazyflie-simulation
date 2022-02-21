@@ -7,9 +7,10 @@ Currently it contains low resolution meshes based on the design of the actual [c
 ## Content
 
 Currently contains:
-* Blender files
-* STL files
-* Webots simulation files
+* Meshes
+    * Blender files
+    * STL files
+* [Webots](https://cyberbotics.com/) simulation files
     * Still needs better meshes
     * Currently only attitude control with fixed height
 
@@ -25,6 +26,7 @@ Wish list (?):
 * SITL and or HITL
 * Simple physics model
 * Deck models
+* Intergration with Crazyflie-lib
 * ?? (let us know in the issue tracker for any feature requests)
 
 ## Measurements Crazyflie Assembly
