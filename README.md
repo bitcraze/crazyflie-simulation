@@ -19,6 +19,7 @@ So the mesh files looks a bit like this:
 <img src="/meshes/blender_files/cf2_render.png" width="400" />
 
 And the webots simulation looks like this:
+
 ![webots](crazyflie_webots.gif)
 
 
