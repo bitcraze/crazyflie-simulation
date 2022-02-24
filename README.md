@@ -11,13 +11,17 @@ Currently contains:
     * Blender files
     * STL files
 * [Webots](https://cyberbotics.com/) simulation files
-    * Still needs better meshes
     * Currently only attitude control with fixed height
 
 So the mesh files looks a bit like this:
 
 
 <img src="/meshes/blender_files/cf2_render.png" width="400" />
+
+And the webots simulation looks like this:
+![webots](crazyflie_webots.gif)
+
+
 
 Near future plans:
 * [Gazebo ignition](https://ignitionrobotics.org/) urdf files
