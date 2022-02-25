@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <plugin filename="CrazyflieController"
+            name="crazyflie_controller::CrazyflieController">
+    </plugin>
+  </world>
+</sdf>
