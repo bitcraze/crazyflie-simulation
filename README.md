@@ -12,6 +12,8 @@ Currently contains:
     * STL files
 * [Webots](https://cyberbotics.com/) simulation files
     * Currently only attitude control with fixed height
+* [Gazebo ignition](https://ignitionrobotics.org/) 
+    * sdf files
 
 So the mesh files looks a bit like this:
 
@@ -22,10 +24,7 @@ And the webots simulation looks like this:
 
 ![webots](crazyflie_webots.gif)
 
-
-
 Near future plans:
-* [Gazebo ignition](https://ignitionrobotics.org/) urdf files
 
 Wish list (?):
 * SITL and or HITL
@@ -33,6 +32,26 @@ Wish list (?):
 * Deck models
 * Intergration with Crazyflie-lib
 * ?? (let us know in the issue tracker for any feature requests)
+
+# Ignition Gazebo
+
+1- First install ignition gazebo: https://ignitionrobotics.org/docs/fortress/install
+
+2- Clone this repo: 
+    git clone https://github.com/bitcraze/crazyflie_simulation.git
+
+3- Put this repo in your ~/.bashrc and source it in your terminal
+
+    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie_simulation/gazebo-ignition/"
+
+4- Try out the crazyflie world with: 
+    ign gazebo crazyflie_world.sdf
+
+5- Spin motors and take off
+
+    ign topic -t /crazyflie/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[2500,2500,2500,2500]'
+
+
 
 ## Measurements Crazyflie Assembly
 
