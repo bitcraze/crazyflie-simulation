@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <sdf version="1.6">
   <world name="crazyflie_world">
     <physics name="1ms" type="ignored">
@@ -61,10 +62,13 @@
         </visual>
       </link>
     </model>
-    <include>
+    <!--include>
       <uri>model://crazyflie</uri>
       <name>crazyflie</name>
       <pose>0 0 0 0 0 0</pose>
+      <plugin filename="CrazyflieController"
+            name="crazyflie_controller::CrazyflieController">
+    </plugin-->
     </include>
   </world>
 </sdf>
