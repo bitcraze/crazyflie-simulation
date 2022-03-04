@@ -46,7 +46,6 @@ int main(int argc, char **argv) {
   double rollDesired, pitchDesired, yawDesired, altitudeDesired;
   double past_time = wb_robot_get_time();
 
-
   // Initialize PID gains.
   double kp_att_y = 1;
   double kd_att_y = 0.5;
