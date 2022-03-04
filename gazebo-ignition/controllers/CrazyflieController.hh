@@ -8,6 +8,8 @@
 #include <ignition/gazebo/components/Component.hh>
 #include <ignition/gazebo/config.hh>
 #include "ignition/gazebo/Model.hh"
+#include <ignition/msgs/twist.pb.h>
+#include <ignition/transport/Node.hh>
 
 namespace crazyflie_controller
 {
@@ -30,6 +32,12 @@ namespace crazyflie_controller
 
     private: ignition::msgs::Actuators motorCommands;
     private: ignition::gazebo::Model model{ignition::gazebo::kNullEntity};
+
+    private: double pastTime;
+
+    private: void velCmd_cb(const ignition::msgs::Twist &_msg);
+    private: ignition::msgs::Twist velCmd;
+    private: ignition::transport::Node node;
 
   };
 }
