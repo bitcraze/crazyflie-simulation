@@ -7,17 +7,7 @@
 #include <webots/inertial_unit.h>
 #include <webots/keyboard.h>
 
-static struct {
-  double m1;
-  double m2;
-  double m3;
-  double m4;
-} motorPower;
-
-float constrain(float value, const float minVal, const float maxVal)
-{
-  return fminf(maxVal, fmaxf(minVal,value));
-}
+#include "../../../controllers/pid_controller.h"
 
 int main(int argc, char **argv) {
   wb_robot_init();
@@ -71,6 +61,8 @@ int main(int argc, char **argv) {
   double kiHeight = 50;
   double kdHeight = 5;
 
+  MotorPower_t motorPower;
+
   printf("Take off!\n");
 
   while (wb_robot_step(timestep) != -1) {
@@ -109,6 +101,11 @@ int main(int argc, char **argv) {
       key = wb_keyboard_get_key();
     }
 
+    pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
+    rollDesired, pitchDesired, yawDesired, altitudeDesired,
+     kp_rp,  kd_rp,  kp,  kd,  kpHeight,  kdHeight,  kiHeight, dt, &motorPower);
+
+    /*
     // Calculate errors
     double altitudeError = altitudeDesired - altitudeActual;
     altitudeIntergralError += altitudeError*dt;
@@ -131,6 +128,7 @@ int main(int argc, char **argv) {
     motorPower.m2 =  altitudeControl - rollControl - pitchControl - yawControl;
     motorPower.m3 =  altitudeControl + rollControl - pitchControl + yawControl;
     motorPower.m4 =  altitudeControl + rollControl + pitchControl - yawControl;
+    */
 
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
@@ -140,10 +138,10 @@ int main(int argc, char **argv) {
     
     // Save past time and errors for next time step
     past_time = wb_robot_get_time();
-    pastAltitudeError = altitudeError;
+    /*pastAltitudeError = altitudeError;
     pastYawError = yawError;
     pastPitchError= pitchError;
-    pastRollError= rollError;
+    pastRollError= rollError;*/
 
   };
 
