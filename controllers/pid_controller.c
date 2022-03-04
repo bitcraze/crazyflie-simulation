@@ -48,6 +48,7 @@ void pid_attitude_fixed_height_controller(double rollActual, double pitchActual,
     motorCommands->m3 =  altitudeControl + rollControl - pitchControl + yawControl;
     motorCommands->m4 =  altitudeControl + rollControl + pitchControl - yawControl;
 
+    // Save error for the next round
     pastAltitudeError = altitudeError;
     pastYawError = yawError;
     pastPitchError= pitchError;

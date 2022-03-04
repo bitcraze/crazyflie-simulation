@@ -43,24 +43,21 @@ int main(int argc, char **argv) {
 
   // Intialize variables
   double rollActual, pitchActual, yawActual, altitudeActual;
-  double rollControl, pitchControl, yawControl, altitudeControl;
   double rollDesired, pitchDesired, yawDesired, altitudeDesired;
   double past_time = wb_robot_get_time();
-  double altitudeIntergralError=0;
-  double pastAltitudeError=0;
-  double pastYawError=0;
-  double pastPitchError = 0;
-  double pastRollError = 0;
+
 
   // Initialize PID gains.
-  double kp = 1;
-  double kd = 0.5;
-  double kp_rp =0.5;
-  double kd_rp = 0.1;
-  double kpHeight = 10;
-  double kiHeight = 50;
-  double kdHeight = 5;
+  double kp_att_y = 1;
+  double kd_att_y = 0.5;
+  double kp_att_rp =0.5;
+  double kd_att_rp = 0.1;
+  double kp_z = 10;
+  double ki_z = 50;
+  double kd_y = 5;
+  init_pid_attitude_fixed_height_controller();
 
+  // Initialize struct for motor power
   MotorPower_t motorPower;
 
   printf("Take off!\n");
@@ -101,34 +98,10 @@ int main(int argc, char **argv) {
       key = wb_keyboard_get_key();
     }
 
+    // PID attitude controller with fixed height
     pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
     rollDesired, pitchDesired, yawDesired, altitudeDesired,
-     kp_rp,  kd_rp,  kp,  kd,  kpHeight,  kdHeight,  kiHeight, dt, &motorPower);
-
-    /*
-    // Calculate errors
-    double altitudeError = altitudeDesired - altitudeActual;
-    altitudeIntergralError += altitudeError*dt;
-    double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
-    double yawError = yawDesired - yawActual;
-    double yawDerivativeError = (yawError - pastYawError)/dt;
-    double pitchError = pitchDesired - pitchActual;
-    double pitchDerivativeError = (pitchError - pastPitchError)/dt;
-    double rollError = rollDesired - rollActual;
-    double rollDerivativeError = (rollError - pastRollError)/dt;
-
-    //PID control
-    rollControl =kp_rp * constrain(rollError,-1, 1) + kd_rp*rollDerivativeError;
-    pitchControl =-kp_rp * constrain(pitchError,-1, 1) - kd_rp*pitchDerivativeError;
-    yawControl = kp * constrain(yawError, -1, 1)+ kd*yawDerivativeError;
-    altitudeControl = kpHeight* constrain(altitudeError, -1, 1) + kiHeight+ kdHeight*altitudeDerivativeError;
-    
-    // Motor mixing
-    motorPower.m1 =  altitudeControl -rollControl + pitchControl + yawControl;
-    motorPower.m2 =  altitudeControl - rollControl - pitchControl - yawControl;
-    motorPower.m3 =  altitudeControl + rollControl - pitchControl + yawControl;
-    motorPower.m4 =  altitudeControl + rollControl + pitchControl - yawControl;
-    */
+     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
 
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
@@ -136,12 +109,8 @@ int main(int argc, char **argv) {
     wb_motor_set_velocity(m3_motor, - motorPower.m3);
     wb_motor_set_velocity(m4_motor, motorPower.m4);
     
-    // Save past time and errors for next time step
+    // Save past time for next time step
     past_time = wb_robot_get_time();
-    /*pastAltitudeError = altitudeError;
-    pastYawError = yawError;
-    pastPitchError= pitchError;
-    pastRollError= rollError;*/
 
   };
 
