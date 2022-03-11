@@ -33,6 +33,17 @@ Wish list (?):
 * Intergration with Crazyflie-lib
 * ?? (let us know in the issue tracker for any feature requests)
 
+# Webots
+
+## Python controller
+Go into the crazyflie_simulation/controllers/ folder and run the following:
+
+    swig -python pid_controller.i
+    python setup.py build_ext --inplace
+
+Change controller in crazyflie robot model to crazyflie_controller_py to try it out. 
+    
+
 # Ignition Gazebo
 
 1- First install ignition gazebo: https://ignitionrobotics.org/docs/fortress/install
