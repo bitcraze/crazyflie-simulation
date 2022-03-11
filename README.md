@@ -35,6 +35,11 @@ Wish list (?):
 
 # Webots
 
+Install webots from the [cyberbotics' website](https://cyberbotics.com/). We use version 2022a version.
+
+Then just run the following
+
+    webots webots/worlds/crazyflie_world.wbt
 ## Python controller
 Go into the crazyflie_simulation/controllers/ folder and run the following:
 
