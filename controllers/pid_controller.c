@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "pid_controller.h"
 
@@ -20,7 +21,7 @@ void init_pid_attitude_fixed_height_controller()
 }
 
 
-void pid_attitude_fixed_height_controller(double rollActual, double pitchActual, double yawActual, double altitudeActual, 
+MotorPower_t pid_attitude_fixed_height_controller(double rollActual, double pitchActual, double yawActual, double altitudeActual, 
     double rollDesired, double pitchDesired, double yawDesired, double altitudeDesired,
     double kp_att_rp, double kd_att_rp, double kp_att_y, double kd_att_y, double kp_z, double kd_z, double ki_z,
     double dt, MotorPower_t* motorCommands)
@@ -48,9 +49,14 @@ void pid_attitude_fixed_height_controller(double rollActual, double pitchActual,
     motorCommands->m3 =  altitudeControl + rollControl - pitchControl + yawControl;
     motorCommands->m4 =  altitudeControl + rollControl + pitchControl - yawControl;
 
+
+    MotorPower_t motorCommandsReturn;
+    memcpy(&motorCommandsReturn, motorCommands, sizeof(MotorPower_t));
     // Save error for the next round
     pastAltitudeError = altitudeError;
     pastYawError = yawError;
     pastPitchError= pitchError;
     pastRollError= rollError;
+
+    return motorCommandsReturn;
 }

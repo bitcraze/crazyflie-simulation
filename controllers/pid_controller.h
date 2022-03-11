@@ -9,7 +9,7 @@ typedef struct MotorPower_s{
 
 float constrain(float value, const float minVal, const float maxVal);
 void init_pid_attitude_fixed_height_controller();
-void pid_attitude_fixed_height_controller(double rollActual, double pitchActual, double yawActual, double altitudeActual, 
+MotorPower_t pid_attitude_fixed_height_controller(double rollActual, double pitchActual, double yawActual, double altitudeActual, 
     double rollDesired, double pitchDesired, double yawDesired, double altitudeDesired,
     double kp_rp, double kd_rp, double kp_y, double kd_yaw, double kp_alt, double kd_alt, double ki_alt,
     double dt, MotorPower_t* motorCommands);
