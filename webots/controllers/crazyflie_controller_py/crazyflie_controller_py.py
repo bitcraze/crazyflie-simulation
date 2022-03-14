@@ -19,6 +19,7 @@ from controller import Motor
 from controller import InertialUnit
 from controller import GPS
 from controller import Keyboard
+import numpy
 
 import sys
 sys.path.append('../../../controllers/')
@@ -27,6 +28,11 @@ from pid_controller import MotorPower_t
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
+
+def constrain(value, minVal, maxVal):
+  return min(maxVal, max(minVal,value))
+
+
 
 ## Initialize motors
 m1_motor = robot.getDevice("m1_motor");
@@ -54,6 +60,7 @@ Keyboard().enable(timestep)
 rollActual, pitchActual, yawActual, altitudeActual = 0.0, 0.0, 0.0, 0.0
 rollDesired, pitchDesired, yawDesired, altitudeDesired = 0.0, 0.0, 0.0, 0.0
 past_time = robot.getTime()
+pastAltitudeError, pastYawError, pastPitchError, pastRollError = 0.0, 0.0, 0.0, 0.0
 
 ## Initialize PID gains.
 kp_att_y = 1
@@ -62,7 +69,7 @@ kp_att_rp =0.5
 kd_att_rp = 0.1
 kp_z = 10
 ki_z = 50
-kd_y = 5
+kd_z = 5
 init_pid_attitude_fixed_height_controller();
 
 ## Initialize struct for motor power
@@ -104,14 +111,13 @@ while robot.step(timestep) != -1:
 
     ## PID attitude controller with fixed height
     pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
-    rollDesired, pitchDesired, yawDesired, altitudeDesired,
-     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, motorPower);
+        rollDesired, pitchDesired, yawDesired, altitudeDesired,
+        kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_z,  ki_z, dt, motorPower);
 
-    #print(motorPower.m1, motorPower.m2, motorPower.m3, motorPower.m4)
 
-    m1_motor.setVelocity(motorPower.m1)
+    m1_motor.setVelocity(-motorPower.m1)
     m2_motor.setVelocity(motorPower.m2)
-    m3_motor.setVelocity(motorPower.m3)
+    m3_motor.setVelocity(-motorPower.m3)
     m4_motor.setVelocity(motorPower.m4)
     
     past_time = robot.getTime()
