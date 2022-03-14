@@ -62,11 +62,11 @@
         </visual>
       </link>
     </model>
-    <!--include>
+    <include>
       <uri>model://crazyflie</uri>
       <name>crazyflie</name>
       <pose>0 0 0 0 0 0</pose>
-      <plugin filename="CrazyflieController"
+      <!--plugin filename="CrazyflieController"
             name="crazyflie_controller::CrazyflieController">
     </plugin-->
     </include>
