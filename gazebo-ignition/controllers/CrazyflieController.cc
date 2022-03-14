@@ -1,3 +1,20 @@
+/** 
+ *  ...........       ____  _ __
+ *  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
+ *  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ *  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+ *     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ *  
+ * MIT License
+ * 
+ * Copyright (c) 2022 Bitcraze
+ * 
+ * 
+ * @file CrazyflieController.cc
+ * A simple control plugin for Ignition Gazebo for controlling the motors
+ * 
+ */
+
 #include "CrazyflieController.hh"
 
 #include <ignition/plugin/Register.hh>

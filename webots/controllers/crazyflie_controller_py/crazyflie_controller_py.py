@@ -1,7 +1,19 @@
+#  ...........       ____  _ __
+#  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
+#  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+#  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+#     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ 
+# MIT License
+
+# Copyright (c) 2022 Bitcraze
+
+# @file crazyflie_controllers_py.py
+# Controls the crazyflie motors in webots in Python
+
 """crazyflie_controller_py controller."""
 
-# You may need to import some classes of the controller module. Ex:
-#  from controller import Robot, Motor, DistanceSensor
+
 from controller import Robot
 from controller import Motor
 from controller import InertialUnit
@@ -14,7 +26,7 @@ from  pid_controller import init_pid_attitude_fixed_height_controller, pid_attit
 from pid_controller import MotorPower_t
 robot = Robot()
 
-timestep = 16 ##int(robot.getBasicTimeStep())
+timestep = int(robot.getBasicTimeStep())
 
 ## Initialize motors
 m1_motor = robot.getDevice("m1_motor");
@@ -56,8 +68,6 @@ init_pid_attitude_fixed_height_controller();
 ## Initialize struct for motor power
 motorPower = MotorPower_t()
 
-##pid_controller.pid_attitude_fixed_height_controller(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,motor_power)
-#print(motor_power.m1)
 # Main loop:
 while robot.step(timestep) != -1:
 
@@ -97,7 +107,7 @@ while robot.step(timestep) != -1:
     rollDesired, pitchDesired, yawDesired, altitudeDesired,
      kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, motorPower);
 
-    print(motorPower.m1, motorPower.m2, motorPower.m3, motorPower.m4)
+    #print(motorPower.m1, motorPower.m2, motorPower.m3, motorPower.m4)
 
     m1_motor.setVelocity(motorPower.m1)
     m2_motor.setVelocity(motorPower.m2)
@@ -107,5 +117,3 @@ while robot.step(timestep) != -1:
     past_time = robot.getTime()
 
     pass
-
-
