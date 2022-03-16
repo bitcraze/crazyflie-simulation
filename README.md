@@ -44,7 +44,7 @@ Then just run the following
 Go into the crazyflie_simulation/controllers/ folder and run the following:
 
     swig -python pid_controller.i
-    python setup.py build_ext --inplace
+    python3 setup.py build_ext --inplace
 
 Change controller in crazyflie robot model to crazyflie_controller_py to try it out. 
     
