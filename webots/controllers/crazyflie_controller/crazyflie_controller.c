@@ -57,21 +57,23 @@ int main(int argc, char **argv) {
   }
 
   // Intialize variables
-  double rollActual, pitchActual, yawActual, altitudeActual;
-  double xActual, yActual, vxActual, vyActual;
+
+  ActualState_t actualState = {0};
+  DesiredState_t desiredState = {0};
   double pastXActual, pastYActual;
-  double rollDesired, pitchDesired, yawDesired, altitudeDesired;
-  double vxDesired, vyDesired, vzDesired;
   double past_time = wb_robot_get_time();
 
   // Initialize PID gains.
-  double kp_att_y = 1;
-  double kd_att_y = 0.5;
-  double kp_att_rp =0.5;
-  double kd_att_rp = 0.1;
-  double kp_z = 10;
-  double ki_z = 50;
-  double kd_y = 5;
+  GainsPID_t gainsPID;
+  gainsPID.kp_att_y = 1;
+  gainsPID.kd_att_y = 0.5;
+  gainsPID.kp_att_rp =0.5;
+  gainsPID.kd_att_rp = 0.1;
+  gainsPID.kd_vel_xy = 0.5;
+  gainsPID.kd_vel_xy = 0.1;
+  gainsPID.kp_z = 10;
+  gainsPID.ki_z = 50;
+  gainsPID.kd_z = 5;
   init_pid_attitude_fixed_height_controller();
 
   // Initialize struct for motor power
@@ -84,57 +86,52 @@ int main(int argc, char **argv) {
     const double dt = wb_robot_get_time() - past_time;
 
     // Get measurements
-    rollActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
-    pitchActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    yawActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
-    altitudeActual = wb_gps_get_values(gps)[2];
-
-
-    xActual= wb_gps_get_values(gps)[0];
-    vxActual = (xActual - pastXActual)/dt;
-
-    yActual= wb_gps_get_values(gps)[1];
-    vyActual = (yActual - pastYActual)/dt;
+    actualState.rollActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
+    actualState.pitchActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
+    actualState.yawActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    actualState.altitudeActual = wb_gps_get_values(gps)[2];
+    double xActual= wb_gps_get_values(gps)[0];
+    actualState.vxActual = (xActual - pastXActual)/dt;
+    double yActual= wb_gps_get_values(gps)[1];
+    actualState.vyActual = (yActual - pastYActual)/dt;
 
     // Initialize values
-    rollDesired = 0;
-    pitchDesired = 0;
-    yawDesired = 0;
-    altitudeDesired = 1;
-    vxDesired = 0;
-    vyDesired = 0;
-    vzDesired = 1;
+    double rollDesired = 0;
+    double pitchDesired = 0;
+    desiredState.altitudeDesired = 1.0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          vxDesired = + 0.05;
+          pitchDesired = + 0.05;
           break;
         case WB_KEYBOARD_DOWN:
-          vxDesired = - 0.05;
+          pitchDesired = - 0.05;
           break;
         case WB_KEYBOARD_RIGHT:
-          vyDesired = + 0.05;
+          rollDesired = + 0.05;
           break;
         case WB_KEYBOARD_LEFT:
-          vyDesired = - 0.05;
+          rollDesired = - 0.05;
           break;
           }
       key = wb_keyboard_get_key();
     }
 
-    // PID attitude controller with fixed height
-    /*pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
-    rollDesired, pitchDesired, yawDesired, altitudeDesired,
-     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
-    */
+    desiredState.rollDesired = rollDesired;
+    desiredState.pitchDesired = pitchDesired;
 
-    pid_velocity_controller(vxActual, vyActual, yawActual, altitudeActual, 
+    // PID attitude controller with fixed height
+    pid_attitude_fixed_height_controller(actualState, &desiredState,
+    gainsPID, dt, &motorPower);
+    
+
+    /*pid_velocity_controller(vxActual, vyActual, yawActual, altitudeActual, 
     vxDesired, vyDesired, yawDesired, vzDesired,
      kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
-
+    */
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
     wb_motor_set_velocity(m2_motor, motorPower.m2);

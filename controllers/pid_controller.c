@@ -38,30 +38,29 @@ void init_pid_attitude_fixed_height_controller()
 }
 
 
-MotorPower_t pid_attitude_fixed_height_controller(double rollActual, double pitchActual, double yawActual, double altitudeActual, 
-    double rollDesired, double pitchDesired, double yawDesired, double altitudeDesired,
-    double kp_att_rp, double kd_att_rp, double kp_att_y, double kd_att_y, double kp_z, double kd_z, double ki_z,
+void pid_attitude_fixed_height_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands)
 {
 
     // Calculate errors
-    double altitudeError = altitudeDesired - altitudeActual;
+    double altitudeError = desiredState->altitudeDesired - actualState.altitudeActual;
     double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
-    double yawError = yawDesired - yawActual;
+    double yawError = desiredState->yawDesired - actualState.yawActual;
     double yawDerivativeError = (yawError - pastYawError)/dt;
-    double pitchError = pitchDesired - pitchActual;
+    double pitchError = desiredState->pitchDesired - actualState.pitchActual;
     double pitchDerivativeError = (pitchError - pastPitchError)/dt;
-    double rollError = rollDesired - rollActual;
+    double rollError = desiredState->rollDesired - actualState.rollActual;
     double rollDerivativeError = (rollError - pastRollError)/dt;
 
     //PID control
-    double rollControl =kp_att_rp * constrain(rollError,-1, 1) + kd_att_rp*rollDerivativeError;
-    double pitchControl =-kp_att_rp * constrain(pitchError,-1, 1) - kd_att_rp*pitchDerivativeError;
-    double yawControl = kp_att_y * constrain(yawError, -1, 1)+ kd_att_y*yawDerivativeError;
-    double altitudeControl = kp_z * constrain(altitudeError, -1, 1) + kd_z*altitudeDerivativeError + ki_z;
+    double rollControl = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
+    double pitchControl =-gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
+    double yawControl = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
+    double altitudeControl = gainsPID.kp_z * constrain(altitudeError, -1, 1) + gainsPID.kd_z*altitudeDerivativeError + gainsPID.ki_z;
     
     // Motor mixing
-    motorCommands->m1 =  altitudeControl -rollControl + pitchControl + yawControl;
+    motorCommands->m1 =  altitudeControl - rollControl + pitchControl + yawControl;
     motorCommands->m2 =  altitudeControl - rollControl - pitchControl - yawControl;
     motorCommands->m3 =  altitudeControl + rollControl - pitchControl + yawControl;
     motorCommands->m4 =  altitudeControl + rollControl + pitchControl - yawControl;
@@ -75,34 +74,29 @@ MotorPower_t pid_attitude_fixed_height_controller(double rollActual, double pitc
     pastPitchError= pitchError;
     pastRollError= rollError;
 
-    return motorCommandsReturn;
 }
 
 
-MotorPower_t pid_velocity_controller(double vxActual, double vyActual, double yawActual, double altitudeActual, 
-    double vxDesired, double vyDesired, double yawDesired, double vzDesired,
-    double kp_vel_xy, double kd_vel_xy, double kp_att_y, double kd_att_y, double kp_z, double kd_z, double ki_z,
+void pid_velocity_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands)
 {
 
-
-    double altitudeDesired = vzDesired;
-
-    double altitudeError = altitudeDesired - altitudeActual;
+    double altitudeError = desiredState->altitudeDesired - actualState.altitudeActual;
     double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
-    double yawError = yawDesired - yawActual;
+    double yawError = desiredState->yawDesired - actualState.yawActual;
     double yawDerivativeError = (yawError - pastYawError)/dt;
-    double vxError = vxDesired - vxActual;
+    double vxError = desiredState->vxDesired - actualState.vxActual;
     double vxDerivative = (vxError - pastVxError)/dt;
-    double vyError = vyDesired - vyActual;
+    double vyError = desiredState->vyDesired - actualState.vyActual;
     double vyDerivative = (vyError - pastVyError)/dt;
 
 
     //PID control
-    double vxControl =kp_vel_xy * constrain(vxError,-1, 1) + kd_vel_xy*vxDerivative;
-    double vyControl =-kp_vel_xy * constrain(vyError,-1, 1) - kd_vel_xy*vyDerivative;
-    double yawControl = kp_att_y * constrain(yawError, -1, 1)+ kd_att_y*yawDerivativeError;
-    double altitudeControl = kp_z * constrain(altitudeError, -1, 1) + kd_z*altitudeDerivativeError + ki_z;
+    double vxControl =gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
+    double vyControl =-gainsPID.kp_vel_xy * constrain(vyError,-1, 1) - gainsPID.kd_vel_xy*vyDerivative;
+    double yawControl = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
+    double altitudeControl = gainsPID.kp_z * constrain(altitudeError, -1, 1) + gainsPID.kd_z*altitudeDerivativeError + gainsPID.ki_z;
     
     // Motor mixing
     motorCommands->m1 =  altitudeControl - vyControl + vxControl + yawControl;
