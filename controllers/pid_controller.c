@@ -27,6 +27,7 @@ float constrain(float value, const float minVal, const float maxVal)
 
 
 double pastAltitudeError, pastYawError, pastPitchError, pastRollError;
+double pastVxError, pastVyError;
 
 void init_pid_attitude_fixed_height_controller()
 {
@@ -75,4 +76,47 @@ MotorPower_t pid_attitude_fixed_height_controller(double rollActual, double pitc
     pastRollError= rollError;
 
     return motorCommandsReturn;
+}
+
+
+MotorPower_t pid_velocity_controller(double vxActual, double vyActual, double yawActual, double altitudeActual, 
+    double vxDesired, double vyDesired, double yawDesired, double vzDesired,
+    double kp_vel_xy, double kd_vel_xy, double kp_att_y, double kd_att_y, double kp_z, double kd_z, double ki_z,
+    double dt, MotorPower_t* motorCommands)
+{
+
+
+    double altitudeDesired = vzDesired;
+
+    double altitudeError = altitudeDesired - altitudeActual;
+    double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
+    double yawError = yawDesired - yawActual;
+    double yawDerivativeError = (yawError - pastYawError)/dt;
+    double vxError = vxDesired - vxActual;
+    double vxDerivative = (vxError - pastVxError)/dt;
+    double vyError = vyDesired - vyActual;
+    double vyDerivative = (vyError - pastVyError)/dt;
+
+
+    //PID control
+    double vxControl =kp_vel_xy * constrain(vxError,-1, 1) + kd_vel_xy*vxDerivative;
+    double vyControl =-kp_vel_xy * constrain(vyError,-1, 1) - kd_vel_xy*vyDerivative;
+    double yawControl = kp_att_y * constrain(yawError, -1, 1)+ kd_att_y*yawDerivativeError;
+    double altitudeControl = kp_z * constrain(altitudeError, -1, 1) + kd_z*altitudeDerivativeError + ki_z;
+    
+    // Motor mixing
+    motorCommands->m1 =  altitudeControl - vyControl + vxControl + yawControl;
+    motorCommands->m2 =  altitudeControl - vyControl - vxControl - yawControl;
+    motorCommands->m3 =  altitudeControl + vyControl - vxControl + yawControl;
+    motorCommands->m4 =  altitudeControl + vyControl + vxControl - yawControl;
+
+
+    MotorPower_t motorCommandsReturn;
+    memcpy(&motorCommandsReturn, motorCommands, sizeof(MotorPower_t));
+
+    pastAltitudeError = altitudeError;
+    pastYawError = yawError;
+    pastVxError = vxError;
+    pastVyError = vyError;
+
 }
