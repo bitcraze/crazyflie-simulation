@@ -20,19 +20,15 @@ from controller import InertialUnit
 from controller import GPS
 from controller import Keyboard
 import numpy
+from math import cos, sin
 
 import sys
 sys.path.append('../../../controllers/')
-from  pid_controller import init_pid_attitude_fixed_height_controller, pid_attitude_fixed_height_controller
-from pid_controller import MotorPower_t
+from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
+from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
-
-def constrain(value, minVal, maxVal):
-  return min(maxVal, max(minVal,value))
-
-
 
 ## Initialize motors
 m1_motor = robot.getDevice("m1_motor");
@@ -40,13 +36,13 @@ m1_motor.setPosition(float('inf'))
 m1_motor.setVelocity(-1)
 m2_motor = robot.getDevice("m2_motor");
 m2_motor.setPosition(float('inf'))
-m2_motor.setVelocity(-1)
+m2_motor.setVelocity(1)
 m3_motor = robot.getDevice("m3_motor");
 m3_motor.setPosition(float('inf'))
 m3_motor.setVelocity(-1)
 m4_motor = robot.getDevice("m4_motor");
 m4_motor.setPosition(float('inf'))
-m4_motor.setVelocity(-1)
+m4_motor.setVelocity(1)
 
 ## Initialize Sensors
 imu = robot.getDevice("inertial unit")
@@ -55,25 +51,37 @@ gps = robot.getDevice("gps")
 gps.enable(timestep)
 Keyboard().enable(timestep)
 
-
+## Wait for two seconds
+#while robot.step(timestep) != -1:
+#    if robot.getTime()>2.0:
+#        break
+    
 ## Initialize variables
-rollActual, pitchActual, yawActual, altitudeActual = 0.0, 0.0, 0.0, 0.0
-rollDesired, pitchDesired, yawDesired, altitudeDesired = 0.0, 0.0, 0.0, 0.0
+actualState = ActualState_t()
+desiredState = DesiredState_t()
+pastXGlobal = 0
+pastYGlobal = 0
+yawDesired = 0
 past_time = robot.getTime()
 pastAltitudeError, pastYawError, pastPitchError, pastRollError = 0.0, 0.0, 0.0, 0.0
 
 ## Initialize PID gains.
-kp_att_y = 1
-kd_att_y = 0.5
-kp_att_rp =0.5
-kd_att_rp = 0.1
-kp_z = 10
-ki_z = 50
-kd_z = 5
+gainsPID = GainsPID_t()
+gainsPID.kp_att_y = 1
+gainsPID.kd_att_y = 0.5
+gainsPID.kp_att_rp =0.5
+gainsPID.kd_att_rp = 0.1
+gainsPID.kp_vel_xy = 2;
+gainsPID.kd_vel_xy = 0.5;
+gainsPID.kp_z = 10
+gainsPID.ki_z = 50
+gainsPID.kd_z = 5
 init_pid_attitude_fixed_height_controller();
 
 ## Initialize struct for motor power
 motorPower = MotorPower_t()
+
+print('Take off!')
 
 # Main loop:
 while robot.step(timestep) != -1:
@@ -81,39 +89,66 @@ while robot.step(timestep) != -1:
     dt = robot.getTime() - past_time;
 
     ## Get measurements
-    rollActual = imu.getRollPitchYaw()[0];
-    pitchActual = imu.getRollPitchYaw()[1];
-    yawActual = imu.getRollPitchYaw()[2];
-    altitudeActual = gps.getValues()[2];
+    actualState.roll = imu.getRollPitchYaw()[0];
+    actualState.yaw = imu.getRollPitchYaw()[2];
+    actualState.altitude = gps.getValues()[2];
+    xGlobal = gps.getValues()[0]
+    vxGlobal = (xGlobal - pastXGlobal)/dt
+    yGlobal = gps.getValues()[1]
+    vyGlobal = (yGlobal - pastYGlobal)/dt
+
+    ## Get body fixed velocities
+    cosyaw = cos(actualState.yaw)
+    sinyaw = sin(actualState.yaw)
+    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw
+    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw
+
 
     ## Initialize values
-    rollDesired = 0;
-    pitchDesired = 0;
-    yawDesired = 0;
-    altitudeDesired = 1;
+    desiredState.roll = 0
+    desiredState.pitch = 0
+    desiredState.vx = 0
+    desiredState.vy = 0
+    desiredState.altitude = 0
+    desiredState.yaw = 0
+    desiredState.altitude = 1.0
+
+    forwardDesired = 0
+    sidewaysDesired = 0
 
     key = Keyboard().getKey()
     while key>0:
         if key == Keyboard.UP:
-            pitchDesired += 0.05
+            forwardDesired += 0.2
         elif key == Keyboard.DOWN:
-            pitchDesired -= 0.05
+            forwardDesired -= 0.2
         elif key == Keyboard.RIGHT:
-            rollDesired += 0.05
+            sidewaysDesired -= 0.2
         elif key == Keyboard.LEFT:
-            rollDesired -= 0.05
-        else:
-            pitchDesired = 0;
-            pitchDesired = 0;
-
+            sidewaysDesired += 0.2
+        elif key == ord('Q'):
+            yawDesired = actualState.yaw + 0.05
+        elif key == ord('E'):
+            yawDesired = actualState.yaw - 0.05
 
         key = Keyboard().getKey()
 
-    ## PID attitude controller with fixed height
-    pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
-        rollDesired, pitchDesired, yawDesired, altitudeDesired,
-        kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_z,  ki_z, dt, motorPower);
+    desiredState.yaw = yawDesired;
 
+    ## PID velocity controller with fixed height
+    desiredState.vy = sidewaysDesired;
+    desiredState.vx = forwardDesired;
+    pid_velocity_fixed_height_controller(actualState, desiredState,
+    gainsPID, dt, motorPower);
+    
+
+    ## PID attitude controller with fixed height
+    '''
+    desiredState.roll = sidewaysDesired;
+    desiredState.pitch = forwardDesired;
+     pid_attitude_fixed_height_controller(actualState, desiredState,
+    gainsPID, dt, motorPower);
+    '''
 
     m1_motor.setVelocity(-motorPower.m1)
     m2_motor.setVelocity(motorPower.m2)
@@ -121,5 +156,7 @@ while robot.step(timestep) != -1:
     m4_motor.setVelocity(motorPower.m4)
     
     past_time = robot.getTime()
+    pastXGlobal = xGlobal
+    pastYGlobal = yGlobal
 
     pass

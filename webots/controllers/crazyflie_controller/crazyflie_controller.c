@@ -56,19 +56,25 @@ int main(int argc, char **argv) {
       break;
   }
 
-  // Intialize variables
-  double rollActual, pitchActual, yawActual, altitudeActual;
-  double rollDesired, pitchDesired, yawDesired, altitudeDesired;
+  // Initialize variables
+  ActualState_t actualState = {0};
+  DesiredState_t desiredState = {0};
+  double pastXGlobal =0;
+  double pastYGlobal=0;
   double past_time = wb_robot_get_time();
+  double yawDesired = 0;
 
   // Initialize PID gains.
-  double kp_att_y = 1;
-  double kd_att_y = 0.5;
-  double kp_att_rp =0.5;
-  double kd_att_rp = 0.1;
-  double kp_z = 10;
-  double ki_z = 50;
-  double kd_y = 5;
+  GainsPID_t gainsPID;
+  gainsPID.kp_att_y = 1;
+  gainsPID.kd_att_y = 0.5;
+  gainsPID.kp_att_rp =0.5;
+  gainsPID.kd_att_rp = 0.1;
+  gainsPID.kp_vel_xy = 2;
+  gainsPID.kd_vel_xy = 0.5;
+  gainsPID.kp_z = 10;
+  gainsPID.ki_z = 50;
+  gainsPID.kd_z = 5;
   init_pid_attitude_fixed_height_controller();
 
   // Initialize struct for motor power
@@ -81,42 +87,73 @@ int main(int argc, char **argv) {
     const double dt = wb_robot_get_time() - past_time;
 
     // Get measurements
-    rollActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
-    pitchActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    yawActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
-    altitudeActual = wb_gps_get_values(gps)[2];
+    actualState.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
+    actualState.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
+    actualState.yaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    actualState.altitude = wb_gps_get_values(gps)[2];
+    double xGlobal= wb_gps_get_values(gps)[0];
+    double vxGlobal = (xGlobal - pastXGlobal)/dt;
+    double yGlobal = wb_gps_get_values(gps)[1];
+    double vyGlobal = (yGlobal - pastYGlobal)/dt;
+
+    // Get body fixed velocities
+    double cosyaw = cos(actualState.yaw);
+    double sinyaw = sin(actualState.yaw);
+    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw;
+    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw;
 
     // Initialize values
-    rollDesired = 0;
-    pitchDesired = 0;
-    yawDesired = 0;
-    altitudeDesired = 1;
+    desiredState.roll = 0;
+    desiredState.pitch = 0;
+    desiredState.vx = 0;
+    desiredState.vy = 0;
+    desiredState.yaw = 0;
+    desiredState.altitude = 1.0;
+
+    double forwardDesired = 0;
+    double sidewaysDesired = 0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          pitchDesired = + 0.05;
+          forwardDesired = + 0.2;
           break;
         case WB_KEYBOARD_DOWN:
-          pitchDesired = - 0.05;
+          forwardDesired = - 0.2;
           break;
         case WB_KEYBOARD_RIGHT:
-          rollDesired = + 0.05;
+          sidewaysDesired = - 0.2;
           break;
         case WB_KEYBOARD_LEFT:
-          rollDesired = - 0.05;
+          sidewaysDesired = + 0.2;
           break;
-          }
+        case 'Q':
+          yawDesired = actualState.yaw + 0.05;
+          break;
+        case 'E':
+          yawDesired = actualState.yaw - 0.05;
+          break;
+        }
       key = wb_keyboard_get_key();
     }
 
-    // PID attitude controller with fixed height
-    pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
-    rollDesired, pitchDesired, yawDesired, altitudeDesired,
-     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
 
+    desiredState.yaw = yawDesired;
+
+    // PID velocity controller with fixed height
+    desiredState.vy = sidewaysDesired;
+    desiredState.vx = forwardDesired;
+    pid_velocity_fixed_height_controller(actualState, &desiredState,
+    gainsPID, dt, &motorPower);
+
+    // PID attitude controller with fixed height
+    /*desiredState.roll = sidewaysDesired;
+    desiredState.pitch = forwardDesired;
+     pid_attitude_fixed_height_controller(actualState, &desiredState,
+    gainsPID, dt, &motorPower);*/
+    
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
     wb_motor_set_velocity(m2_motor, motorPower.m2);
@@ -125,6 +162,9 @@ int main(int argc, char **argv) {
     
     // Save past time for next time step
     past_time = wb_robot_get_time();
+    pastXGlobal = xGlobal;
+    pastYGlobal = yGlobal;
+
 
   };
 
