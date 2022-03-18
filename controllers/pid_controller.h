@@ -85,4 +85,4 @@ void pid_attitude_controller(ActualState_t actualState,
 
 void pid_horizontal_velocity_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt, MotorPower_t* motorCommands);
+    double dt);

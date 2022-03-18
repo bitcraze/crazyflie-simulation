@@ -69,8 +69,8 @@ int main(int argc, char **argv) {
   gainsPID.kd_att_y = 0.5;
   gainsPID.kp_att_rp =0.5;
   gainsPID.kd_att_rp = 0.1;
-  gainsPID.kd_vel_xy = 0.5;
-  gainsPID.kd_vel_xy = 0.1;
+  gainsPID.kp_vel_xy = 5;
+  gainsPID.kd_vel_xy = 1;
   gainsPID.kp_z = 10;
   gainsPID.ki_z = 50;
   gainsPID.kd_z = 5;
@@ -96,8 +96,14 @@ int main(int argc, char **argv) {
     actualState.vyActual = (yActual - pastYActual)/dt;
 
     // Initialize values
-    double rollDesired = 0;
-    double pitchDesired = 0;
+    desiredState.rollDesired = 0;
+    desiredState.pitchDesired = 0;
+    desiredState.vxDesired = 0;
+    desiredState.vyDesired = 0;
+    desiredState.altitudeDesired = 0;
+
+    double forwardDesired = 0;
+    double sidewaysDesired = 0;
     desiredState.altitudeDesired = 1.0;
 
     // Control altitude
@@ -105,28 +111,30 @@ int main(int argc, char **argv) {
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          pitchDesired = + 0.05;
+          forwardDesired = + 0.05;
           break;
         case WB_KEYBOARD_DOWN:
-          pitchDesired = - 0.05;
+          forwardDesired = - 0.05;
           break;
         case WB_KEYBOARD_RIGHT:
-          rollDesired = + 0.05;
+          sidewaysDesired = - 0.05;
           break;
         case WB_KEYBOARD_LEFT:
-          rollDesired = - 0.05;
+          sidewaysDesired = + 0.05;
           break;
           }
       key = wb_keyboard_get_key();
     }
 
-    desiredState.rollDesired = rollDesired;
-    desiredState.pitchDesired = pitchDesired;
+    desiredState.vyDesired = sidewaysDesired;
+    desiredState.vxDesired = forwardDesired;
 
     // PID attitude controller with fixed height
-    pid_attitude_fixed_height_controller(actualState, &desiredState,
+    pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
-    
+
+     /* pid_attitude_fixed_height_controller(actualState, &desiredState,
+    gainsPID, dt, &motorPower);*/
 
     /*pid_velocity_controller(vxActual, vyActual, yawActual, altitudeActual, 
     vxDesired, vyDesired, yawDesired, vzDesired,

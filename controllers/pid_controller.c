@@ -44,9 +44,25 @@ void pid_attitude_fixed_height_controller(ActualState_t actualState,
 {
 
     ControlCommands_t controlCommands = {0};
+    pid_fixed_height_controller(actualState, 
+    desiredState, gainsPID, dt, &controlCommands);
     pid_attitude_controller(actualState, 
     desiredState, gainsPID, dt, &controlCommands);
+    motor_mixing(controlCommands, motorCommands);
+
+}
+
+
+void pid_velocity_fixed_height_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
+    double dt, MotorPower_t* motorCommands)
+{
+    ControlCommands_t controlCommands = {0};
+    pid_horizontal_velocity_controller(actualState, 
+    desiredState, gainsPID, dt);
     pid_fixed_height_controller(actualState, 
+    desiredState, gainsPID, dt, &controlCommands);
+    pid_attitude_controller(actualState, 
     desiredState, gainsPID, dt, &controlCommands);
     motor_mixing(controlCommands, motorCommands);
 
@@ -102,7 +118,7 @@ void pid_attitude_controller(ActualState_t actualState,
 
 void pid_horizontal_velocity_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt, MotorPower_t* motorCommands)
+    double dt)
 {
 
     double vxError = desiredState->vxDesired - actualState.vxActual;
@@ -110,9 +126,13 @@ void pid_horizontal_velocity_controller(ActualState_t actualState,
     double vyError = desiredState->vyDesired - actualState.vyActual;
     double vyDerivative = (vyError - pastVyError)/dt;
 
+
     //PID control
-    double vxControl =gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
-    double vyControl =-gainsPID.kp_vel_xy * constrain(vyError,-1, 1) - gainsPID.kd_vel_xy*vyDerivative;
+    double pitchCommand = gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
+    double rollCommand = - gainsPID.kp_vel_xy * constrain(vyError,-1, 1) - gainsPID.kd_vel_xy*vyDerivative;
+    
+    desiredState->pitchDesired = pitchCommand;
+    desiredState->rollDesired = rollCommand;
 
     // Save error for the next round
     pastVxError = vxError;
