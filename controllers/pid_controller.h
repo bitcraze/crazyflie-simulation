@@ -26,28 +26,28 @@ typedef struct MotorPower_s{
 
 
 typedef struct ControlCommands_s{
-  double rollControl;
-  double pitchControl;
-  double yawControl;
-  double altitudeControl;
+  double roll;
+  double pitch;
+  double yaw;
+  double altitude;
 } ControlCommands_t;
 
 typedef struct DesiredState_s{
-  double rollDesired;
-  double pitchDesired;
-  double yawDesired;
-  double altitudeDesired;
-  double vxDesired;
-  double vyDesired;
+  double roll;
+  double pitch;
+  double yaw;
+  double altitude;
+  double vx;
+  double vy;
 } DesiredState_t;
 
 typedef struct ActualState_s{
-  double rollActual;
-  double pitchActual;
-  double yawActual;
-  double altitudeActual;
-  double vxActual;
-  double vyActual;
+  double roll;
+  double pitch;
+  double yaw;
+  double altitude;
+  double vx;
+  double vy;
 } ActualState_t;
 
 typedef struct GainsPID_s{

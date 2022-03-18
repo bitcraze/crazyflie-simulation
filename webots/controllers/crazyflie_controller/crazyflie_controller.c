@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
 
   ActualState_t actualState = {0};
   DesiredState_t desiredState = {0};
-  double pastXActualGlobal =0;
-  double pastYActualGlobal=0;
+  double pastXGlobal =0;
+  double pastYGlobal=0;
   double past_time = wb_robot_get_time();
 
   // Initialize PID gains.
@@ -88,32 +88,32 @@ int main(int argc, char **argv) {
     const double dt = wb_robot_get_time() - past_time;
 
     // Get measurements
-    actualState.rollActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
-    actualState.pitchActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    actualState.yawActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
-    actualState.altitudeActual = wb_gps_get_values(gps)[2];
-    double xActualGlobal= wb_gps_get_values(gps)[0];
-    double vxActualGlobal = (xActualGlobal - pastXActualGlobal)/dt;
-    double yActualGlobal = wb_gps_get_values(gps)[1];
-    double vyActualGlobal = (yActualGlobal - pastYActualGlobal)/dt;
+    actualState.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
+    actualState.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
+    actualState.yaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    actualState.altitude = wb_gps_get_values(gps)[2];
+    double xGlobal= wb_gps_get_values(gps)[0];
+    double vxGlobal = (xGlobal - pastXGlobal)/dt;
+    double yGlobal = wb_gps_get_values(gps)[1];
+    double vyGlobal = (yGlobal - pastYGlobal)/dt;
 
     // Get body fixed velocities
-    double cosyaw = cos(actualState.yawActual);
-    double sinyaw = sin(actualState.yawActual);
-    actualState.vxActual = vxActualGlobal * cosyaw + vyActualGlobal * sinyaw;
-    actualState.vyActual = - vxActualGlobal * sinyaw + vyActualGlobal * cosyaw;
+    double cosyaw = cos(actualState.yaw);
+    double sinyaw = sin(actualState.yaw);
+    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw;
+    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw;
 
     // Initialize values
-    desiredState.rollDesired = 0;
-    desiredState.pitchDesired = 0;
-    desiredState.vxDesired = 0;
-    desiredState.vyDesired = 0;
-    desiredState.altitudeDesired = 0;
-    desiredState.yawDesired = 0;
+    desiredState.roll = 0;
+    desiredState.pitch = 0;
+    desiredState.vx = 0;
+    desiredState.vy = 0;
+    desiredState.altitude = 0;
+    desiredState.yaw = 0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
-    desiredState.altitudeDesired = 1.0;
+    desiredState.altitude = 1.0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
@@ -132,26 +132,26 @@ int main(int argc, char **argv) {
           sidewaysDesired = + 0.2;
           break;
         case 'Q':
-          yawDesired = actualState.yawActual+ 0.05;
+          yawDesired = actualState.yaw+ 0.05;
           break;
         case 'E':
-          yawDesired = actualState.yawActual - 0.05;
+          yawDesired = actualState.yaw - 0.05;
           break;
         }
       key = wb_keyboard_get_key();
     }
 
 
-    desiredState.yawDesired = yawDesired;
+    desiredState.yaw = yawDesired;
 
     // PID attitude controller with fixed height
-    desiredState.vyDesired = sidewaysDesired;
-    desiredState.vxDesired = forwardDesired;
+    desiredState.vy = sidewaysDesired;
+    desiredState.vx = forwardDesired;
     pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
     
-    /*desiredState.rollDesired = sidewaysDesired;
-    desiredState.pitchDesired = forwardDesired;
+    /*desiredState.roll = sidewaysDesired;
+    desiredState.pitch = forwardDesired;
      pid_attitude_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);*/
     
@@ -163,8 +163,8 @@ int main(int argc, char **argv) {
     
     // Save past time for next time step
     past_time = wb_robot_get_time();
-    pastXActualGlobal = xActualGlobal;
-    pastYActualGlobal = yActualGlobal;
+    pastXGlobal = xGlobal;
+    pastYGlobal = yGlobal;
 
 
   };

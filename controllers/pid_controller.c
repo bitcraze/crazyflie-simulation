@@ -35,8 +35,9 @@ void init_pid_attitude_fixed_height_controller()
     pastYawError = 0;
     pastPitchError = 0;
     pastRollError = 0;
+    pastVxError = 0;
+    pastVyError = 0;
 }
-
 
 void pid_attitude_fixed_height_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
@@ -69,9 +70,9 @@ void pid_fixed_height_controller(ActualState_t actualState,
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, ControlCommands_t* controlCommands)
 {
-    double altitudeError = desiredState->altitudeDesired - actualState.altitudeActual;
+    double altitudeError = desiredState->altitude - actualState.altitude;
     double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
-    controlCommands->altitudeControl = gainsPID.kp_z * constrain(altitudeError, -1, 1) + gainsPID.kd_z*altitudeDerivativeError + gainsPID.ki_z;
+    controlCommands->altitude = gainsPID.kp_z * constrain(altitudeError, -1, 1) + gainsPID.kd_z*altitudeDerivativeError + gainsPID.ki_z;
     pastAltitudeError = altitudeError;
 
 }
@@ -79,10 +80,10 @@ void pid_fixed_height_controller(ActualState_t actualState,
 void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands)
 {
     // Motor mixing
-    motorCommands->m1 =  controlCommands.altitudeControl - controlCommands.rollControl + controlCommands.pitchControl + controlCommands.yawControl;
-    motorCommands->m2 =  controlCommands.altitudeControl - controlCommands.rollControl - controlCommands.pitchControl - controlCommands.yawControl;
-    motorCommands->m3 =  controlCommands.altitudeControl + controlCommands.rollControl - controlCommands.pitchControl + controlCommands.yawControl;
-    motorCommands->m4 =  controlCommands.altitudeControl + controlCommands.rollControl + controlCommands.pitchControl - controlCommands.yawControl;
+    motorCommands->m1 =  controlCommands.altitude - controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m2 =  controlCommands.altitude - controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m3 =  controlCommands.altitude + controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m4 =  controlCommands.altitude + controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
 }
 
 
@@ -92,17 +93,17 @@ void pid_attitude_controller(ActualState_t actualState,
 {
 
     // Calculate errors
-    double yawError = desiredState->yawDesired - actualState.yawActual;
+    double yawError = desiredState->yaw - actualState.yaw;
     double yawDerivativeError = (yawError - pastYawError)/dt;
-    double pitchError = desiredState->pitchDesired - actualState.pitchActual;
+    double pitchError = desiredState->pitch - actualState.pitch;
     double pitchDerivativeError = (pitchError - pastPitchError)/dt;
-    double rollError = desiredState->rollDesired - actualState.rollActual;
+    double rollError = desiredState->roll - actualState.roll;
     double rollDerivativeError = (rollError - pastRollError)/dt;
 
     //PID control
-    controlCommands->rollControl = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
-    controlCommands->pitchControl = -gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
-    controlCommands->yawControl = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
+    controlCommands->roll = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
+    controlCommands->pitch = -gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
+    controlCommands->yaw = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
     
     // Save error for the next round
     pastYawError = yawError;
@@ -117,17 +118,17 @@ void pid_horizontal_velocity_controller(ActualState_t actualState,
     double dt)
 {
 
-    double vxError = desiredState->vxDesired - actualState.vxActual;
+    double vxError = desiredState->vx - actualState.vx;
     double vxDerivative = (vxError - pastVxError)/dt;
-    double vyError = desiredState->vyDesired - actualState.vyActual;
+    double vyError = desiredState->vy - actualState.vy;
     double vyDerivative = (vyError - pastVyError)/dt;
 
     //PID control
     double pitchCommand = gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
     double rollCommand = - gainsPID.kp_vel_xy * constrain(vyError,-1, 1) - gainsPID.kd_vel_xy*vyDerivative;
     
-    desiredState->pitchDesired = pitchCommand;
-    desiredState->rollDesired = rollCommand;
+    desiredState->pitch = pitchCommand;
+    desiredState->roll = rollCommand;
 
     // Save error for the next round
     pastVxError = vxError;
