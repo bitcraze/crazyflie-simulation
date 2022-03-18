@@ -17,12 +17,20 @@
  */
 
 typedef struct MotorPower_s{
+
   double m1;
   double m2;
   double m3;
   double m4;
 } MotorPower_t;
 
+
+typedef struct ControlCommands_s{
+  double rollControl;
+  double pitchControl;
+  double yawControl;
+  double altitudeControl;
+} ControlCommands_t;
 
 typedef struct DesiredState_s{
   double rollDesired;
@@ -61,6 +69,20 @@ void pid_attitude_fixed_height_controller(ActualState_t actualState,
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands);
 
-void pid_velocity_controller(ActualState_t actualState, 
+void pid_velocity_fixed_height_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
+    double dt, MotorPower_t* motorCommands);
+
+void pid_fixed_height_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
+    double dt, ControlCommands_t* controlCommands);
+
+void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands);
+
+void pid_attitude_controller(ActualState_t actualState, 
+    DesiredState_t* desiredState, GainsPID_t gainsPID,
+    double dt, ControlCommands_t* controlCommands);
+
+void pid_horizontal_velocity_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands);
