@@ -56,13 +56,13 @@ int main(int argc, char **argv) {
       break;
   }
 
-  // Intialize variables
-
+  // Initialize variables
   ActualState_t actualState = {0};
   DesiredState_t desiredState = {0};
   double pastXGlobal =0;
   double pastYGlobal=0;
   double past_time = wb_robot_get_time();
+  double yawDesired = 0;
 
   // Initialize PID gains.
   GainsPID_t gainsPID;
@@ -81,7 +81,6 @@ int main(int argc, char **argv) {
   MotorPower_t motorPower;
 
   printf("Take off!\n");
-  double yawDesired = 0;
 
   while (wb_robot_step(timestep) != -1) {
 
@@ -108,12 +107,11 @@ int main(int argc, char **argv) {
     desiredState.pitch = 0;
     desiredState.vx = 0;
     desiredState.vy = 0;
-    desiredState.altitude = 0;
     desiredState.yaw = 0;
+    desiredState.altitude = 1.0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
-    desiredState.altitude = 1.0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
@@ -132,7 +130,7 @@ int main(int argc, char **argv) {
           sidewaysDesired = + 0.2;
           break;
         case 'Q':
-          yawDesired = actualState.yaw+ 0.05;
+          yawDesired = actualState.yaw + 0.05;
           break;
         case 'E':
           yawDesired = actualState.yaw - 0.05;
@@ -144,12 +142,13 @@ int main(int argc, char **argv) {
 
     desiredState.yaw = yawDesired;
 
-    // PID attitude controller with fixed height
+    // PID velocity controller with fixed height
     desiredState.vy = sidewaysDesired;
     desiredState.vx = forwardDesired;
     pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
-    
+
+    // PID attitude controller with fixed height
     /*desiredState.roll = sidewaysDesired;
     desiredState.pitch = forwardDesired;
      pid_attitude_fixed_height_controller(actualState, &desiredState,
