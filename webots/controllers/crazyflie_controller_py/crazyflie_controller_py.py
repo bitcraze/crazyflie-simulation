@@ -94,13 +94,13 @@ while robot.step(timestep) != -1:
 
     key = Keyboard().getKey()
     while key>0:
-        if key == Keyboard().WB_KEYBOARD_UP:
+        if key == Keyboard.UP:
             pitchDesired += 0.05
-        elif key == Keyboard().WB_KEYBOARD_DOWN:
+        elif key == Keyboard.DOWN:
             pitchDesired -= 0.05
-        elif key == Keyboard().WB_KEYBOARD_RIGHT:
+        elif key == Keyboard.RIGHT:
             rollDesired += 0.05
-        elif key == Keyboard().WB_KEYBOARD_LEFT:
+        elif key == Keyboard.LEFT:
             rollDesired -= 0.05
         else:
             pitchDesired = 0;
