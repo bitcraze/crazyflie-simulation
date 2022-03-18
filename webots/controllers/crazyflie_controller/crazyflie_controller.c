@@ -60,7 +60,8 @@ int main(int argc, char **argv) {
 
   ActualState_t actualState = {0};
   DesiredState_t desiredState = {0};
-  double pastXActual, pastYActual;
+  double pastXActualGlobal =0;
+  double pastYActualGlobal=0;
   double past_time = wb_robot_get_time();
 
   // Initialize PID gains.
@@ -69,8 +70,8 @@ int main(int argc, char **argv) {
   gainsPID.kd_att_y = 0.5;
   gainsPID.kp_att_rp =0.5;
   gainsPID.kd_att_rp = 0.1;
-  gainsPID.kp_vel_xy = 5;
-  gainsPID.kd_vel_xy = 1;
+  gainsPID.kp_vel_xy = 2;
+  gainsPID.kd_vel_xy = 0.5;
   gainsPID.kp_z = 10;
   gainsPID.ki_z = 50;
   gainsPID.kd_z = 5;
@@ -80,6 +81,7 @@ int main(int argc, char **argv) {
   MotorPower_t motorPower;
 
   printf("Take off!\n");
+  double yawDesired = 0;
 
   while (wb_robot_step(timestep) != -1) {
 
@@ -90,10 +92,16 @@ int main(int argc, char **argv) {
     actualState.pitchActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
     actualState.yawActual = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
     actualState.altitudeActual = wb_gps_get_values(gps)[2];
-    double xActual= wb_gps_get_values(gps)[0];
-    actualState.vxActual = (xActual - pastXActual)/dt;
-    double yActual= wb_gps_get_values(gps)[1];
-    actualState.vyActual = (yActual - pastYActual)/dt;
+    double xActualGlobal= wb_gps_get_values(gps)[0];
+    double vxActualGlobal = (xActualGlobal - pastXActualGlobal)/dt;
+    double yActualGlobal = wb_gps_get_values(gps)[1];
+    double vyActualGlobal = (yActualGlobal - pastYActualGlobal)/dt;
+
+    // Get body fixed velocities
+    double cosyaw = cos(actualState.yawActual);
+    double sinyaw = sin(actualState.yawActual);
+    actualState.vxActual = vxActualGlobal * cosyaw + vyActualGlobal * sinyaw;
+    actualState.vyActual = - vxActualGlobal * sinyaw + vyActualGlobal * cosyaw;
 
     // Initialize values
     desiredState.rollDesired = 0;
@@ -101,6 +109,7 @@ int main(int argc, char **argv) {
     desiredState.vxDesired = 0;
     desiredState.vyDesired = 0;
     desiredState.altitudeDesired = 0;
+    desiredState.yawDesired = 0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
@@ -111,46 +120,51 @@ int main(int argc, char **argv) {
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          forwardDesired = + 0.05;
+          forwardDesired = + 0.2;
           break;
         case WB_KEYBOARD_DOWN:
-          forwardDesired = - 0.05;
+          forwardDesired = - 0.2;
           break;
         case WB_KEYBOARD_RIGHT:
-          sidewaysDesired = - 0.05;
+          sidewaysDesired = - 0.2;
           break;
         case WB_KEYBOARD_LEFT:
-          sidewaysDesired = + 0.05;
+          sidewaysDesired = + 0.2;
           break;
-          }
+        case 'Q':
+          yawDesired = actualState.yawActual+ 0.05;
+          break;
+        case 'E':
+          yawDesired = actualState.yawActual - 0.05;
+          break;
+        }
       key = wb_keyboard_get_key();
     }
 
-    desiredState.vyDesired = sidewaysDesired;
-    desiredState.vxDesired = forwardDesired;
+
+    desiredState.yawDesired = yawDesired;
 
     // PID attitude controller with fixed height
+    desiredState.vyDesired = sidewaysDesired;
+    desiredState.vxDesired = forwardDesired;
     pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
-
-     /* pid_attitude_fixed_height_controller(actualState, &desiredState,
+    
+    /*desiredState.rollDesired = sidewaysDesired;
+    desiredState.pitchDesired = forwardDesired;
+     pid_attitude_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);*/
-
-    /*pid_velocity_controller(vxActual, vyActual, yawActual, altitudeActual, 
-    vxDesired, vyDesired, yawDesired, vzDesired,
-     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
-    */
+    
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
     wb_motor_set_velocity(m2_motor, motorPower.m2);
     wb_motor_set_velocity(m3_motor, - motorPower.m3);
     wb_motor_set_velocity(m4_motor, motorPower.m4);
-
     
     // Save past time for next time step
     past_time = wb_robot_get_time();
-    pastXActual = xActual;
-    pastYActual = yActual;
+    pastXActualGlobal = xActualGlobal;
+    pastYActualGlobal = yActualGlobal;
 
 
   };

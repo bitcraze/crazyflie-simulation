@@ -42,14 +42,12 @@ void pid_attitude_fixed_height_controller(ActualState_t actualState,
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands)
 {
-
     ControlCommands_t controlCommands = {0};
     pid_fixed_height_controller(actualState, 
     desiredState, gainsPID, dt, &controlCommands);
     pid_attitude_controller(actualState, 
     desiredState, gainsPID, dt, &controlCommands);
     motor_mixing(controlCommands, motorCommands);
-
 }
 
 
@@ -65,7 +63,6 @@ void pid_velocity_fixed_height_controller(ActualState_t actualState,
     pid_attitude_controller(actualState, 
     desiredState, gainsPID, dt, &controlCommands);
     motor_mixing(controlCommands, motorCommands);
-
 }
 
 void pid_fixed_height_controller(ActualState_t actualState, 
@@ -95,7 +92,6 @@ void pid_attitude_controller(ActualState_t actualState,
 {
 
     // Calculate errors
-
     double yawError = desiredState->yawDesired - actualState.yawActual;
     double yawDerivativeError = (yawError - pastYawError)/dt;
     double pitchError = desiredState->pitchDesired - actualState.pitchActual;
@@ -105,7 +101,7 @@ void pid_attitude_controller(ActualState_t actualState,
 
     //PID control
     controlCommands->rollControl = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
-    controlCommands->pitchControl =-gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
+    controlCommands->pitchControl = -gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
     controlCommands->yawControl = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
     
     // Save error for the next round
@@ -125,7 +121,6 @@ void pid_horizontal_velocity_controller(ActualState_t actualState,
     double vxDerivative = (vxError - pastVxError)/dt;
     double vyError = desiredState->vyDesired - actualState.vyActual;
     double vyDerivative = (vyError - pastVyError)/dt;
-
 
     //PID control
     double pitchCommand = gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
