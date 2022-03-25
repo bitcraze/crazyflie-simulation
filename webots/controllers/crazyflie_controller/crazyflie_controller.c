@@ -56,13 +56,13 @@ int main(int argc, char **argv) {
   WbDeviceTag camera = wb_robot_get_device("camera");
   wb_camera_enable(camera, timestep);
   WbDeviceTag range_front = wb_robot_get_device("range_front");
-  wb_distance_sensor_enable(range_front, TIME_STEP);
+  wb_distance_sensor_enable(range_front, timestep);
   WbDeviceTag range_left = wb_robot_get_device("range_left");
-  wb_distance_sensor_enable(range_left, TIME_STEP);
+  wb_distance_sensor_enable(range_left, timestep);
   WbDeviceTag range_back = wb_robot_get_device("range_back");
-  wb_distance_sensor_enable(range_back, TIME_STEP);
+  wb_distance_sensor_enable(range_back, timestep);
   WbDeviceTag range_right = wb_robot_get_device("range_right");
-  wb_distance_sensor_enable(range_right, TIME_STEP);
+  wb_distance_sensor_enable(range_right, timestep);
   
 
   // Wait for 2 seconds
@@ -126,6 +126,10 @@ int main(int argc, char **argv) {
           }
       key = wb_keyboard_get_key();
     }
+
+    // Example how to get sensor data
+    // range_front_value = wb_distance_sensor_get_value(range_front));
+    // const unsigned char *image = wb_camera_get_image(camera);
 
     // PID attitude controller with fixed height
     pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
