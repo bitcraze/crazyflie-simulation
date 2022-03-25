@@ -11,9 +11,11 @@ Currently contains:
     * Blender files
     * STL files
 * [Webots](https://cyberbotics.com/) simulation files
-    * Currently only attitude control with fixed height
+    * Currently with velocity control fixed height
+    * Camera and multiranger sensors
 * [Gazebo ignition](https://ignitionrobotics.org/) 
     * sdf files
+    * no control yet
 
 So the mesh files looks a bit like this:
 
