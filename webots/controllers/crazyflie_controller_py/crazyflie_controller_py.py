@@ -20,6 +20,9 @@ from controller import InertialUnit
 from controller import GPS
 from controller import Gyro
 from controller import Keyboard
+from controller import Camera
+from controller import DistanceSensor
+
 from math import cos, sin
 
 import sys
@@ -52,6 +55,16 @@ gps.enable(timestep)
 Keyboard().enable(timestep)
 gyro = robot.getDevice("gyro")
 gyro.enable(timestep)
+camera = robot.getDevice("camera")
+camera.enable(timestep)
+range_front = robot.getDevice("range_front")
+range_front.enable(timestep)
+range_left = robot.getDevice("range_left")
+range_left.enable(timestep)
+range_back = robot.getDevice("range_back")
+range_back.enable(timestep)
+range_right = robot.getDevice("range_right")
+range_right.enable(timestep)
 
 ## Wait for two seconds
 #while robot.step(timestep) != -1:
@@ -134,6 +147,13 @@ while robot.step(timestep) != -1:
             yawDesired = - 0.5
 
         key = Keyboard().getKey()
+
+    ## Example how to get sensor data
+    range_front_value = range_front.getValue();
+    ## cameraData = camera.getImage()
+
+    print(range_front_value)
+
 
     desiredState.yaw_rate = yawDesired;
 

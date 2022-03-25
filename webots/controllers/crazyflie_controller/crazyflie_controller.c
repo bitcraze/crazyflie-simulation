@@ -52,6 +52,8 @@ int main(int argc, char **argv) {
   WbDeviceTag gps = wb_robot_get_device("gps");
   wb_gps_enable(gps, timestep);
   wb_keyboard_enable(timestep);
+  WbDeviceTag gyro = wb_robot_get_device("gyro");
+  wb_gyro_enable(gyro, timestep);
   WbDeviceTag camera = wb_robot_get_device("camera");
   wb_camera_enable(camera, timestep);
   WbDeviceTag range_front = wb_robot_get_device("range_front");
@@ -62,8 +64,7 @@ int main(int argc, char **argv) {
   wb_distance_sensor_enable(range_back, timestep);
   WbDeviceTag range_right = wb_robot_get_device("range_right");
   wb_distance_sensor_enable(range_right, timestep);
-  WbDeviceTag gyro = wb_robot_get_device("gyro");
-  wb_gyro_enable(gyro, timestep);
+
 
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
