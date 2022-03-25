@@ -24,7 +24,7 @@ So the mesh files looks a bit like this:
 
 And the webots simulation looks like this:
 
-![webots](crazyflie_webots.gif)
+![webots](wallfollowing_webots.gif)
 
 Near future plans:
 
