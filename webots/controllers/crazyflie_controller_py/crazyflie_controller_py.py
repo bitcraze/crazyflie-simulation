@@ -149,10 +149,8 @@ while robot.step(timestep) != -1:
         key = Keyboard().getKey()
 
     ## Example how to get sensor data
-    range_front_value = range_front.getValue();
+    ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
-
-    print(range_front_value)
 
 
     desiredState.yaw_rate = yawDesired;
