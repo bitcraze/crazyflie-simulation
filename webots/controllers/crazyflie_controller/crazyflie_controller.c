@@ -26,6 +26,7 @@
 #include <webots/distance_sensor.h>
 
 #include "../../../controllers/pid_controller.h"
+#include "../../../controllers/wall_following/wallfollowing_multiranger_onboard.h"
 
 int main(int argc, char **argv) {
   wb_robot_init();
@@ -96,6 +97,7 @@ int main(int argc, char **argv) {
   MotorPower_t motorPower;
 
   printf("Take off!\n");
+  wallFollowerInit(0.5, 0.3, 0);
 
   while (wb_robot_step(timestep) != -1) {
 
@@ -126,9 +128,9 @@ int main(int argc, char **argv) {
     desiredState.yaw_rate = 0;
     desiredState.altitude = 1.0;
 
-    double forwardDesired = 0;
-    double sidewaysDesired = 0;
-    double yawDesired = 0;
+    float forwardDesired = 0;
+    float sidewaysDesired = 0;
+    float yawDesired = 0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
@@ -159,6 +161,13 @@ int main(int argc, char **argv) {
     // Example how to get sensor data
     // range_front_value = wb_distance_sensor_get_value(range_front));
     // const unsigned char *image = wb_camera_get_image(camera);
+
+
+    float range_front_value = (float)wb_distance_sensor_get_value(range_front)/1000.0f;
+    float range_right_value = (float)wb_distance_sensor_get_value(range_right)/1000.0f;
+
+    int state= wallFollower(&forwardDesired, &sidewaysDesired, &yawDesired, range_front_value, range_right_value, actualYaw, 1, wb_robot_get_time());
+    float yawratedesiredrad = yawDesired * M_PI/180.0f;
 
 
     desiredState.yaw_rate = yawDesired;

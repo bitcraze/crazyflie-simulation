@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
-  position -0.6915100278560411 -0.36483795282963377 0.6236285609441987
+  orientation -0.09015568929292822 0.9393001841600556 0.3310394473850552 0.8224330202205704
+  position -3.614732405064191 -1.1464312247212625 3.5080936401124716
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -248,5 +248,9 @@ Robot {
     density -1
     mass 0.05
   }
-  controller "crazyflie_controller_py"
+  controller "crazyflie_controller"
+}
+SolidBox {
+  translation 2.12 0 0.54
+  size 0.1 2 1
 }
