@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.06758263006559177 0.8966785616101349 0.43749302310116533 0.8023199886491769
-  position -0.47995183698203764 -0.2749014637126652 0.4250510155239734
+  orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
+  position -1.2441139194684487 -0.5997579702427096 1.1423261539455942
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -15,6 +15,18 @@ RectangleArena {
 Robot {
   translation 0 0 0.015
   children [
+    Transform {
+      translation 0 0 0.02
+      children [
+        DistanceSensor {
+          name "range_front"
+          lookupTable [
+            0 0 0
+            2 2000 0
+          ]
+        }
+      ]
+    }
     Camera {
       translation 0.03 0 0.01
       fieldOfView 0.87
