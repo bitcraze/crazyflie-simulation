@@ -16,7 +16,7 @@ typedef struct MotorPower_s{
 typedef struct DesiredState_s{
   double roll;
   double pitch;
-  double yaw;
+  double yaw_rate;
   double altitude;
   double vx;
   double vy;
@@ -25,7 +25,7 @@ typedef struct DesiredState_s{
 typedef struct ActualState_s{
   double roll;
   double pitch;
-  double yaw;
+  double yaw_rate;
   double altitude;
   double vx;
   double vy;
