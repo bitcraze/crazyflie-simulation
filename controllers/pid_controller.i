@@ -4,6 +4,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include "pid_controller.h"
+#include "wallfollowing_multiranger.h"
 %}
 
 typedef struct MotorPower_s{
@@ -52,3 +53,16 @@ void pid_attitude_fixed_height_controller(ActualState_t actualState,
 void pid_velocity_fixed_height_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands);
+
+typedef struct CommandVel_s{
+    float cmdVelX;
+    float cmdVelY;
+    float cmdAngW;
+} CommandVel_t;
+
+
+
+void wallFollower(CommandVel_t *commandVel, float frontRange, float sideRange, float currentHeading,
+                     int directionTurn, float timeOuter);
+
+void wallFollowerInit(float refDistanceFromWallNew, float maxForwardSpeed_ref, int initState);

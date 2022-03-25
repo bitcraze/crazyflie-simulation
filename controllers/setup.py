@@ -8,7 +8,8 @@ from distutils.core import setup, Extension
 
 
 pid_controller_module = Extension('_pid_controller',
-                           sources=['pid_controller_wrap.c', 'pid_controller.c'],
+                           sources=['pid_controller_wrap.c', 'pid_controller.c',
+                           'wallfollowing_multiranger.c'],
                            )
 
 setup (name = 'example',

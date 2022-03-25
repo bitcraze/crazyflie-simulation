@@ -17,7 +17,7 @@ The same wallfollowing strategy was used in the following paper:
 
  */
 
-#include "wallfollowing_multiranger_onboard.h"
+#include "wallfollowing_multiranger.h"
 #include <math.h>
 
 // variables
@@ -39,7 +39,7 @@ static const float waitForMeasurementSeconds = 1.0f;
 static StateWF stateWF = forward;
 float timeNow = 0.0f;
 
-void wallFollowerInit(float refDistanceFromWallNew, float maxForwardSpeed_ref, StateWF initState)
+void wallFollowerInit(float refDistanceFromWallNew, float maxForwardSpeed_ref, int initState)
 {
   refDistanceFromWall = refDistanceFromWallNew;
   maxForwardSpeed = maxForwardSpeed_ref;
@@ -166,7 +166,7 @@ void adjustDistanceWall(float distanceWallNew)
   refDistanceFromWall = distanceWallNew;
 }
 
-StateWF wallFollower(float *cmdVelX, float *cmdVelY, float *cmdAngW, float frontRange, float sideRange, float currentHeading,
+void wallFollower(CommandVel_t* commandVel, float frontRange, float sideRange, float currentHeading,
                      int directionTurn, float timeOuter)
 {
 
@@ -360,9 +360,8 @@ StateWF wallFollower(float *cmdVelX, float *cmdVelY, float *cmdAngW, float front
     commandHover(&cmdVelXTemp, &cmdVelYTemp, &cmdAngWTemp);
   }
 
-  *cmdVelX = cmdVelXTemp;
-  *cmdVelY = cmdVelYTemp;
-  *cmdAngW = cmdAngWTemp;
+  commandVel->cmdVelX = cmdVelXTemp;
+  commandVel->cmdVelY = cmdVelYTemp;
+  commandVel->cmdAngW = cmdAngWTemp;
 
-  return stateWF;
 }

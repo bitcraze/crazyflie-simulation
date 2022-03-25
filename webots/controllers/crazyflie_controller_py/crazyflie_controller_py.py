@@ -27,8 +27,10 @@ from math import cos, sin
 
 import sys
 sys.path.append('../../../controllers/')
-from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
+from pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
 from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
+from pid_controller import wallFollowerInit, wallFollower, CommandVel_t
+
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
@@ -96,6 +98,8 @@ motorPower = MotorPower_t()
 
 print('Take off!')
 
+wallFollowerInit(0.5, 0.3, 0)
+
 # Main loop:
 while robot.step(timestep) != -1:
 
@@ -151,13 +155,19 @@ while robot.step(timestep) != -1:
     ## Example how to get sensor data
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
+    range_front_value = range_front.getValue()/1000.0
+    range_right_value = range_right.getValue()/1000.0
+
+    cmdVel = CommandVel_t();
+
+    wallFollower(cmdVel, range_front_value, range_right_value, actualYaw, 1, robot.getTime());
 
 
-    desiredState.yaw_rate = yawDesired;
+    desiredState.yaw_rate = cmdVel.cmdAngW;
 
     ## PID velocity controller with fixed height
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
+    desiredState.vy = cmdVel.cmdVelY;
+    desiredState.vx = cmdVel.cmdVelX;
     pid_velocity_fixed_height_controller(actualState, desiredState,
     gainsPID, dt, motorPower);
     

@@ -22,10 +22,17 @@ typedef enum
     findCorner
 } StateWF;
 
-StateWF wallFollower(float *cmdVelX, float *cmdVelY, float *cmdAngW, float frontRange, float sideRange, float currentHeading,
+typedef struct CommandVel_s{
+    float cmdVelX;
+    float cmdVelY;
+    float cmdAngW;
+} CommandVel_t;
+
+
+void wallFollower(CommandVel_t *commandVel, float frontRange, float sideRange, float currentHeading,
                      int directionTurn, float timeOuter);
 
 void adjustDistanceWall(float distanceWallNew);
 
-void wallFollowerInit(float refDistanceFromWallNew, float maxForwardSpeed_ref, StateWF initState);
+void wallFollowerInit(float refDistanceFromWallNew, float maxForwardSpeed_ref, int initState);
 #endif /* SRC_WALLFOLLOWING_MULTIRANGER_ONBOARD_H_ */
