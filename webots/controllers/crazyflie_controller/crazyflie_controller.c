@@ -57,6 +57,13 @@ int main(int argc, char **argv) {
   wb_camera_enable(camera, timestep);
   WbDeviceTag range_front = wb_robot_get_device("range_front");
   wb_distance_sensor_enable(range_front, TIME_STEP);
+  WbDeviceTag range_left = wb_robot_get_device("range_left");
+  wb_distance_sensor_enable(range_left, TIME_STEP);
+  WbDeviceTag range_back = wb_robot_get_device("range_back");
+  wb_distance_sensor_enable(range_back, TIME_STEP);
+  WbDeviceTag range_right = wb_robot_get_device("range_right");
+  wb_distance_sensor_enable(range_right, TIME_STEP);
+  
 
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
