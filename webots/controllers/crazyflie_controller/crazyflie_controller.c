@@ -21,6 +21,8 @@
 #include <webots/gps.h>
 #include <webots/inertial_unit.h>
 #include <webots/keyboard.h>
+#include <webots/camera.h>
+#include <webots/distance_sensor.h>
 
 #include "../../../controllers/pid_controller.h"
 
@@ -49,6 +51,16 @@ int main(int argc, char **argv) {
   WbDeviceTag gps = wb_robot_get_device("gps");
   wb_gps_enable(gps, timestep);
   wb_keyboard_enable(timestep);
+  WbDeviceTag camera = wb_robot_get_device("camera");
+  wb_camera_enable(camera, timestep);
+  WbDeviceTag range_front = wb_robot_get_device("range_front");
+  wb_distance_sensor_enable(range_front, timestep);
+  WbDeviceTag range_left = wb_robot_get_device("range_left");
+  wb_distance_sensor_enable(range_left, timestep);
+  WbDeviceTag range_back = wb_robot_get_device("range_back");
+  wb_distance_sensor_enable(range_back, timestep);
+  WbDeviceTag range_right = wb_robot_get_device("range_right");
+  wb_distance_sensor_enable(range_right, timestep);
 
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
@@ -138,6 +150,10 @@ int main(int argc, char **argv) {
         }
       key = wb_keyboard_get_key();
     }
+    
+    // Example how to get sensor data
+    // range_front_value = wb_distance_sensor_get_value(range_front));
+    // const unsigned char *image = wb_camera_get_image(camera);
 
 
     desiredState.yaw = yawDesired;
