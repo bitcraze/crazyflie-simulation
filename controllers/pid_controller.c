@@ -26,13 +26,13 @@ float constrain(float value, const float minVal, const float maxVal)
 }
 
 
-double pastAltitudeError, pastYawError, pastPitchError, pastRollError;
+double pastAltitudeError, pastPitchError, pastRollError, pastYawRateError;
 double pastVxError, pastVyError;
 
 void init_pid_attitude_fixed_height_controller()
 {
     pastAltitudeError = 0;
-    pastYawError = 0;
+    pastYawRateError =0;
     pastPitchError = 0;
     pastRollError = 0;
     pastVxError = 0;
@@ -93,22 +93,21 @@ void pid_attitude_controller(ActualState_t actualState,
 {
 
     // Calculate errors
-    double yawError = desiredState->yaw - actualState.yaw;
-    double yawDerivativeError = (yawError - pastYawError)/dt;
     double pitchError = desiredState->pitch - actualState.pitch;
     double pitchDerivativeError = (pitchError - pastPitchError)/dt;
     double rollError = desiredState->roll - actualState.roll;
     double rollDerivativeError = (rollError - pastRollError)/dt;
+    double yawRateError = desiredState->yaw_rate -actualState.yaw_rate;
 
     //PID control
     controlCommands->roll = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
     controlCommands->pitch = -gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
-    controlCommands->yaw = gainsPID.kp_att_y * constrain(yawError, -1, 1)+ gainsPID.kd_att_y*yawDerivativeError;
+    controlCommands->yaw = gainsPID.kp_att_y * constrain(yawRateError, -1, 1);
     
     // Save error for the next round
-    pastYawError = yawError;
     pastPitchError= pitchError;
     pastRollError= rollError;
+    pastYawRateError = yawRateError;
 
 }
 

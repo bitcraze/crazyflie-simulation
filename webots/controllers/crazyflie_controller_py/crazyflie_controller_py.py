@@ -18,8 +18,8 @@ from controller import Robot
 from controller import Motor
 from controller import InertialUnit
 from controller import GPS
+from controller import Gyro
 from controller import Keyboard
-import numpy
 from math import cos, sin
 
 import sys
@@ -50,6 +50,8 @@ imu.enable(timestep)
 gps = robot.getDevice("gps")
 gps.enable(timestep)
 Keyboard().enable(timestep)
+gyro = robot.getDevice("gyro")
+gyro.enable(timestep)
 
 ## Wait for two seconds
 #while robot.step(timestep) != -1:
@@ -61,9 +63,7 @@ actualState = ActualState_t()
 desiredState = DesiredState_t()
 pastXGlobal = 0
 pastYGlobal = 0
-yawDesired = 0
 past_time = robot.getTime()
-pastAltitudeError, pastYawError, pastPitchError, pastRollError = 0.0, 0.0, 0.0, 0.0
 
 ## Initialize PID gains.
 gainsPID = GainsPID_t()
@@ -89,8 +89,9 @@ while robot.step(timestep) != -1:
     dt = robot.getTime() - past_time;
 
     ## Get measurements
-    actualState.roll = imu.getRollPitchYaw()[0];
-    actualState.yaw = imu.getRollPitchYaw()[2];
+    actualState.roll = imu.getRollPitchYaw()[0]
+    actualState.pitch = imu.getRollPitchYaw()[1]
+    actualState.yaw_rate = gyro.getValues()[2];
     actualState.altitude = gps.getValues()[2];
     xGlobal = gps.getValues()[0]
     vxGlobal = (xGlobal - pastXGlobal)/dt
@@ -98,8 +99,9 @@ while robot.step(timestep) != -1:
     vyGlobal = (yGlobal - pastYGlobal)/dt
 
     ## Get body fixed velocities
-    cosyaw = cos(actualState.yaw)
-    sinyaw = sin(actualState.yaw)
+    actualYaw = imu.getRollPitchYaw()[2];
+    cosyaw = cos(actualYaw)
+    sinyaw = sin(actualYaw)
     actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw
     actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw
 
@@ -109,12 +111,12 @@ while robot.step(timestep) != -1:
     desiredState.pitch = 0
     desiredState.vx = 0
     desiredState.vy = 0
-    desiredState.altitude = 0
-    desiredState.yaw = 0
+    desiredState.yaw_rate = 0
     desiredState.altitude = 1.0
 
     forwardDesired = 0
     sidewaysDesired = 0
+    yawDesired = 0
 
     key = Keyboard().getKey()
     while key>0:
@@ -127,13 +129,13 @@ while robot.step(timestep) != -1:
         elif key == Keyboard.LEFT:
             sidewaysDesired += 0.2
         elif key == ord('Q'):
-            yawDesired = actualState.yaw + 0.05
+            yawDesired =  + 0.5
         elif key == ord('E'):
-            yawDesired = actualState.yaw - 0.05
+            yawDesired = - 0.5
 
         key = Keyboard().getKey()
 
-    desiredState.yaw = yawDesired;
+    desiredState.yaw_rate = yawDesired;
 
     ## PID velocity controller with fixed height
     desiredState.vy = sidewaysDesired;
