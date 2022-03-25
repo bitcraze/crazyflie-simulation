@@ -1,15 +1,4 @@
 #VRML_SIM R2022a utf8
-
-#  ...........       ____  _ __
-#  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
-#  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
-#  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
-#     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
-# MIT License
-
-# Copyright (c) 2022 Bitcraze
-
 WorldInfo {
 }
 Viewpoint {
@@ -26,6 +15,12 @@ RectangleArena {
 Robot {
   translation 0 0 0.015
   children [
+    Camera {
+      translation 0.03 0 0.01
+      fieldOfView 0.87
+      width 324
+      height 324
+    }
     Solid {
       translation 0 0 -0.015
       children [

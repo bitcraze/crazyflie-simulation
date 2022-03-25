@@ -16,6 +16,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <webots/camera.h>
 #include <webots/robot.h>
 #include <webots/motor.h>
 #include <webots/gps.h>
@@ -23,6 +24,7 @@
 #include <webots/keyboard.h>
 
 #include "../../../controllers/pid_controller.h"
+
 
 int main(int argc, char **argv) {
   wb_robot_init();
@@ -49,6 +51,8 @@ int main(int argc, char **argv) {
   WbDeviceTag gps = wb_robot_get_device("gps");
   wb_gps_enable(gps, timestep);
   wb_keyboard_enable(timestep);
+  WbDeviceTag camera = wb_robot_get_device("camera");
+  wb_camera_enable(camera, timestep);
 
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
