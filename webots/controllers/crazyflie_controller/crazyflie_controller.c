@@ -19,6 +19,7 @@
 #include <webots/robot.h>
 #include <webots/motor.h>
 #include <webots/gps.h>
+#include <webots/gyro.h>
 #include <webots/inertial_unit.h>
 #include <webots/keyboard.h>
 #include <webots/camera.h>
@@ -61,6 +62,8 @@ int main(int argc, char **argv) {
   wb_distance_sensor_enable(range_back, timestep);
   WbDeviceTag range_right = wb_robot_get_device("range_right");
   wb_distance_sensor_enable(range_right, timestep);
+  WbDeviceTag gyro = wb_robot_get_device("gyro");
+  wb_gyro_enable(gyro, timestep);
 
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
@@ -74,7 +77,6 @@ int main(int argc, char **argv) {
   double pastXGlobal =0;
   double pastYGlobal=0;
   double past_time = wb_robot_get_time();
-  double yawDesired = 0;
 
   // Initialize PID gains.
   GainsPID_t gainsPID;
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
     // Get measurements
     actualState.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
     actualState.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    actualState.yaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    actualState.yaw_rate = wb_gyro_get_values(gyro)[2];
     actualState.altitude = wb_gps_get_values(gps)[2];
     double xGlobal= wb_gps_get_values(gps)[0];
     double vxGlobal = (xGlobal - pastXGlobal)/dt;
@@ -109,8 +111,9 @@ int main(int argc, char **argv) {
     double vyGlobal = (yGlobal - pastYGlobal)/dt;
 
     // Get body fixed velocities
-    double cosyaw = cos(actualState.yaw);
-    double sinyaw = sin(actualState.yaw);
+    double actualYaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    double cosyaw = cos(actualYaw);
+    double sinyaw = sin(actualYaw);
     actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw;
     actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw;
 
@@ -119,11 +122,12 @@ int main(int argc, char **argv) {
     desiredState.pitch = 0;
     desiredState.vx = 0;
     desiredState.vy = 0;
-    desiredState.yaw = 0;
+    desiredState.yaw_rate = 0;
     desiredState.altitude = 1.0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
+    double yawDesired = 0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
@@ -142,10 +146,10 @@ int main(int argc, char **argv) {
           sidewaysDesired = + 0.2;
           break;
         case 'Q':
-          yawDesired = actualState.yaw + 0.05;
+          yawDesired = 0.5;
           break;
         case 'E':
-          yawDesired = actualState.yaw - 0.05;
+          yawDesired = - 0.5;
           break;
         }
       key = wb_keyboard_get_key();
@@ -156,7 +160,7 @@ int main(int argc, char **argv) {
     // const unsigned char *image = wb_camera_get_image(camera);
 
 
-    desiredState.yaw = yawDesired;
+    desiredState.yaw_rate = yawDesired;
 
     // PID velocity controller with fixed height
     desiredState.vy = sidewaysDesired;
