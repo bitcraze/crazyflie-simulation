@@ -10,12 +10,12 @@ TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-RectangleArena {
+Floor {
 }
 Robot {
   translation 0 0 0.015
   children [
-    Transform {
+    DEF Multiranger Transform {
       translation 0 0 0.02
       children [
         DistanceSensor {
@@ -248,5 +248,5 @@ Robot {
     density -1
     mass 0.05
   }
-  controller "crazyflie_controller"
+  controller "crazyflie_controller_py"
 }
