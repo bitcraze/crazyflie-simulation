@@ -26,7 +26,7 @@
 #include <webots/distance_sensor.h>
 
 #include "../../../controllers/pid_controller.h"
-#include "../../../controllers/wall_following/wallfollowing_multiranger_onboard.h"
+#include "../../../controllers/wallfollowing_multiranger.h"
 
 int main(int argc, char **argv) {
   wb_robot_init();
@@ -166,15 +166,16 @@ int main(int argc, char **argv) {
     float range_front_value = (float)wb_distance_sensor_get_value(range_front)/1000.0f;
     float range_right_value = (float)wb_distance_sensor_get_value(range_right)/1000.0f;
 
-    int state= wallFollower(&forwardDesired, &sidewaysDesired, &yawDesired, range_front_value, range_right_value, actualYaw, 1, wb_robot_get_time());
-    float yawratedesiredrad = yawDesired * M_PI/180.0f;
+    CommandVel_t cmdVel;
 
+    wallFollower(&cmdVel, range_front_value, range_right_value, actualYaw, 1, wb_robot_get_time());
+    
 
-    desiredState.yaw_rate = yawDesired;
+    desiredState.yaw_rate = cmdVel.cmdAngW;
 
     // PID velocity controller with fixed height
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
+    desiredState.vy = cmdVel.cmdVelY;
+    desiredState.vx = cmdVel.cmdVelX;
     pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
 

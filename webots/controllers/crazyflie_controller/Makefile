@@ -35,7 +35,7 @@
 ###
 ### ---- C Sources ----
 ### if your program uses several C source files:
-C_SOURCES = crazyflie_controller.c ../../../controllers/pid_controller.c ../../../controllers/wall_following/wallfollowing_multiranger_onboard.c
+C_SOURCES = crazyflie_controller.c ../../../controllers/pid_controller.c ../../../controllers/wallfollowing_multiranger.c
 ###
 ### ---- C++ Sources ----
 ### if your program uses several C++ source files:
