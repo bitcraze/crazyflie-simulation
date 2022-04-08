@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.09015568929292822 0.9393001841600556 0.3310394473850552 0.8224330202205704
-  position -3.614732405064191 -1.1464312247212625 3.5080936401124716
+  orientation 0.17668464985469706 0.8232042052751113 0.5395529361639092 0.37221414218415233
+  position -4.761478954907338 -1.8917480262209492 3.130032354473169
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -56,6 +56,14 @@ Robot {
       fieldOfView 0.87
       width 324
       height 324
+      exposure 0.2
+      motionBlur 0.2
+      noise 0.02
+      lens Lens {
+        radialCoefficients 0.1 0.1
+      }
+      lensFlare LensFlare {
+      }
     }
     Solid {
       translation 0 0 -0.015
@@ -251,6 +259,26 @@ Robot {
   controller "crazyflie_controller"
 }
 SolidBox {
-  translation 2.12 0 0.54
-  size 0.1 2 1
+  translation 2.12 0 0.32
+  size 0.1 2 0.5
+}
+Sassafras {
+  translation 4.04 0 -1.39
+}
+Oak {
+  translation 1.38 -2.99 0
+}
+PottedTree {
+  translation 2.06 2.05 0
+}
+PalmTree {
+  translation 0.87 2.07 0
+}
+Cypress {
+  translation 3.51866 -2.77548 0
+  rotation 0 0 1 -0.523595307179586
+}
+LincolnMKZSimple {
+  translation -2.80526 2.06474 0.4
+  rotation 0 0 1 0.785398
 }

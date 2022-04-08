@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     desiredState.vx = 0;
     desiredState.vy = 0;
     desiredState.yaw_rate = 0;
-    desiredState.altitude = 1.0;
+    desiredState.altitude = 0.7;
 
     float forwardDesired = 0;
     float sidewaysDesired = 0;
