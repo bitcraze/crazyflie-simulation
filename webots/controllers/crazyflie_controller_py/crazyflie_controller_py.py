@@ -29,6 +29,11 @@ import sys
 sys.path.append('../../../controllers/')
 from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
 from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
+from pid_controller import motor_mixing, ControlCommands_t
+
+sys.path.append('../../../../../C/crazyflie-firmware')
+import cffirmware
+
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
@@ -76,6 +81,8 @@ actualState = ActualState_t()
 desiredState = DesiredState_t()
 pastXGlobal = 0
 pastYGlobal = 0
+pastZGlobal = 0
+
 past_time = robot.getTime()
 
 ## Initialize PID gains.
@@ -93,6 +100,8 @@ init_pid_attitude_fixed_height_controller();
 
 ## Initialize struct for motor power
 motorPower = MotorPower_t()
+controlCommands = ControlCommands_t()
+cffirmware.controllerPidInit()
 
 print('Take off!')
 
@@ -105,11 +114,15 @@ while robot.step(timestep) != -1:
     actualState.roll = imu.getRollPitchYaw()[0]
     actualState.pitch = imu.getRollPitchYaw()[1]
     actualState.yaw_rate = gyro.getValues()[2];
+    pitch_rate = gyro.getValues()[1];
+    roll_rate = gyro.getValues()[0];
     actualState.altitude = gps.getValues()[2];
     xGlobal = gps.getValues()[0]
     vxGlobal = (xGlobal - pastXGlobal)/dt
     yGlobal = gps.getValues()[1]
     vyGlobal = (yGlobal - pastYGlobal)/dt
+    zGlobal = gps.getValues()[2]
+    vzGlobal = (zGlobal - pastZGlobal)/dt
 
     ## Get body fixed velocities
     actualYaw = imu.getRollPitchYaw()[2];
@@ -134,17 +147,17 @@ while robot.step(timestep) != -1:
     key = Keyboard().getKey()
     while key>0:
         if key == Keyboard.UP:
-            forwardDesired += 0.2
+            forwardDesired = 0.2
         elif key == Keyboard.DOWN:
-            forwardDesired -= 0.2
+            forwardDesired = -0.2
         elif key == Keyboard.RIGHT:
-            sidewaysDesired -= 0.2
+            sidewaysDesired = -0.2
         elif key == Keyboard.LEFT:
-            sidewaysDesired += 0.2
+            sidewaysDesired = 0.2
         elif key == ord('Q'):
-            yawDesired =  + 0.5
+            yawDesired = 0.5
         elif key == ord('E'):
-            yawDesired = - 0.5
+            yawDesired = -0.5
 
         key = Keyboard().getKey()
 
@@ -152,31 +165,81 @@ while robot.step(timestep) != -1:
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
 
+    ## Firmware PID bindings
+    control = cffirmware.control_t()
+    setpoint = cffirmware.setpoint_t()
+    setpoint.mode.z = 1;
+    setpoint.position.z = 1;
+    setpoint.mode.yaw = 2;
+    setpoint.attitudeRate.yaw = yawDesired*180/3.14;
+    setpoint.mode.x = 2;
+    setpoint.mode.y = 2;
+    setpoint.velocity.x = forwardDesired;
+    setpoint.velocity.y = sidewaysDesired;
+    setpoint.mode.x 
+    setpoint.mode.z = 1
+    setpoint.position.z = 1.0
 
-    desiredState.yaw_rate = yawDesired;
+    state = cffirmware.state_t()
+    state.attitude.roll = actualState.roll*180/3.14
+    state.attitude.pitch = -actualState.pitch*180/3.14
+    state.attitude.yaw = actualYaw*180/3.14
+    state.position.x = xGlobal
+    state.position.y = yGlobal
+    state.position.z = zGlobal
+    state.velocity.x = vxGlobal
+    state.velocity.y = vyGlobal
+    state.velocity.z = vzGlobal
 
+    sensors = cffirmware.sensorData_t()
+    sensors.gyro.x =  roll_rate*180/3.14
+    sensors.gyro.y = -pitch_rate*180/3.14
+    sensors.gyro.z = actualState.yaw_rate*180/3.14
+
+    tick = 100
+
+
+
+    cffirmware.controllerPid(control, setpoint,sensors,state,tick)
+    print(state.attitude.pitch,control.pitch )
+
+    controlCommands.roll = control.roll*3.14/180
+    controlCommands.pitch = control.pitch*3.14/180
+    controlCommands.yaw = control.yaw*3.14/180
+    controlCommands.altitude = control.thrust
+
+    motor_mixing(controlCommands, motorPower);
+
+
+    #print(controlCommands.altitude/1000)
     ## PID velocity controller with fixed height
+    '''
+    desiredState.yaw_rate = yawDesired;
     desiredState.vy = sidewaysDesired;
     desiredState.vx = forwardDesired;
     pid_velocity_fixed_height_controller(actualState, desiredState,
     gainsPID, dt, motorPower);
+    '''
     
 
     ## PID attitude controller with fixed height
     '''
+    desiredState.yaw_rate = yawDesired;
     desiredState.roll = sidewaysDesired;
     desiredState.pitch = forwardDesired;
      pid_attitude_fixed_height_controller(actualState, desiredState,
     gainsPID, dt, motorPower);
     '''
-
-    m1_motor.setVelocity(-motorPower.m1)
-    m2_motor.setVelocity(motorPower.m2)
-    m3_motor.setVelocity(-motorPower.m3)
-    m4_motor.setVelocity(motorPower.m4)
+    scaling = 1000
+    m1_motor.setVelocity(-motorPower.m1/scaling)
+    m2_motor.setVelocity(motorPower.m2/scaling)
+    m3_motor.setVelocity(-motorPower.m3/scaling)
+    m4_motor.setVelocity(motorPower.m4/scaling)
     
     past_time = robot.getTime()
     pastXGlobal = xGlobal
     pastYGlobal = yGlobal
+    pastZGlobal = zGlobal
+
 
     pass

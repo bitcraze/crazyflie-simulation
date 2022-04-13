@@ -43,6 +43,13 @@ typedef struct GainsPID_s{
   double ki_z;
 } GainsPID_t;
 
+typedef struct ControlCommands_s{
+  double roll;
+  double pitch;
+  double yaw;
+  double altitude;
+} ControlCommands_t;
+
 void init_pid_attitude_fixed_height_controller();
 
 void pid_attitude_fixed_height_controller(ActualState_t actualState, 
@@ -52,3 +59,5 @@ void pid_attitude_fixed_height_controller(ActualState_t actualState,
 void pid_velocity_fixed_height_controller(ActualState_t actualState, 
     DesiredState_t* desiredState, GainsPID_t gainsPID,
     double dt, MotorPower_t* motorCommands);
+
+void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands);
