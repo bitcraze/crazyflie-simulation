@@ -26,6 +26,7 @@ from controller import DistanceSensor
 from math import cos, sin, degrees, radians 
 
 import sys
+# Change this path to your crazyflie-firmware folder
 sys.path.append('../../../../../C/crazyflie-firmware')
 import cffirmware
 
