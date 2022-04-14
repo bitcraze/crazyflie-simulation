@@ -35,16 +35,16 @@ robot = Robot()
 timestep = int(robot.getBasicTimeStep())
 
 ## Initialize motors
-m1_motor = robot.getDevice("m1_motor");
+m1_motor = robot.getDevice("m1_motor")
 m1_motor.setPosition(float('inf'))
 m1_motor.setVelocity(-1)
-m2_motor = robot.getDevice("m2_motor");
+m2_motor = robot.getDevice("m2_motor")
 m2_motor.setPosition(float('inf'))
 m2_motor.setVelocity(1)
-m3_motor = robot.getDevice("m3_motor");
+m3_motor = robot.getDevice("m3_motor")
 m3_motor.setPosition(float('inf'))
 m3_motor.setVelocity(-1)
-m4_motor = robot.getDevice("m4_motor");
+m4_motor = robot.getDevice("m4_motor")
 m4_motor.setPosition(float('inf'))
 m4_motor.setVelocity(1)
 
@@ -82,7 +82,7 @@ print('Take off!')
 # Main loop:
 while robot.step(timestep) != -1:
 
-    dt = robot.getTime() - past_time;
+    dt = robot.getTime() - past_time
 
     ## Get measurements
     roll = imu.getRollPitchYaw()[0]
@@ -146,17 +146,15 @@ while robot.step(timestep) != -1:
 
     ## Fill in Setpoints
     setpoint = cffirmware.setpoint_t()
-    setpoint.mode.z = 1;
-    setpoint.position.z = 1;
-    setpoint.mode.yaw = 2;
-    setpoint.attitudeRate.yaw = degrees(yawDesired);
-    setpoint.mode.x = 2;
-    setpoint.mode.y = 2;
-    setpoint.velocity.x = forwardDesired;
-    setpoint.velocity.y = sidewaysDesired;
-    setpoint.velocity_body = True
-    setpoint.mode.z = 1
+    setpoint.mode.z = cffirmware.modeAbs
     setpoint.position.z = 1.0
+    setpoint.mode.yaw = cffirmware.modeVelocity
+    setpoint.attitudeRate.yaw = degrees(yawDesired)
+    setpoint.mode.x = cffirmware.modeVelocity
+    setpoint.mode.y = cffirmware.modeVelocity
+    setpoint.velocity.x = forwardDesired
+    setpoint.velocity.y = sidewaysDesired
+    setpoint.velocity_body = True
 
     ## Firmware PID bindings
     control = cffirmware.control_t()
@@ -170,10 +168,10 @@ while robot.step(timestep) != -1:
     cmd_thrust = control.thrust
 
     ## Motor mixing
-    motorPower_m1 =  cmd_thrust - cmd_roll + cmd_pitch + cmd_yaw;
-    motorPower_m2 =  cmd_thrust - cmd_roll - cmd_pitch - cmd_yaw;
-    motorPower_m3 =  cmd_thrust + cmd_roll - cmd_pitch + cmd_yaw;
-    motorPower_m4 =  cmd_thrust + cmd_roll + cmd_pitch - cmd_yaw;
+    motorPower_m1 =  cmd_thrust - cmd_roll + cmd_pitch + cmd_yaw
+    motorPower_m2 =  cmd_thrust - cmd_roll - cmd_pitch - cmd_yaw
+    motorPower_m3 =  cmd_thrust + cmd_roll - cmd_pitch + cmd_yaw
+    motorPower_m4 =  cmd_thrust + cmd_roll + cmd_pitch - cmd_yaw
 
     scaling = 1000 ##Todo, remove necessity of this scaling (SI units in firmware)
     m1_motor.setVelocity(-motorPower_m1/scaling)
