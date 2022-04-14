@@ -23,7 +23,7 @@ from controller import Keyboard
 from controller import Camera
 from controller import DistanceSensor
 
-from math import cos, sin
+from math import cos, sin, degrees, radians 
 
 import sys
 sys.path.append('../../../controllers/')
@@ -147,17 +147,17 @@ while robot.step(timestep) != -1:
     key = Keyboard().getKey()
     while key>0:
         if key == Keyboard.UP:
-            forwardDesired = 0.2
+            forwardDesired = 0.5
         elif key == Keyboard.DOWN:
-            forwardDesired = -0.2
+            forwardDesired = -0.5
         elif key == Keyboard.RIGHT:
-            sidewaysDesired = -0.2
+            sidewaysDesired = -0.5
         elif key == Keyboard.LEFT:
-            sidewaysDesired = 0.2
+            sidewaysDesired = 0.5
         elif key == ord('Q'):
-            yawDesired = 0.5
+            yawDesired = 3
         elif key == ord('E'):
-            yawDesired = -0.5
+            yawDesired = -3
 
         key = Keyboard().getKey()
 
@@ -171,19 +171,21 @@ while robot.step(timestep) != -1:
     setpoint.mode.z = 1;
     setpoint.position.z = 1;
     setpoint.mode.yaw = 2;
-    setpoint.attitudeRate.yaw = yawDesired*180/3.14;
+    setpoint.attitudeRate.yaw = degrees(yawDesired);
     setpoint.mode.x = 2;
     setpoint.mode.y = 2;
     setpoint.velocity.x = forwardDesired;
     setpoint.velocity.y = sidewaysDesired;
+    setpoint.velocity_body = True
     setpoint.mode.x 
     setpoint.mode.z = 1
     setpoint.position.z = 1.0
+    
 
     state = cffirmware.state_t()
-    state.attitude.roll = actualState.roll*180/3.14
-    state.attitude.pitch = -actualState.pitch*180/3.14
-    state.attitude.yaw = actualYaw*180/3.14
+    state.attitude.roll = degrees(actualState.roll)
+    state.attitude.pitch = -degrees(actualState.pitch)
+    state.attitude.yaw = degrees(actualYaw)
     state.position.x = xGlobal
     state.position.y = yGlobal
     state.position.z = zGlobal
@@ -192,9 +194,9 @@ while robot.step(timestep) != -1:
     state.velocity.z = vzGlobal
 
     sensors = cffirmware.sensorData_t()
-    sensors.gyro.x =  roll_rate*180/3.14
-    sensors.gyro.y = -pitch_rate*180/3.14
-    sensors.gyro.z = actualState.yaw_rate*180/3.14
+    sensors.gyro.x =  degrees(roll_rate)
+    sensors.gyro.y = degrees(pitch_rate)
+    sensors.gyro.z = degrees(actualState.yaw_rate)
 
     tick = 100
 
@@ -203,9 +205,9 @@ while robot.step(timestep) != -1:
     cffirmware.controllerPid(control, setpoint,sensors,state,tick)
     print(state.attitude.pitch,control.pitch )
 
-    controlCommands.roll = control.roll*3.14/180
-    controlCommands.pitch = control.pitch*3.14/180
-    controlCommands.yaw = control.yaw*3.14/180
+    controlCommands.roll = radians(control.roll)
+    controlCommands.pitch = radians(control.pitch)
+    controlCommands.yaw = -radians(control.yaw)
     controlCommands.altitude = control.thrust
 
     motor_mixing(controlCommands, motorPower);
