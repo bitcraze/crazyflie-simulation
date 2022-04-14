@@ -49,9 +49,23 @@ Go into the crazyflie_simulation/controllers/ folder and run the following:
     python3 setup.py build_ext --inplace
 
 Change controller in crazyflie robot model to crazyflie_controller_py to try it out. 
-    
+
+## Firmware python bindings
+As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitcraze/crazyflie-firmware/pull/1021) it is possible to use the python bindings of the controllers of the actual crazyflie controller directly in webots.
+
+Go the crazyflie-firmware directory in a terminal and write:
+
+    make bindings_python
+
+Change the controller in the crazyflie robot model in webots to crazyflie_controller_py_firmware_pid, and adjust the following line to point to your crazyflie-firmware repo:
+
+    sys.path.append('../../../../../C/crazyflie-firmware')
+
+Press play with the simulator and use your keyboard to  control it 
 
 # Ignition Gazebo
+
+*Just mind that this model does not fly properly yet.* 
 
 1- First install ignition gazebo: https://ignitionrobotics.org/docs/fortress/install
 
