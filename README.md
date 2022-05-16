@@ -11,7 +11,7 @@ Currently contains:
     * Blender files
     * STL files
 * [Webots](https://cyberbotics.com/) simulation files
-    * Currently with velocity control fixed height
+    * Currently with velocity control fixed height and firmware python bindings
     * Camera and multiranger sensors
 * [Gazebo ignition](https://ignitionrobotics.org/) 
     * sdf files
@@ -74,7 +74,7 @@ Press play with the simulator and use your keyboard to  control it
 
 3- Put this repo in your ~/.bashrc and source it in your terminal
 
-    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie_simulation/gazebo-ignition/"
+    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie_simulation/gazebo-ignition/":"path/to/crazyflie_simulation/gazebo-ignition/worlds/"
 
 4- Try out the crazyflie world with: 
     ign gazebo crazyflie_world.sdf
