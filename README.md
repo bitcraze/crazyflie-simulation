@@ -74,7 +74,7 @@ Press play with the simulator and use your keyboard to  control it
 
 3- Put this repo in your ~/.bashrc and source it in your terminal
 
-    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie_simulation/gazebo-ignition/":"path/to/crazyflie_simulation/gazebo-ignition/worlds/"
+    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie-simulation/gazebo-ignition/"
 
 4- Try out the crazyflie world with: 
     ign gazebo crazyflie_world.sdf
