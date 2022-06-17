@@ -1,9 +1,9 @@
-#VRML_SIM R2022a utf8
+#VRML_SIM R2022b utf8
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
-  position -0.6915100278560411 -0.36483795282963377 0.6236285609441987
+  orientation -0.09923921549288409 0.6717890520773446 0.7340647434779712 0.6790741322977293
+  position -0.6598406658099185 -0.4123215433208702 0.3987198821291728
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -13,8 +13,12 @@ TexturedBackgroundLight {
 Floor {
 }
 Robot {
-  translation 0 0 0.015
   children [
+    DEF Body CadShape {
+      url [
+        "../../meshes/collada_files/cf2_assembly.dae"
+      ]
+    }
     DEF Multiranger Transform {
       translation 0 0 0.02
       children [
@@ -57,82 +61,6 @@ Robot {
       width 324
       height 324
     }
-    Solid {
-      translation 0 0 -0.015
-      children [
-        DEF battery Shape {
-          appearance PBRAppearance {
-            baseColor 0.5 0.5 0.6
-            metalness 0.1
-            emissiveIntensity 0
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/battery.stl"
-            ]
-          }
-        }
-        DEF battery_holder Shape {
-          appearance PBRAppearance {
-            baseColor 0 0 0
-            metalness 0.2
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/battery_holder.stl"
-            ]
-          }
-        }
-        DEF motors Shape {
-          appearance PBRAppearance {
-            baseColor 0.5 0.5 0.5
-            emissiveColor 0.4 0.4 0.4
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/4_motors.stl"
-            ]
-          }
-        }
-        DEF motormounts Shape {
-          appearance PBRAppearance {
-            transparency 0.1
-            metalness 0.2
-            emissiveColor 0.5 0.5 0.5
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/4_motormounts.stl"
-            ]
-          }
-        }
-        DEF pinheader Shape {
-          appearance DEF metal PBRAppearance {
-            baseColor 0.5 0.5 0.5
-            metalness 0.8
-            emissiveColor 0.4 0.4 0.4
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/2_pinheaders.stl"
-            ]
-          }
-        }
-        DEF body Shape {
-          appearance DEF PCB PBRAppearance {
-            baseColor 0 0 0
-            roughness 0.3
-            metalness 0.5
-          }
-          geometry Mesh {
-            url [
-              "../../meshes/cf_body.stl"
-            ]
-          }
-        }
-      ]
-      name "body"
-    }
     GPS {
     }
     Gyro {
@@ -141,7 +69,7 @@ Robot {
     }
     DEF m1 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust 0.031 -0.031 0.008
+      centerOfThrust 0.031 -0.031 0.022
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -150,7 +78,7 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation 0.031 -0.031 0.008
+        translation 0.031 -0.031 0.022
         children [
           Shape {
             appearance DEF plastic PBRAppearance {
@@ -159,7 +87,7 @@ Robot {
             }
             geometry Mesh {
               url [
-                "../../meshes/ccw_prop.stl"
+                "../../meshes/collada_files/ccw_prop.dae"
               ]
             }
           }
@@ -168,7 +96,7 @@ Robot {
     }
     DEF m2 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust -0.031 -0.031 0.008
+      centerOfThrust -0.031 -0.031 0.022
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -177,7 +105,7 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation -0.031 -0.031 0.008
+        translation -0.031 -0.031 0.022
         children [
           Shape {
             appearance USE plastic
@@ -192,7 +120,7 @@ Robot {
     }
     DEF m3 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust -0.031 0.031 0.008
+      centerOfThrust -0.031 0.031 0.022
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -201,13 +129,13 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation -0.031 0.031 0.008
+        translation -0.031 0.031 0.022
         children [
           Shape {
             appearance USE plastic
             geometry Mesh {
               url [
-                "../../meshes/ccw_prop.stl"
+                "../../meshes/collada_files/ccw_prop.dae"
               ]
             }
           }
@@ -216,7 +144,7 @@ Robot {
     }
     DEF m4 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust 0.031 0.031 0.008
+      centerOfThrust 0.031 0.031 0.022
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -225,13 +153,13 @@ Robot {
         maxTorque 30
       }
       slowHelix DEF prop Solid {
-        translation 0.031 0.031 0.008
+        translation 0.031 0.031 0.022
         children [
           DEF prop Shape {
             appearance USE plastic
             geometry Mesh {
               url [
-                "../../meshes/cw_prop.stl"
+                "../../meshes/collada_files/cw_prop.dae"
               ]
             }
           }
