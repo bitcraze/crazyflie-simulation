@@ -3,7 +3,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.09923921549288409 0.6717890520773446 0.7340647434779712 0.6790741322977293
-  position -0.6598406658099185 -0.4123215433208702 0.3987198821291728
+  position -0.42518113251855577 -0.2781257501455645 0.26697873888566714
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -13,10 +13,16 @@ TexturedBackgroundLight {
 Floor {
 }
 Robot {
+  translation 0 0 0.015
   children [
-    DEF Body CadShape {
-      url [
-        "../../meshes/collada_files/cf2_assembly.dae"
+    DEF Body Transform {
+      translation 0 0 -0.015
+      children [
+        CadShape {
+          url [
+            "../../meshes/collada_files/cf2_assembly.dae"
+          ]
+        }
       ]
     }
     DEF Multiranger Transform {
@@ -69,7 +75,7 @@ Robot {
     }
     DEF m1 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust 0.031 -0.031 0.022
+      centerOfThrust 0.031 -0.031 0.008
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -78,7 +84,7 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation 0.031 -0.031 0.022
+        translation 0.031 -0.031 0.008
         children [
           Shape {
             appearance DEF plastic PBRAppearance {
@@ -96,7 +102,7 @@ Robot {
     }
     DEF m2 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust -0.031 -0.031 0.022
+      centerOfThrust -0.031 -0.031 0.008
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -105,7 +111,7 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation -0.031 -0.031 0.022
+        translation -0.031 -0.031 0.008
         children [
           Shape {
             appearance USE plastic
@@ -120,7 +126,7 @@ Robot {
     }
     DEF m3 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust -0.031 0.031 0.022
+      centerOfThrust -0.031 0.031 0.008
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -129,7 +135,7 @@ Robot {
         maxTorque 30
       }
       slowHelix Solid {
-        translation -0.031 0.031 0.022
+        translation -0.031 0.031 0.008
         children [
           Shape {
             appearance USE plastic
@@ -144,7 +150,7 @@ Robot {
     }
     DEF m4 Propeller {
       shaftAxis 0 0 1
-      centerOfThrust 0.031 0.031 0.022
+      centerOfThrust 0.031 0.031 0.008
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
       device RotationalMotor {
@@ -153,7 +159,7 @@ Robot {
         maxTorque 30
       }
       slowHelix DEF prop Solid {
-        translation 0.031 0.031 0.022
+        translation 0.031 0.031 0.007
         children [
           DEF prop Shape {
             appearance USE plastic
