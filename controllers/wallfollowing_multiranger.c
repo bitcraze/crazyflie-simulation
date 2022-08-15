@@ -165,8 +165,10 @@ void adjustDistanceWall(float distanceWallNew)
 {
   refDistanceFromWall = distanceWallNew;
 }
-
-void wallFollower(CommandVel_t* commandVel, float frontRange, float sideRange, float currentHeading,
+/*void wallFollower(CommandVel_t* commandVel, float frontRange, float sideRange, float currentHeading,
+                     int directionTurn, float timeOuter)
+                     */
+void wallFollower(float cmdVelX, float cmdVelY, float cmdAngW, float frontRange, float sideRange, float currentHeading,
                      int directionTurn, float timeOuter)
 {
 
@@ -360,8 +362,11 @@ void wallFollower(CommandVel_t* commandVel, float frontRange, float sideRange, f
     commandHover(&cmdVelXTemp, &cmdVelYTemp, &cmdAngWTemp);
   }
 
-  commandVel->cmdVelX = cmdVelXTemp;
-  commandVel->cmdVelY = cmdVelYTemp;
-  commandVel->cmdAngW = cmdAngWTemp;
+  //commandVel->cmdVelX = cmdVelXTemp;
+  cmdVelX = cmdVelXTemp;
+  //commandVel->cmdVelY = cmdVelYTemp;
+  cmdVelY = cmdVelYTemp;
+  //commandVel->cmdAngW = cmdAngWTemp;
+  cmdAngW = cmdAngWTemp;
 
 }

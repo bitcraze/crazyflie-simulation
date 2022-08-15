@@ -29,8 +29,9 @@ typedef struct CommandVel_s{
 } CommandVel_t;
 
 
-void wallFollower(CommandVel_t *commandVel, float frontRange, float sideRange, float currentHeading,
+/*void wallFollower(CommandVel_t *commandVel, float frontRange, float sideRange, float currentHeading,
                      int directionTurn, float timeOuter);
+                     */
 
 void adjustDistanceWall(float distanceWallNew);
 
