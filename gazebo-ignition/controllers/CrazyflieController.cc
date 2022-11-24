@@ -81,47 +81,63 @@ void CrazyflieController::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       _info.simTime).count();
 
     double current_time = (double)current_time_ms/1000.0;
-    
+    double dt = 0.01;
 
     ignition::math::Pose3d poseCF = ignition::gazebo::worldPose(this->model.Entity(), _ecm);
+
     double rollActual = poseCF.Roll();
     double pitchActual = poseCF.Pitch();
     double yawActual = poseCF.Yaw();
     double altitudeActual = poseCF.Z();
 
-    double rollDesired = 0;
-    double pitchDesired = 0;
-    double yawDesired = 0;
-    double altitudeDesired = 1;
+    double xGlobal = poseCF.X();
+    double yGlobal = poseCF.Y();
 
+    double vxGlobal = (xGlobal - this->pastXGlobal) / dt;
+    double vyGlobal = (yGlobal - this->pastYGlobal) / dt;
 
-        pitchDesired = this->velCmd.linear().x();
-        rollDesired = this->velCmd.linear().y();
+    double cosYaw = cos(yawActual);
+    double sinYaw = sin(yawActual);
 
-            ignmsg << pitchDesired <<" "<<rollDesired << std::endl;
+    ActualState_t actualState;
+    actualState.roll = rollActual;
+    actualState.pitch = pitchActual;
+    actualState.yaw_rate = (yawActual - this->pastYawActual) / dt;
+    actualState.vx = vxGlobal * cosYaw + vyGlobal * sinYaw;
+    actualState.vy = -vxGlobal * sinYaw + vyGlobal * cosYaw;
+    actualState.altitude = altitudeActual;
 
+    DesiredState_t desiredState;
+    desiredState.roll = 0;
+    desiredState.pitch = 0;
+    desiredState.vx = 0;
+    desiredState.vy = 0;
+    desiredState.yaw_rate = 0;
+    desiredState.altitude = 1;
 
+    desiredState.vx = this->velCmd.linear().x();
+    desiredState.vy = this->velCmd.linear().y();
+    desiredState.yaw_rate = this->velCmd.angular().z();
+
+//    ignmsg << desiredState.pitch << " " << desiredState.roll << " " << desiredState.yaw_rate << std::endl;
 
     double factor = 1;
 
-    double kp_att_y = 1 * factor;
-    double kd_att_y = 0.5 * factor;
-    double kp_att_rp = 0.5 * factor;
-    double kd_att_rp = 0.1 * factor;
-    double kp_z = 10 * factor;
-    double ki_z = 50 * factor;
-    double kd_y = 5 * factor;
+    GainsPID_t gainsPID;
+    gainsPID.kp_att_y = 1 * factor;
+    gainsPID.kd_att_y = 0.5 * factor;
+    gainsPID.kp_att_rp = 0.5 * factor;
+    gainsPID.kd_att_rp = 0.1 * factor;
+    gainsPID.kp_vel_xy = 2 * factor;
+    gainsPID.kd_vel_xy = 0.5 * factor;
+    gainsPID.kp_z = 10 * factor;
+    gainsPID.ki_z = 50 * factor;
+    gainsPID.kd_z = 5 * factor;
     MotorPower_t motorPower;
 
-    double dt = 0.01;
-    
-    pid_attitude_fixed_height_controller(rollActual, pitchActual, yawActual, altitudeActual, 
-    rollDesired, pitchDesired, yawDesired, altitudeDesired,
-     kp_att_rp,  kd_att_rp,  kp_att_y,  kd_att_y,  kp_z,  kd_y,  ki_z, dt, &motorPower);
+    pid_velocity_fixed_height_controller(actualState, &desiredState, gainsPID, dt, &motorPower);
 
-    ignmsg << rollActual <<" "<<rollDesired << std::endl;
-
-
+//    ignmsg << rollActual <<" "<<rollDesired << std::endl;
 
     this->motorCommands.set_velocity(0, motorPower.m1);
     this->motorCommands.set_velocity(1, motorPower.m2);
@@ -139,5 +155,8 @@ void CrazyflieController::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
     ignmsg << "set motors" << std::endl;
 
-    past_time = current_time;
+    this->pastTime = current_time;
+    this->pastXGlobal = xGlobal;
+    this->pastYGlobal = yGlobal;
+    this->pastYawActual = yawActual;
 }

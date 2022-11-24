@@ -50,6 +50,7 @@ namespace crazyflie_controller
     private: ignition::gazebo::Model model{ignition::gazebo::kNullEntity};
 
     private: double pastTime;
+    private: double pastXGlobal, pastYGlobal, pastYawActual;
 
     private: void velCmd_cb(const ignition::msgs::Twist &_msg);
     private: ignition::msgs::Twist velCmd;
