@@ -11,9 +11,11 @@ Currently contains:
     * Blender files
     * STL files
 * [Webots](https://cyberbotics.com/) simulation files
-    * Currently only attitude control with fixed height
+    * Currently with velocity control fixed height and firmware python bindings
+    * Camera and multiranger sensors
 * [Gazebo ignition](https://ignitionrobotics.org/) 
     * sdf files
+    * no control yet
 
 So the mesh files looks a bit like this:
 
@@ -33,7 +35,37 @@ Wish list (?):
 * Intergration with Crazyflie-lib
 * ?? (let us know in the issue tracker for any feature requests)
 
+# Webots
+
+Install webots from the [cyberbotics' website](https://cyberbotics.com/). We use version 2022a version.
+
+Then just run the following
+
+    webots webots/worlds/crazyflie_world.wbt
+## Python controller
+Go into the crazyflie_simulation/controllers/ folder and run the following:
+
+    swig -python pid_controller.i
+    python3 setup.py build_ext --inplace
+
+Change controller in crazyflie robot model to crazyflie_controller_py to try it out. 
+
+## Firmware python bindings
+As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitcraze/crazyflie-firmware/pull/1021) it is possible to use the python bindings of the controllers of the actual crazyflie controller directly in webots.
+
+Go the crazyflie-firmware directory in a terminal and write:
+
+    make bindings_python
+
+Change the controller in the crazyflie robot model in webots to crazyflie_controller_py_firmware_pid, and adjust the following line to point to your crazyflie-firmware repo:
+
+    sys.path.append('../../../../../C/crazyflie-firmware')
+
+Press play with the simulator and use your keyboard to  control it 
+
 # Ignition Gazebo
+
+*Just mind that this model does not fly properly yet.* 
 
 1- First install ignition gazebo: https://ignitionrobotics.org/docs/fortress/install
 
@@ -42,7 +74,7 @@ Wish list (?):
 
 3- Put this repo in your ~/.bashrc and source it in your terminal
 
-    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie_simulation/gazebo-ignition/"
+    export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie-simulation/gazebo-ignition/"
 
 4- Try out the crazyflie world with: 
     ign gazebo crazyflie_world.sdf

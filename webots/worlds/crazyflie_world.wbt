@@ -2,19 +2,61 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.06758263006559177 0.8966785616101349 0.43749302310116533 0.8023199886491769
-  position -0.47995183698203764 -0.2749014637126652 0.4250510155239734
+  orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
+  position -0.6915100278560411 -0.36483795282963377 0.6236285609441987
   follow "Crazyflie"
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
-RectangleArena {
+Floor {
 }
 Robot {
   translation 0 0 0.015
   children [
+    DEF Multiranger Transform {
+      translation 0 0 0.02
+      children [
+        DistanceSensor {
+          rotation 0 0 1 -1.57
+          name "range_right"
+          lookupTable [
+            0 0 0
+            2 2000 0
+          ]
+        }
+        DistanceSensor {
+          rotation 0 0 1 3.14
+          name "range_back"
+          lookupTable [
+            0 0 0
+            2 2000 0
+          ]
+        }
+        DistanceSensor {
+          rotation 0 0 1 1.57
+          name "range_left"
+          lookupTable [
+            0 0 0
+            2 2000 0
+          ]
+        }
+        DistanceSensor {
+          name "range_front"
+          lookupTable [
+            0 0 0
+            2 2000 0
+          ]
+        }
+      ]
+    }
+    Camera {
+      translation 0.03 0 0.01
+      fieldOfView 0.87
+      width 324
+      height 324
+    }
     Solid {
       translation 0 0 -0.015
       children [
@@ -206,5 +248,5 @@ Robot {
     density -1
     mass 0.05
   }
-  controller "crazyflie_controller"
+  controller "crazyflie_controller_py"
 }
