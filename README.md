@@ -37,7 +37,7 @@ Wish list (?):
 
 # Webots
 
-Install webots from the [cyberbotics' website](https://cyberbotics.com/). We use version 2022a version.
+Install webots from the [cyberbotics' website](https://cyberbotics.com/). We use version 2023a version.
 
 Then just run the following
 
