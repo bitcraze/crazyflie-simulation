@@ -254,7 +254,7 @@ Robot {
   }
   physics Physics {
     density -1
-    mass 0.05
+    mass 0.025
   }
   controller "crazyflie_controller_py_firmware_pid"
 }
