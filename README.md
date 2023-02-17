@@ -13,7 +13,7 @@ Currently contains:
 * [Webots](https://cyberbotics.com/) simulation files
     * Currently with velocity control fixed height and firmware python bindings
     * Camera and multiranger sensors
-* [Gazebo ignition](https://ignitionrobotics.org/) 
+* [Gazebo](https://gazebosim.org/) 
     * sdf files
     * no control yet
 
@@ -63,11 +63,11 @@ Change the controller in the crazyflie robot model in webots to crazyflie_contro
 
 Press play with the simulator and use your keyboard to  control it 
 
-# Ignition Gazebo
+# Gazebo
 
 *Just mind that this model does not fly properly yet.* 
 
-1- First install ignition gazebo: https://ignitionrobotics.org/docs/fortress/install
+1- First install gazebo garden: https://ignitionrobotics.org/docs/garden/install
 
 2- Clone this repo: 
     git clone https://github.com/bitcraze/crazyflie_simulation.git
@@ -76,13 +76,14 @@ Press play with the simulator and use your keyboard to  control it
 
     export IGN_GAZEBO_RESOURCE_PATH="path/to/crazyflie-simulation/gazebo-ignition/"
 
+*Note that indeed this is still IGN_GAZEBO_RESOURCE_PATH, eventhough gazebo dropped the name IGN so this should be updated at one point*
+
 4- Try out the crazyflie world with: 
-    ign gazebo crazyflie_world.sdf
+    gz sim crazyflie_world.sdf
 
-5- Spin motors and take off
+5- Spin motors 
 
-    ign topic -t /crazyflie/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[2500,2500,2500,2500]'
-
+    gz topic -t /crazyflie/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[250,250,250,250]'
 
 
 ## Measurements Crazyflie Assembly
