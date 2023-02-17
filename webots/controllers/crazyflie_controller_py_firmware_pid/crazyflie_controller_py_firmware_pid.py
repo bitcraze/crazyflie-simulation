@@ -53,7 +53,6 @@ imu = robot.getDevice("inertial unit")
 imu.enable(timestep)
 gps = robot.getDevice("gps")
 gps.enable(timestep)
-Keyboard().enable(timestep)
 gyro = robot.getDevice("gyro")
 gyro.enable(timestep)
 camera = robot.getDevice("camera")
@@ -67,7 +66,10 @@ range_back.enable(timestep)
 range_right = robot.getDevice("range_right")
 range_right.enable(timestep)
 
-    
+## Get keyboard
+keyboard = Keyboard()
+keyboard.enable(timestep)
+
 ## Initialize variables
 pastXGlobal = 0
 pastYGlobal = 0
@@ -123,7 +125,7 @@ while robot.step(timestep) != -1:
     sidewaysDesired = 0
     yawDesired = 0
 
-    key = Keyboard().getKey()
+    key = keyboard.getKey()
     while key>0:
         if key == Keyboard.UP:
             forwardDesired = 0.5
@@ -138,7 +140,7 @@ while robot.step(timestep) != -1:
         elif key == ord('E'):
             yawDesired = -8
 
-        key = Keyboard().getKey()
+        key = keyboard.getKey()
 
     ## Example how to get sensor data
     # range_front_value = range_front.getValue();
