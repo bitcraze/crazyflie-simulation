@@ -10,8 +10,9 @@ def rpm_to_force_np_model(rpm):
 
 def rpm_to_force_webots_model(rpm):
     # polyfit using data and scripts from https://github.com/IMRCLab/crazyflie-system-id
-    p = [4e-8, 0, 0]
-    force_in_grams = np.polyval(p, rpm)
+    rps = rpm / 60.0
+    p = [1e-4, 0, 0]
+    force_in_grams = np.polyval(p, rps)
     force_in_newton = force_in_grams * 9.81 / 1000.0
     return np.maximum(force_in_newton, 0)
 
@@ -42,4 +43,6 @@ plt.title('Force vs RPM')
 plt.xlabel('PWM')
 plt.ylabel('Force (N)')
 plt.show()
+
+print(1e-4*0.006)
 

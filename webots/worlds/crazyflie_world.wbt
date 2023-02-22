@@ -150,8 +150,8 @@ Robot {
     DEF m1 Propeller {
       shaftAxis 0 0 1
       centerOfThrust 0.031 -0.031 0.008
-      thrustConstants -4e-05 0
-      torqueConstants 2.4e-06 0
+      thrustConstants -1e-04 0
+      torqueConstants 6e-07 0
       device RotationalMotor {
         name "m1_motor"
         maxVelocity 600
@@ -177,8 +177,8 @@ Robot {
     DEF m2 Propeller {
       shaftAxis 0 0 1
       centerOfThrust -0.031 -0.031 0.008
-      thrustConstants 4e-05 0
-      torqueConstants 2.4e-06 0
+      thrustConstants 1e-04 0
+      torqueConstants 6e-07 0
       device RotationalMotor {
         name "m2_motor"
         maxVelocity 600
@@ -201,8 +201,8 @@ Robot {
     DEF m3 Propeller {
       shaftAxis 0 0 1
       centerOfThrust -0.031 0.031 0.008
-      thrustConstants -4e-05 0
-      torqueConstants 2.4e-06 0
+      thrustConstants -1e-04 0
+      torqueConstants 6e-07 0
       device RotationalMotor {
         name "m3_motor"
         maxVelocity 600
@@ -225,8 +225,8 @@ Robot {
     DEF m4 Propeller {
       shaftAxis 0 0 1
       centerOfThrust 0.031 0.031 0.008
-      thrustConstants 4e-05 0
-      torqueConstants 2.4e-06 0
+      thrustConstants 1e-04 0
+      torqueConstants 6e-07 0
       device RotationalMotor {
         name "m4_motor"
         maxVelocity 600
