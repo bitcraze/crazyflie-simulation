@@ -1,14 +1,14 @@
-/* 
+/*
  *  ...........       ____  _ __
  *  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  *  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  *  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- *  
+ *
  * MIT License
- * 
+ *
  * Copyright (c) 2022 Bitcraze
- * 
+ *
  * @file crazyflie_controller.c
  * Controls the crazyflie motors in webots
  */
@@ -73,29 +73,32 @@ int main(int argc, char **argv) {
   }
 
   // Initialize variables
-  ActualState_t actualState = {0};
-  DesiredState_t desiredState = {0};
+  State_t actualState = {0};
+  State_t desiredState = {0};
   double pastXGlobal =0;
   double pastYGlobal=0;
+  double pastZGlobal=0;
   double past_time = wb_robot_get_time();
+
+  // Initialize struct for motor power
+  StatePID_t statePID;
+  MotorPower_t motorPower;
+  ControlCommands_t control;
 
   // Initialize PID gains.
   GainsPID_t gainsPID;
-  gainsPID.kp_att_y = 1;
-  gainsPID.kd_att_y = 0.5;
-  gainsPID.kp_att_rp =0.5;
-  gainsPID.kd_att_rp = 0.1;
-  gainsPID.kp_vel_xy = 2;
-  gainsPID.kd_vel_xy = 0.5;
-  gainsPID.kp_z = 10;
-  gainsPID.ki_z = 50;
-  gainsPID.kd_z = 5;
-  init_pid_attitude_fixed_height_controller();
-
-  // Initialize struct for motor power
-  MotorPower_t motorPower;
-
-  printf("Take off!\n");
+  gainsPID.rollpitchKP = 0.5;
+  gainsPID.rollpitchKD = 0.1;
+  gainsPID.rollpitchKI = 0.0;
+  gainsPID.yawKP = 1;
+  gainsPID.yawKD = 0.5;
+  gainsPID.yawKI = 0.0;
+  gainsPID.xyKP = 1;
+  gainsPID.xyKD = 0.5;
+  gainsPID.xyKI = 0.0;
+  gainsPID.zKP = 30;
+  gainsPID.zKD = 10;
+  gainsPID.zKI = 10;
 
   while (wb_robot_step(timestep) != -1) {
 
@@ -104,27 +107,19 @@ int main(int argc, char **argv) {
     // Get measurements
     actualState.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
     actualState.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    actualState.yaw_rate = wb_gyro_get_values(gyro)[2];
-    actualState.altitude = wb_gps_get_values(gps)[2];
-    double xGlobal= wb_gps_get_values(gps)[0];
-    double vxGlobal = (xGlobal - pastXGlobal)/dt;
-    double yGlobal = wb_gps_get_values(gps)[1];
-    double vyGlobal = (yGlobal - pastYGlobal)/dt;
+    actualState.yaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
+    actualState.rollRate = wb_gyro_get_values(gyro)[0];
+    actualState.pitchRate = wb_gyro_get_values(gyro)[1];
+    actualState.yawRate = wb_gyro_get_values(gyro)[2];
+    actualState.x = wb_gps_get_values(gps)[0];
+    actualState.xVelocity = (actualState.x - pastXGlobal)/dt;
+    actualState.y = wb_gps_get_values(gps)[1];
+    actualState.yVelocity = (actualState.y - pastYGlobal)/dt;
+    actualState.z = wb_gps_get_values(gps)[2];
+    actualState.zVelocity = (actualState.z - pastZGlobal)/dt;
 
-    // Get body fixed velocities
-    double actualYaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
-    double cosyaw = cos(actualYaw);
-    double sinyaw = sin(actualYaw);
-    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw;
-    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw;
-
-    // Initialize values
-    desiredState.roll = 0;
-    desiredState.pitch = 0;
-    desiredState.vx = 0;
-    desiredState.vy = 0;
-    desiredState.yaw_rate = 0;
-    desiredState.altitude = 1.0;
+    // Initialize values for height Zs
+    desiredState.z = 1.0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
@@ -132,6 +127,8 @@ int main(int argc, char **argv) {
 
     // Control altitude
     int key = wb_keyboard_get_key();
+
+    // check keys
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
@@ -155,37 +152,46 @@ int main(int argc, char **argv) {
         }
       key = wb_keyboard_get_key();
     }
-    
+    printf("forwardDesired: %f  sidewaysDesired: %f \n", forwardDesired, sidewaysDesired);
+
     // Example how to get sensor data
     // range_front_value = wb_distance_sensor_get_value(range_front));
     // const unsigned char *image = wb_camera_get_image(camera);
 
+    // yaw based on yaw desired
+    desiredState.yaw = actualState.yaw + yawDesired * dt;
 
-    desiredState.yaw_rate = yawDesired;
+    // calculate global desired velocity from body fixed desired velocity
+    double vxGlobal = forwardDesired * cos(actualState.yaw) - sidewaysDesired * sin(actualState.yaw);
+    double vyGlobal = forwardDesired * sin(actualState.yaw) + sidewaysDesired * cos(actualState.yaw);
 
-    // PID velocity controller with fixed height
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
-    pid_velocity_fixed_height_controller(actualState, &desiredState,
-    gainsPID, dt, &motorPower);
+    // Calculate global desired position based on global desired velocity
+    desiredState.x = actualState.x + vxGlobal * dt;
+    desiredState.y = actualState.y + vyGlobal * dt;
 
-    // PID attitude controller with fixed height
-    /*desiredState.roll = sidewaysDesired;
-    desiredState.pitch = forwardDesired;
-     pid_attitude_fixed_height_controller(actualState, &desiredState,
-    gainsPID, dt, &motorPower);*/
-    
+    // full PID controller
+    pid_pos_att_controller(&statePID, gainsPID, actualState, &desiredState, dt, &control);
+
+    //motor mixing
+    motor_mixing(control, &motorPower);
+
+    printf("cmd roll: %f, cmd pitch: %f, cmd yaw: %f, cmd z: %f   \n", control.roll, control.pitch, control.yaw, control.z);
+    // print out the motor powers
+    printf("m1: %f, m2: %f, m3: %f, m4: %f   \n", motorPower.m1, motorPower.m2, motorPower.m3, motorPower.m4);
+    // print desired z and actual z
+    printf("desired z: %f, actual z: %f   \n", desiredState.z, actualState.z);
+
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
     wb_motor_set_velocity(m2_motor, motorPower.m2);
     wb_motor_set_velocity(m3_motor, - motorPower.m3);
     wb_motor_set_velocity(m4_motor, motorPower.m4);
-    
+
     // Save past time for next time step
     past_time = wb_robot_get_time();
-    pastXGlobal = xGlobal;
-    pastYGlobal = yGlobal;
-
+    pastXGlobal = actualState.x;
+    pastYGlobal = actualState.y;
+    pastZGlobal = actualState.z;
 
   };
 

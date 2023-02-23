@@ -1,17 +1,17 @@
-/** 
+/**
  *  ...........       ____  _ __
  *  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  *  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  *  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- *  
+ *
  * MIT License
- * 
+ *
  * Copyright (c) 2022 Bitcraze
- * 
+ *
  * @file pid_controller.c
- * A simple PID controller for attitude control of an 
- * quadcopter 
+ * A simple PID controller for attitude control of an
+ * quadcopter
  */
 
 #include <math.h>
@@ -26,111 +26,83 @@ float constrain(float value, const float minVal, const float maxVal)
 }
 
 
-double pastAltitudeError, pastPitchError, pastRollError, pastYawRateError;
-double pastVxError, pastVyError;
-
-void init_pid_attitude_fixed_height_controller()
-{
-    pastAltitudeError = 0;
-    pastYawRateError =0;
-    pastPitchError = 0;
-    pastRollError = 0;
-    pastVxError = 0;
-    pastVyError = 0;
-}
-
-void pid_attitude_fixed_height_controller(ActualState_t actualState, 
-    DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt, MotorPower_t* motorCommands)
-{
-    ControlCommands_t controlCommands = {0};
-    pid_fixed_height_controller(actualState, 
-    desiredState, gainsPID, dt, &controlCommands);
-    pid_attitude_controller(actualState, 
-    desiredState, gainsPID, dt, &controlCommands);
-    motor_mixing(controlCommands, motorCommands);
-}
-
-
-void pid_velocity_fixed_height_controller(ActualState_t actualState, 
-    DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt, MotorPower_t* motorCommands)
-{
-    ControlCommands_t controlCommands = {0};
-    pid_horizontal_velocity_controller(actualState, 
-    desiredState, gainsPID, dt);
-    pid_fixed_height_controller(actualState, 
-    desiredState, gainsPID, dt, &controlCommands);
-    pid_attitude_controller(actualState, 
-    desiredState, gainsPID, dt, &controlCommands);
-    motor_mixing(controlCommands, motorCommands);
-}
-
-void pid_fixed_height_controller(ActualState_t actualState, 
-    DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt, ControlCommands_t* controlCommands)
-{
-    double altitudeError = desiredState->altitude - actualState.altitude;
-    double altitudeDerivativeError = (altitudeError - pastAltitudeError)/dt;
-    controlCommands->altitude = gainsPID.kp_z * constrain(altitudeError, -1, 1) + gainsPID.kd_z*altitudeDerivativeError + gainsPID.ki_z;
-    pastAltitudeError = altitudeError;
-
-}
-
 void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands)
 {
     // Motor mixing
-    motorCommands->m1 =  controlCommands.altitude - controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m2 =  controlCommands.altitude - controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
-    motorCommands->m3 =  controlCommands.altitude + controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m4 =  controlCommands.altitude + controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m1 =  controlCommands.z - controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m2 =  controlCommands.z - controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m3 =  controlCommands.z + controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m4 =  controlCommands.z + controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
 }
 
+void calculate_errors(double desired, double actual, double dt,
+    double *error, double *prevError, double*integ,
+    double *deriv)
+{
+    *error = desired - actual;
+    *deriv = (*error - *prevError)/dt;
+    *integ += *error * dt;
+    *prevError = *error;
+}
 
-void pid_attitude_controller(ActualState_t actualState, 
-    DesiredState_t* desiredState, GainsPID_t gainsPID,
+double pid_controller(double desired, double actual, double dt,
+    double *error, double *prevError, double*integ,
+    double *deriv, double kp, double ki, double kd)
+{
+    calculate_errors(desired, actual, dt, error, prevError, integ, deriv);
+    return kp * constrain(*error, -1, 1) + kd * (*deriv) + ki * (*integ);
+}
+
+void pid_attitude_controller(StatePID_t *pidState, GainsPID_t gainsPID,
+    State_t actualState, State_t* desiredState,
     double dt, ControlCommands_t* controlCommands)
 {
+        // Calculate errors
+    double rollcmd = pid_controller(desiredState->roll, actualState.roll, dt,
+        &(pidState->rollError), &(pidState->prevRollError), &(pidState->rollInteg),
+        &(pidState->rollDeriv), gainsPID.rollpitchKP, gainsPID.rollpitchKI, gainsPID.rollpitchKD);
 
-    // Calculate errors
-    double pitchError = desiredState->pitch - actualState.pitch;
-    double pitchDerivativeError = (pitchError - pastPitchError)/dt;
-    double rollError = desiredState->roll - actualState.roll;
-    double rollDerivativeError = (rollError - pastRollError)/dt;
-    double yawRateError = desiredState->yaw_rate -actualState.yaw_rate;
+    double pitchcmd = pid_controller(desiredState->pitch, actualState.pitch, dt,
+        &(pidState->pitchError), &(pidState->prevPitchError), &(pidState->pitchInteg),
+        &(pidState->pitchDeriv), gainsPID.rollpitchKP, gainsPID.rollpitchKI, gainsPID.rollpitchKD);
 
-    //PID control
-    controlCommands->roll = gainsPID.kp_att_rp * constrain(rollError,-1, 1) + gainsPID.kd_att_rp*rollDerivativeError;
-    controlCommands->pitch = -gainsPID.kp_att_rp * constrain(pitchError,-1, 1) - gainsPID.kd_att_rp*pitchDerivativeError;
-    controlCommands->yaw = gainsPID.kp_att_y * constrain(yawRateError, -1, 1);
-    
-    // Save error for the next round
-    pastPitchError= pitchError;
-    pastRollError= rollError;
-    pastYawRateError = yawRateError;
+    double yawcmd = pid_controller(desiredState->yaw, actualState.yaw, dt,
+        &(pidState->yawError), &(pidState->prevYawError), &(pidState->yawInteg),
+        &(pidState->yawDeriv), gainsPID.yawKP, gainsPID.yawKI, gainsPID.yawKD);
 
+    controlCommands->roll = rollcmd;
+    controlCommands->pitch = pitchcmd;
+    controlCommands->yaw = yawcmd;
 }
 
-
-void pid_horizontal_velocity_controller(ActualState_t actualState, 
-    DesiredState_t* desiredState, GainsPID_t gainsPID,
-    double dt)
+void pid_position_controller(StatePID_t *pidState, GainsPID_t gainsPID,
+    State_t actualState, State_t* desiredState,
+    double dt, ControlCommands_t* controlCommands)
 {
+    // Calculate errors
+    double xcmd = pid_controller(desiredState->x, actualState.x, dt,
+        &(pidState->xError), &(pidState->prevXError), &(pidState->xInteg),
+        &(pidState->xDeriv), gainsPID.xyKP, gainsPID.xyKI, gainsPID.xyKD);
 
-    double vxError = desiredState->vx - actualState.vx;
-    double vxDerivative = (vxError - pastVxError)/dt;
-    double vyError = desiredState->vy - actualState.vy;
-    double vyDerivative = (vyError - pastVyError)/dt;
+    double ycmd = pid_controller(desiredState->y, actualState.y, dt,
+        &(pidState->yError), &(pidState->prevYError), &(pidState->yInteg),
+        &(pidState->yDeriv), gainsPID.xyKP, gainsPID.xyKI, gainsPID.xyKD);
 
-    //PID control
-    double pitchCommand = gainsPID.kp_vel_xy * constrain(vxError,-1, 1) + gainsPID.kd_vel_xy*vxDerivative;
-    double rollCommand = - gainsPID.kp_vel_xy * constrain(vyError,-1, 1) - gainsPID.kd_vel_xy*vyDerivative;
-    
-    desiredState->pitch = pitchCommand;
-    desiredState->roll = rollCommand;
+    double zcmd = pid_controller(desiredState->z, actualState.z, dt,
+        &(pidState->zError), &(pidState->prevZError), &(pidState->zInteg),
+        &(pidState->zDeriv), gainsPID.zKP, gainsPID.zKI, gainsPID.zKD);
 
-    // Save error for the next round
-    pastVxError = vxError;
-    pastVyError = vyError;
+    controlCommands->x = xcmd;
+    controlCommands->y = ycmd;
+    controlCommands->z = zcmd;
+}
 
+void pid_pos_att_controller(StatePID_t* pidState, GainsPID_t gainsPID,
+    State_t actualState, State_t* desiredState,
+    double dt, ControlCommands_t* controlCommands)
+{
+    pid_attitude_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
+    desiredState->roll = controlCommands->y;
+    desiredState->pitch = controlCommands->x;
+    pid_position_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
 }
