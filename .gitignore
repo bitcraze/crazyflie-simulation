@@ -1,1 +1,4 @@
 *.blend1
+*.exe
+
+webots/worlds/*.jpg
