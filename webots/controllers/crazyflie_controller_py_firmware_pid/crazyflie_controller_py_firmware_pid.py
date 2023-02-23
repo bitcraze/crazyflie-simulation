@@ -31,6 +31,7 @@ sys.path.append('../../../../../c/crazyflie-firmware')
 import cffirmware
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 robot = Robot()
 
@@ -69,8 +70,6 @@ range_back = robot.getDevice("range_back")
 range_back.enable(timestep)
 range_right = robot.getDevice("range_right")
 range_right.enable(timestep)
-
-    
 ## Initialize variables
 pastXGlobal = 0
 pastYGlobal = 0
@@ -82,10 +81,22 @@ cffirmware.controllerPidInit()
 
 print('Take off!')
 
+max_time = 10
+plt.axis([0,max_time,0,35000])
+plt.ion()
+plt.show()
+x = []
+y1=[]
+y2 = []
+
+pastRoll = 0
+pastPitch = 0
+pastYaw = 0
 # Main loop:
 while robot.step(timestep) != -1:
 
     dt = robot.getTime() - past_time
+    print('timestep',dt)
 
     ## Get measurements
     roll = imu.getRollPitchYaw()[0]
@@ -94,6 +105,10 @@ while robot.step(timestep) != -1:
     roll_rate = gyro.getValues()[0]
     pitch_rate = gyro.getValues()[1]
     yaw_rate = gyro.getValues()[2]
+    # atlernative rate calculation
+    #roll_rate = (roll - pastRoll)/dt
+    #pitch_rate = (pitch - pastPitch)/dt
+    #yaw_rate = (yaw - pastYaw)/dt
     xGlobal = gps.getValues()[0]
     vxGlobal = (xGlobal - pastXGlobal)/dt
     yGlobal = gps.getValues()[1]
@@ -133,9 +148,9 @@ while robot.step(timestep) != -1:
         elif key == Keyboard.DOWN:
             forwardDesired = -0.5
         elif key == Keyboard.RIGHT:
-            sidewaysDesired = -0.5
+            sidewaysDesired = -1
         elif key == Keyboard.LEFT:
-            sidewaysDesired = 0.5
+            sidewaysDesired = 1
         elif key == ord('Q'):
             yawDesired = 1
         elif key == ord('E'):
@@ -152,24 +167,42 @@ while robot.step(timestep) != -1:
     setpoint.mode.z = cffirmware.modeAbs
     setpoint.position.z = 1.0
     setpoint.mode.yaw = cffirmware.modeVelocity
+    setpoint.mode.roll = cffirmware.modeDisable
+    setpoint.mode.pitch = cffirmware.modeDisable
+
     setpoint.attitudeRate.yaw = degrees(yawDesired)
-    setpoint.mode.x = cffirmware.modeVelocity
+    setpoint.mode.x = cffirmware.modeAbs
     setpoint.mode.y = cffirmware.modeVelocity
     setpoint.velocity.x = forwardDesired
     setpoint.velocity.y = sidewaysDesired
+    #setpoint.attitudeRate.roll = sidewaysDesired/5
+    #setpoint.attitudeRate.pitch = forwardDesired/5
+    setpoint.attitude.roll = sidewaysDesired
+    #setpoint.attitude.pitch = forwardDesired/5
     setpoint.velocity_body = True
 
     ## Firmware PID bindings
     control = cffirmware.control_t()
-    tick = 100 #this value makes sure that the position controller and attitude controller are always always initiated
+    tick = int(robot.getTime()*1000) #this value makes sure that the position controller and attitude controller are always always initiated
+    print('ticks',tick)
     cffirmware.controllerPid(control, setpoint,sensors,state,tick)
+
+
+    
+    '''cmd = radians(control.roll)
+    control.roll = int(cmd)
+    cmd = radians(control.pitch)
+    control.pitch = int(cmd)
+    cmd = radians(control.yaw)
+    control.yaw = int(cmd)'''
+
 
     motors_thrust_uncapped = cffirmware.motors_thrust_uncapped_t()
     motors_thrust_pwm = cffirmware.motors_thrust_pwm_t()
     cffirmware.powerDistribution(control, motors_thrust_uncapped)
     cffirmware.powerDistributionCap(motors_thrust_uncapped, motors_thrust_pwm)
     
-    pwm_motors = [motors_thrust_uncapped.motors.m1, motors_thrust_uncapped.motors.m2, motors_thrust_uncapped.motors.m3, motors_thrust_uncapped.motors.m4]
+    pwm_motors = [motors_thrust_pwm.motors.m1, motors_thrust_pwm.motors.m2, motors_thrust_pwm.motors.m3, motors_thrust_pwm.motors.m4]
     rpm_motors = []
     for pwm in pwm_motors:
         if pwm < 1:
@@ -180,24 +213,40 @@ while robot.step(timestep) != -1:
         rpm_motors.append(pwm)
 
     
-
-    
     motor_velocities = []
     scaling = 20
     for rpm in rpm_motors:
         motor_velocities.append((rpm/60)/scaling)
 
-    print(rpm_motors)
+
+    print(setpoint.attitude.roll, state.attitude.roll, control.roll)
+
+    x.append(robot.getTime())
+    y1.append(sensors.gyro.x)
+    y2.append(state.attitude.roll)
+
+    # if x get larger than size_array, remove first element
+    if robot.getTime() > max_time:
+        x.pop(0)
+        y1.pop(0)
+        y2.pop(0)
+
+    print(len(x))
+    plt.cla()
+    plt.plot(x, y1)
+    plt.plot(x, y2)
+    plt.draw()
+    plt.pause(0.001)
 
      ##Todo, remove necessity of this scaling (SI units in firmware)
-    '''m1_motor.setVelocity(-motor_velocities[0])
+    m1_motor.setVelocity(-motor_velocities[0])
     m2_motor.setVelocity(motor_velocities[1])
     m3_motor.setVelocity(-motor_velocities[2])
-    m4_motor.setVelocity(motor_velocities[3])'''
+    m4_motor.setVelocity(motor_velocities[3])
 
     
-    ## 
-
+    ## old way
+    '''
     cmd_roll = control.roll /(180.0/np.pi)
     cmd_pitch = control.pitch /(180.0/np.pi)
     cmd_yaw = - control.yaw /(180.0/np.pi)
@@ -211,16 +260,11 @@ while robot.step(timestep) != -1:
 
     scaling = 1500 ##Todo, remove necessity of this scaling (SI units in firmware)
     
-    m1_motor.setVelocity(-motorPower_m1/scaling)
-    m2_motor.setVelocity(motorPower_m2/scaling)
-    m3_motor.setVelocity(-motorPower_m3/scaling)
-    m4_motor.setVelocity(motorPower_m4/scaling)
+    #m1_motor.setVelocity(-motorPower_m1/scaling)
+    #m2_motor.setVelocity(motorPower_m2/scaling)
+    #m3_motor.setVelocity(-motorPower_m3/scaling)
+    #m4_motor.setVelocity(motorPower_m4/scaling)'''
     
-
-
-
-
-
 
     #print(motor_velocities)
     
@@ -228,5 +272,8 @@ while robot.step(timestep) != -1:
     pastXGlobal = xGlobal
     pastYGlobal = yGlobal
     pastZGlobal = zGlobal
+    pastRoll = roll
+    pastPitch = pitch
+    pastYaw = yaw
 
     pass

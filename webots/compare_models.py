@@ -18,8 +18,8 @@ def rpm_to_force_webots_model(rpm):
 
 def pwm_to_rpm(pwm):
     # polyfit using data and scripts from https://github.com/IMRCLab/crazyflie-system-id
-    if pwm < 10000:
-        return 0
+    #if pwm < 10000:
+    #    return 0
     p = [3.26535711e-01, 3.37495115e+03]
     return np.polyval(p, pwm)
 
