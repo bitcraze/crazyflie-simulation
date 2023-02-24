@@ -111,12 +111,23 @@ int main(int argc, char **argv) {
     actualState.rollRate = wb_gyro_get_values(gyro)[0];
     actualState.pitchRate = wb_gyro_get_values(gyro)[1];
     actualState.yawRate = wb_gyro_get_values(gyro)[2];
-    actualState.x = wb_gps_get_values(gps)[0];
-    actualState.xVelocity = (actualState.x - pastXGlobal)/dt;
-    actualState.y = wb_gps_get_values(gps)[1];
-    actualState.yVelocity = (actualState.y - pastYGlobal)/dt;
-    actualState.z = wb_gps_get_values(gps)[2];
-    actualState.zVelocity = (actualState.z - pastZGlobal)/dt;
+    double xGlobal = wb_gps_get_values(gps)[0];
+    double xGlobalVel = (xGlobal - pastXGlobal)/dt;
+    double yGlobal = wb_gps_get_values(gps)[1];
+    double yGlobalVel = (actualState.y - pastYGlobal)/dt;
+    double zGlobal = wb_gps_get_values(gps)[2];
+    double zGlobalVel = (actualState.z - pastZGlobal)/dt;
+
+    // rotate to body frame
+    actualState.x = xGlobal*cos(actualState.yaw) + yGlobal*sin(actualState.yaw);
+    actualState.y = -xGlobal*sin(actualState.yaw) + yGlobal*cos(actualState.yaw);
+    actualState.z = zGlobal;
+    actualState.xVelocity = xGlobalVel*cos(actualState.yaw) + yGlobalVel*sin(actualState.yaw);
+    actualState.yVelocity = -xGlobalVel*sin(actualState.yaw) + yGlobalVel*cos(actualState.yaw);
+    actualState.zVelocity = zGlobalVel;
+
+
+
 
     // Initialize values for height Zs
     desiredState.z = 1.0;
@@ -162,18 +173,21 @@ int main(int argc, char **argv) {
     desiredState.yaw = actualState.yaw + yawDesired * dt;
 
     // calculate global desired velocity from body fixed desired velocity
-    double vxGlobal = forwardDesired * cos(actualState.yaw) - sidewaysDesired * sin(actualState.yaw);
-    double vyGlobal = forwardDesired * sin(actualState.yaw) + sidewaysDesired * cos(actualState.yaw);
 
     // Calculate global desired position based on global desired velocity
-    desiredState.x = actualState.x + vxGlobal * dt;
-    desiredState.y = actualState.y + vyGlobal * dt;
+    //desiredState.x = actualState.x + forwardDesired * dt;
+    //desiredState.y = actualState.y + sidewaysDesired * dt;
+
+    desiredState.pitch = forwardDesired/10;
+    desiredState.roll = sidewaysDesired/10;
 
     // full PID controller
     pid_pos_att_controller(&statePID, gainsPID, actualState, &desiredState, dt, &control);
 
     //motor mixing
     motor_mixing(control, &motorPower);
+
+    printf("actual x: %f, desired x: %f   \n", actualState.x, desiredState.x);
 
     printf("cmd roll: %f, cmd pitch: %f, cmd yaw: %f, cmd z: %f   \n", control.roll, control.pitch, control.yaw, control.z);
     // print out the motor powers

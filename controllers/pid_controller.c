@@ -29,10 +29,10 @@ float constrain(float value, const float minVal, const float maxVal)
 void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands)
 {
     // Motor mixing
-    motorCommands->m1 =  controlCommands.z - controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m2 =  controlCommands.z - controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
-    motorCommands->m3 =  controlCommands.z + controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m4 =  controlCommands.z + controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m1 =  controlCommands.z - controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m2 =  controlCommands.z - controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m3 =  controlCommands.z + controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
+    motorCommands->m4 =  controlCommands.z + controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
 }
 
 void calculate_errors(double desired, double actual, double dt,
@@ -57,6 +57,7 @@ void pid_attitude_controller(StatePID_t *pidState, GainsPID_t gainsPID,
     State_t actualState, State_t* desiredState,
     double dt, ControlCommands_t* controlCommands)
 {
+    printf("desiredState->pitch: %f , actualState->pitch: %f \n", desiredState->pitch, actualState.pitch);
         // Calculate errors
     double rollcmd = pid_controller(desiredState->roll, actualState.roll, dt,
         &(pidState->rollError), &(pidState->prevRollError), &(pidState->rollInteg),
@@ -101,8 +102,11 @@ void pid_pos_att_controller(StatePID_t* pidState, GainsPID_t gainsPID,
     State_t actualState, State_t* desiredState,
     double dt, ControlCommands_t* controlCommands)
 {
-    pid_attitude_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
-    desiredState->roll = controlCommands->y;
-    desiredState->pitch = controlCommands->x;
+
     pid_position_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
+
+    //desiredState->roll = controlCommands->y;
+    //desiredState->pitch = controlCommands->x;
+    pid_attitude_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
+
 }
