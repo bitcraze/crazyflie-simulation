@@ -29,20 +29,21 @@ float constrain(float value, const float minVal, const float maxVal)
 void motor_mixing(ControlCommands_t controlCommands, MotorPower_t* motorCommands)
 {
     // Motor mixing
-    motorCommands->m1 =  controlCommands.z - controlCommands.roll - controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m2 =  controlCommands.z - controlCommands.roll + controlCommands.pitch - controlCommands.yaw;
-    motorCommands->m3 =  controlCommands.z + controlCommands.roll + controlCommands.pitch + controlCommands.yaw;
-    motorCommands->m4 =  controlCommands.z + controlCommands.roll - controlCommands.pitch - controlCommands.yaw;
+    motorCommands->m1 =  controlCommands.z - controlCommands.roll - controlCommands.pitch + controlCommands.yaw; // Front right
+    motorCommands->m2 =  controlCommands.z - controlCommands.roll + controlCommands.pitch - controlCommands.yaw; // back right
+    motorCommands->m3 =  controlCommands.z + controlCommands.roll + controlCommands.pitch + controlCommands.yaw; // Back left
+    motorCommands->m4 =  controlCommands.z + controlCommands.roll - controlCommands.pitch - controlCommands.yaw; // Front left
 }
 
 void calculate_errors(double desired, double actual, double dt,
     double *error, double *prevError, double*integ,
     double *deriv)
 {
-    *error = desired - actual;
-    *deriv = (*error - *prevError)/dt;
-    *integ += *error * dt;
-    *prevError = *error;
+    double error_temp = desired - actual;
+    *deriv = (error_temp - *prevError)/dt;
+    *integ += error_temp * dt;
+    *error = error_temp;
+    *prevError = error_temp;
 }
 
 double pid_controller(double desired, double actual, double dt,
@@ -57,39 +58,98 @@ void pid_attitude_controller(StatePID_t *pidState, GainsPID_t gainsPID,
     State_t actualState, State_t* desiredState,
     double dt, ControlCommands_t* controlCommands)
 {
-    printf("desiredState->pitch: %f , actualState->pitch: %f \n", desiredState->pitch, actualState.pitch);
         // Calculate errors
-    double rollcmd = pid_controller(desiredState->roll, actualState.roll, dt,
+    double rollcmd = pid_controller(desiredState->roll, actualState.roll,  dt,
         &(pidState->rollError), &(pidState->prevRollError), &(pidState->rollInteg),
         &(pidState->rollDeriv), gainsPID.rollpitchKP, gainsPID.rollpitchKI, gainsPID.rollpitchKD);
 
-    double pitchcmd = pid_controller(desiredState->pitch, actualState.pitch, dt,
+    double pitchcmd = pid_controller(desiredState->pitch, actualState.pitch,  dt,
         &(pidState->pitchError), &(pidState->prevPitchError), &(pidState->pitchInteg),
         &(pidState->pitchDeriv), gainsPID.rollpitchKP, gainsPID.rollpitchKI, gainsPID.rollpitchKD);
 
-    double yawcmd = pid_controller(desiredState->yaw, actualState.yaw, dt,
+    double desiredYaw, actualYaw, yawKP, yawKI, yawKD;
+    if (pidState->modeYaw == 1)
+    {
+        desiredYaw = desiredState->yawRate;
+        actualYaw = actualState.yawRate;
+        yawKP = gainsPID.yawRateKP;
+        yawKI = gainsPID.yawRateKI;
+        yawKD = gainsPID.yawRateKD;
+    }else
+    {
+        desiredYaw = desiredState->yaw;
+        actualYaw = actualState.yaw;
+        yawKP = gainsPID.yawKP;
+        yawKI = gainsPID.yawKI;
+        yawKD = gainsPID.yawKD;
+
+    }
+    double yawcmd = pid_controller(desiredYaw, actualYaw, dt,
         &(pidState->yawError), &(pidState->prevYawError), &(pidState->yawInteg),
-        &(pidState->yawDeriv), gainsPID.yawKP, gainsPID.yawKI, gainsPID.yawKD);
+        &(pidState->yawDeriv), yawKP, yawKI, yawKD);
 
     controlCommands->roll = rollcmd;
     controlCommands->pitch = pitchcmd;
     controlCommands->yaw = yawcmd;
 }
 
-void pid_position_controller(StatePID_t *pidState, GainsPID_t gainsPID,
+void pid_pos_vel_controller(StatePID_t *pidState, GainsPID_t gainsPID,
     State_t actualState, State_t* desiredState,
     double dt, ControlCommands_t* controlCommands)
 {
-    // Calculate errors
-    double xcmd = pid_controller(desiredState->x, actualState.x, dt,
+
+    double xcmd = 0, ycmd = 0, zcmd = 0;
+    double xActual = 0, yActual = 0, zActual = 0;
+    double xDesired = 0, yDesired = 0, zDesired = 0;
+    double xyKP, xyKI, xyKD, zKP, zKI, zKD;
+    if (pidState->modeXY == 1)
+    {
+        xActual = actualState.xVelocity;
+        xDesired = desiredState->xVelocity;
+        yActual = actualState.yVelocity;
+        yDesired = desiredState->yVelocity;
+        xyKP = gainsPID.xyVelocityKP;
+        xyKI = gainsPID.xyVelocityKI;
+        xyKD = gainsPID.xyVelocityKD;
+    }
+    else
+    {
+        xActual = actualState.x;
+        xDesired = desiredState->x;
+        yActual = actualState.y;
+        yDesired = desiredState->y;
+        xyKP = gainsPID.xyKP;
+        xyKI = gainsPID.xyKI;
+        xyKD = gainsPID.xyKD;
+    }
+
+    if (pidState->modeZ == 1)
+    {
+        zActual = actualState.zVelocity;
+        zDesired = desiredState->zVelocity;
+        zKP = gainsPID.zVelocityKP;
+        zKI = gainsPID.zVelocityKI;
+        zKD = gainsPID.zVelocityKD;
+    }
+    else
+    {
+        zActual = actualState.z;
+        zDesired = desiredState->z;
+        zKP = gainsPID.zKP;
+        zKI = gainsPID.zKI;
+        zKD = gainsPID.zKD;
+    }
+
+
+    xcmd = pid_controller(xDesired, xActual, dt,
         &(pidState->xError), &(pidState->prevXError), &(pidState->xInteg),
-        &(pidState->xDeriv), gainsPID.xyKP, gainsPID.xyKI, gainsPID.xyKD);
+        &(pidState->xDeriv), xyKP, xyKI, xyKD);
 
-    double ycmd = pid_controller(desiredState->y, actualState.y, dt,
+    ycmd = pid_controller(yDesired, yActual, dt,
         &(pidState->yError), &(pidState->prevYError), &(pidState->yInteg),
-        &(pidState->yDeriv), gainsPID.xyKP, gainsPID.xyKI, gainsPID.xyKD);
+        &(pidState->yDeriv), xyKP, xyKI, xyKD);
 
-    double zcmd = pid_controller(desiredState->z, actualState.z, dt,
+    zcmd = pid_controller(zDesired, zActual, dt,
         &(pidState->zError), &(pidState->prevZError), &(pidState->zInteg),
         &(pidState->zDeriv), gainsPID.zKP, gainsPID.zKI, gainsPID.zKD);
 
@@ -103,10 +163,9 @@ void pid_pos_att_controller(StatePID_t* pidState, GainsPID_t gainsPID,
     double dt, ControlCommands_t* controlCommands)
 {
 
-    pid_position_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
-
-    //desiredState->roll = controlCommands->y;
-    //desiredState->pitch = controlCommands->x;
+    pid_pos_vel_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
+    //    desiredState->roll = - controlCommands->y;
+    //    desiredState->pitch = controlCommands->x;
     pid_attitude_controller(pidState, gainsPID, actualState, desiredState, dt, controlCommands);
 
 }

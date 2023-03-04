@@ -54,12 +54,21 @@ typedef struct GainsPID_s{
   double yawKP;
   double yawKD;
   double yawKI;
+  double yawRateKP;
+  double yawRateKD;
+  double yawRateKI;
   double xyKP;
   double xyKD;
   double xyKI;
+  double xyVelocityKP;
+  double xyVelocityKD;
+  double xyVelocityKI;
   double zKP;
   double zKD;
   double zKI;
+  double zVelocityKP;
+  double zVelocityKD;
+  double zVelocityKI;
 } GainsPID_t;
 
 typedef struct StatePID_s
@@ -88,6 +97,11 @@ typedef struct StatePID_s
   double prevZError;
   double zInteg;
   double zDeriv;
+  int modeXY;
+  int modeZ;
+  int modeRollPitch;
+  int modeYaw;
+
 } StatePID_t;
 
 float constrain(float value, const float minVal, const float maxVal);
