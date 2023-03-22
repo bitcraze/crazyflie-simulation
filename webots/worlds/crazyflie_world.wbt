@@ -4,14 +4,13 @@ IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R20
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/Floor.proto"
-
-
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/panels/protos/Panel.proto"
 
 WorldInfo {
 }
 Viewpoint {
   orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
-  position -0.6915100278560411 -0.36483795282963377 0.6236285609441987
+  position -4.676246793532773 -2.058807981972808 4.363872523160765
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -19,6 +18,14 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 Floor {
+}
+Panel {
+  translation 1.18 -0.56 0
+}
+Panel {
+  translation 1.18 -0.56 0
+  rotation 0 0 1 -1.5707953071795862
+  name "panel(1)"
 }
 Robot {
   translation 0 0 0.015
@@ -256,5 +263,5 @@ Robot {
     density -1
     mass 0.05
   }
-  controller "crazyflie_controller_py_firmware_pid"
+  controller "crazyflie_controller_py"
 }

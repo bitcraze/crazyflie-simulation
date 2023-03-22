@@ -1,14 +1,14 @@
-/* 
+/*
  *  ...........       ____  _ __
  *  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  *  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  *  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- *  
+ *
  * MIT License
- * 
+ *
  * Copyright (c) 2022 Bitcraze
- * 
+ *
  * @file crazyflie_controller.c
  * Controls the crazyflie motors in webots
  */
@@ -81,9 +81,9 @@ int main(int argc, char **argv) {
 
   // Initialize PID gains.
   GainsPID_t gainsPID;
-  gainsPID.kp_att_y = 1;
-  gainsPID.kd_att_y = 0.5;
-  gainsPID.kp_att_rp =0.5;
+  gainsPID.kp_att_y = 0.8;
+  gainsPID.kd_att_y = 0.3;
+  gainsPID.kp_att_rp =0.4;
   gainsPID.kd_att_rp = 0.1;
   gainsPID.kp_vel_xy = 2;
   gainsPID.kd_vel_xy = 0.5;
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
         }
       key = wb_keyboard_get_key();
     }
-    
+
     // Example how to get sensor data
     // range_front_value = wb_distance_sensor_get_value(range_front));
     // const unsigned char *image = wb_camera_get_image(camera);
@@ -174,13 +174,13 @@ int main(int argc, char **argv) {
     desiredState.pitch = forwardDesired;
      pid_attitude_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);*/
-    
+
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
     wb_motor_set_velocity(m2_motor, motorPower.m2);
     wb_motor_set_velocity(m3_motor, - motorPower.m3);
     wb_motor_set_velocity(m4_motor, motorPower.m4);
-    
+
     // Save past time for next time step
     past_time = wb_robot_get_time();
     pastXGlobal = xGlobal;

@@ -3,7 +3,7 @@
 #  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
 #  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
+
 # MIT License
 
 # Copyright (c) 2022 Bitcraze
@@ -29,6 +29,12 @@ import sys
 sys.path.append('../../../controllers/')
 from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
 from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
+
+sys.path.append('C:/Users/kimbe/Development/bitcraze/python/crazyflie-lib-python/examples/multiranger/wall_following')
+from wall_following_multiranger import WallFollowingMultiranger
+
+
+
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
@@ -68,7 +74,7 @@ range_right.enable(timestep)
 ## Get keyboard
 keyboard = Keyboard()
 keyboard.enable(timestep)
-    
+
 ## Initialize variables
 actualState = ActualState_t()
 desiredState = DesiredState_t()
@@ -93,6 +99,8 @@ init_pid_attitude_fixed_height_controller();
 motorPower = MotorPower_t()
 
 print('Take off!')
+
+wall_following = WallFollowingMultiranger(angle_value_buffer= 0.01, ref_distance_from_wall = 0.5, max_forward_speed = 0.3, init_state = WallFollowingMultiranger.StateWF.FORWARD)
 
 # Main loop:
 while robot.step(timestep) != -1:
@@ -150,6 +158,17 @@ while robot.step(timestep) != -1:
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
 
+    range_front_value = range_front.getValue()/1000
+    range_right_value = range_right.getValue()/1000
+
+    direction  = 1
+
+    cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(range_front_value, range_right_value, actualYaw, direction, robot.getTime())
+    sidewaysDesired = cmd_vel_y
+    forwardDesired = cmd_vel_x
+    yawDesired = cmd_ang_w
+    print('state_wf: ', state_wf)
+
 
     desiredState.yaw_rate = yawDesired;
 
@@ -158,7 +177,7 @@ while robot.step(timestep) != -1:
     desiredState.vx = forwardDesired;
     pid_velocity_fixed_height_controller(actualState, desiredState,
     gainsPID, dt, motorPower);
-    
+
 
     ## PID attitude controller with fixed height
     '''
@@ -172,7 +191,7 @@ while robot.step(timestep) != -1:
     m2_motor.setVelocity(motorPower.m2)
     m3_motor.setVelocity(-motorPower.m3)
     m4_motor.setVelocity(motorPower.m4)
-    
+
     past_time = robot.getTime()
     pastXGlobal = xGlobal
     pastYGlobal = yGlobal
