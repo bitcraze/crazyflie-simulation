@@ -27,7 +27,7 @@ from math import cos, sin, degrees, radians
 
 import sys
 # Change this path to your crazyflie-firmware folder
-sys.path.append('../../../../../c/crazyflie-firmware')
+sys.path.append('../../../../../c/crazyflie-firmware-experimental/build')
 import cffirmware
 
 import numpy as np
@@ -78,7 +78,8 @@ pastZGlobal = 0
 past_time = robot.getTime()
 
 cffirmware.controllerPidInit()
-
+#mellinger_control = cffirmware.controllerMellinger_t()
+#cffirmware.controllerMellingerInit(mellinger_control)
 print('Take off!')
 
 max_time = 10
@@ -96,7 +97,8 @@ pastYaw = 0
 while robot.step(timestep) != -1:
 
     dt = robot.getTime() - past_time
-    print('timestep',dt)
+
+    print(robot.getTime())
 
     ## Get measurements
     roll = imu.getRollPitchYaw()[0]
@@ -148,9 +150,9 @@ while robot.step(timestep) != -1:
         elif key == Keyboard.DOWN:
             forwardDesired = -0.5
         elif key == Keyboard.RIGHT:
-            sidewaysDesired = -1
+            sidewaysDesired = -0.5
         elif key == Keyboard.LEFT:
-            sidewaysDesired = 1
+            sidewaysDesired = 0.5
         elif key == ord('Q'):
             yawDesired = 1
         elif key == ord('E'):
@@ -170,8 +172,8 @@ while robot.step(timestep) != -1:
     setpoint.mode.roll = cffirmware.modeDisable
     setpoint.mode.pitch = cffirmware.modeDisable
 
-    setpoint.attitudeRate.yaw = degrees(yawDesired)
-    setpoint.mode.x = cffirmware.modeAbs
+    setpoint.attitudeRate.yaw = yawDesired
+    setpoint.mode.x = cffirmware.modeVelocity
     setpoint.mode.y = cffirmware.modeVelocity
     setpoint.velocity.x = forwardDesired
     setpoint.velocity.y = sidewaysDesired
@@ -184,17 +186,17 @@ while robot.step(timestep) != -1:
     ## Firmware PID bindings
     control = cffirmware.control_t()
     tick = int(robot.getTime()*1000) #this value makes sure that the position controller and attitude controller are always always initiated
-    print('ticks',tick)
     cffirmware.controllerPid(control, setpoint,sensors,state,tick)
+    #cffirmware.controllerMellinger(mellinger_control, control, setpoint, sensors, state, tick)
 
 
     
-    '''cmd = radians(control.roll)
+    cmd = control.roll/10000
     control.roll = int(cmd)
-    cmd = radians(control.pitch)
+    cmd = control.pitch/10000
     control.pitch = int(cmd)
-    cmd = radians(control.yaw)
-    control.yaw = int(cmd)'''
+    cmd = control.yaw/10000
+    control.yaw = int(cmd)
 
 
     motors_thrust_uncapped = cffirmware.motors_thrust_uncapped_t()
@@ -214,16 +216,16 @@ while robot.step(timestep) != -1:
 
     
     motor_velocities = []
-    scaling = 20
+    scaling = 40
     for rpm in rpm_motors:
         motor_velocities.append((rpm/60)/scaling)
 
 
-    print(setpoint.attitude.roll, state.attitude.roll, control.roll)
+    #print(setpoint.attitudeRate.yaw, sensors.gyro.z, control.yaw)
 
     x.append(robot.getTime())
-    y1.append(sensors.gyro.x)
-    y2.append(state.attitude.roll)
+    y1.append(sensors.gyro.z)
+    y2.append(setpoint.attitudeRate.yaw)
 
     # if x get larger than size_array, remove first element
     if robot.getTime() > max_time:
@@ -231,12 +233,13 @@ while robot.step(timestep) != -1:
         y1.pop(0)
         y2.pop(0)
 
-    print(len(x))
-    plt.cla()
-    plt.plot(x, y1)
-    plt.plot(x, y2)
-    plt.draw()
-    plt.pause(0.001)
+    #plt.cla()
+    #plt.plot(x, y1)
+    #plt.plot(x, y2)
+    #plt.draw()
+    #plt.pause(0.001)
+
+    print(motor_velocities)
 
      ##Todo, remove necessity of this scaling (SI units in firmware)
     m1_motor.setVelocity(-motor_velocities[0])
