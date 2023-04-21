@@ -115,17 +115,17 @@ if __name__ == '__main__':
         key = keyboard.getKey()
         while key>0:
             if key == Keyboard.UP:
-                forward_desired += 0.2
+                forward_desired += 0.5
             elif key == Keyboard.DOWN:
-                forward_desired -= 0.2
+                forward_desired -= 0.5
             elif key == Keyboard.RIGHT:
-                sideways_desired -= 0.2
+                sideways_desired -= 0.5
             elif key == Keyboard.LEFT:
-                sideways_desired += 0.2
+                sideways_desired += 0.5
             elif key == ord('Q'):
-                yaw_desired =  + 0.5
+                yaw_desired =  + 1
             elif key == ord('E'):
-                yaw_desired = - 0.5
+                yaw_desired = - 1
 
             key = keyboard.getKey()
 
