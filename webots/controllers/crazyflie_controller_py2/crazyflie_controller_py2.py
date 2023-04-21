@@ -33,6 +33,7 @@ from python.pid_controller_full_state import PIDControllerFullState
 
 robot = Robot()
 
+
 timestep = int(robot.getBasicTimeStep())
 
 ## Initialize motors
@@ -89,9 +90,9 @@ gains_pid_pos[0][2] = 0.0
 gains_pid_pos[1][0] = 1.0
 gains_pid_pos[1][1] = 0.0
 gains_pid_pos[1][2] = 0.0
-gains_pid_pos[2][0] = 15
-gains_pid_pos[2][1] = 0
-gains_pid_pos[2][2] = 0
+gains_pid_pos[2][0] = 10
+gains_pid_pos[2][1] = 10
+gains_pid_pos[2][2] = 5
 
 gains_pid_vel = [[0 for x in range(3)] for y in range(3)]
 gains_pid_vel[0][0] = 1.0
@@ -107,10 +108,10 @@ gains_pid_vel[2][2] = 0.0
 gains_pid_att = [[0 for x in range(3)] for y in range(3)]
 gains_pid_att[0][0] = 1.0
 gains_pid_att[0][1] = 0.0
-gains_pid_att[0][2] = 0.0
-gains_pid_att[1][0] = 1.0
+gains_pid_att[0][2] = 0.5
+gains_pid_att[1][0] = 0.5
 gains_pid_att[1][1] = 0.0
-gains_pid_att[1][2] = 0.0
+gains_pid_att[1][2] = 0.1
 gains_pid_att[2][0] = 1.0
 gains_pid_att[2][1] = 0.0
 gains_pid_att[2][2] = 0.0
@@ -170,7 +171,7 @@ while robot.step(timestep) != -1:
 
     desired_state[0][0] = 0
     desired_state[0][1] = 0
-    desired_state[0][2] = 1
+    desired_state[0][2] = 0
     desired_state[1][0] = 0
     desired_state[1][1] = 0
     desired_state[1][2] = 0
@@ -206,9 +207,9 @@ while robot.step(timestep) != -1:
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
 
-    desired_state[0][0] = forwardDesired
-    desired_state[0][1] = sidewaysDesired
     desired_state[0][2] = 1
+    desired_state[1][0] = forwardDesired
+    desired_state[1][1] = sidewaysDesired
     desired_state[3][0] = yawDesired
 
     pos_mode[0] = 1
