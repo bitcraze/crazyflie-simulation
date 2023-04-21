@@ -26,9 +26,8 @@ from controller import DistanceSensor
 from math import cos, sin
 
 import sys
-sys.path.append('../../../controllers/')
-from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
-from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
+sys.path.append('../../../controllers/python')
+from pid_controller import pid_velocity_fixed_height_controller
 robot = Robot()
 
 timestep = int(robot.getBasicTimeStep())
@@ -70,61 +69,44 @@ keyboard = Keyboard()
 keyboard.enable(timestep)
     
 ## Initialize variables
-actualState = ActualState_t()
-desiredState = DesiredState_t()
+
 pastXGlobal = 0
 pastYGlobal = 0
 past_time = robot.getTime()
 
-## Initialize PID gains.
-gainsPID = GainsPID_t()
-gainsPID.kp_att_y = 1
-gainsPID.kd_att_y = 0.5
-gainsPID.kp_att_rp =0.5
-gainsPID.kd_att_rp = 0.1
-gainsPID.kp_vel_xy = 2;
-gainsPID.kd_vel_xy = 0.5;
-gainsPID.kp_z = 10
-gainsPID.ki_z = 50
-gainsPID.kd_z = 5
-init_pid_attitude_fixed_height_controller();
+# Crazyflie velocity PID controller
+PID_CF = pid_velocity_fixed_height_controller()
+PID_update_last_time = robot.getTime()
+sensor_read_last_time = robot.getTime()
+step_count = 0
 
-## Initialize struct for motor power
-motorPower = MotorPower_t()
-
-print('Take off!')
 
 # Main loop:
 while robot.step(timestep) != -1:
 
-    dt = robot.getTime() - past_time;
+    dt = robot.getTime() - past_time
 
-    ## Get measurements
-    actualState.roll = imu.getRollPitchYaw()[0]
-    actualState.pitch = imu.getRollPitchYaw()[1]
-    actualState.yaw_rate = gyro.getValues()[2];
-    actualState.altitude = gps.getValues()[2];
+    actual_state = {}
+
+    ## Get sensor data
+    roll = imu.getRollPitchYaw()[0]
+    pitch = imu.getRollPitchYaw()[1]
+    yaw = imu.getRollPitchYaw()[2]
+    yaw_rate = gyro.getValues()[2]
+    altitude = gps.getValues()[2]
     xGlobal = gps.getValues()[0]
     vxGlobal = (xGlobal - pastXGlobal)/dt
     yGlobal = gps.getValues()[1]
     vyGlobal = (yGlobal - pastYGlobal)/dt
 
     ## Get body fixed velocities
-    actualYaw = imu.getRollPitchYaw()[2];
-    cosyaw = cos(actualYaw)
-    sinyaw = sin(actualYaw)
-    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw
-    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw
-
+    cosyaw = cos(yaw)
+    sinyaw = sin(yaw)
+    v_x = vxGlobal * cosyaw + vyGlobal * sinyaw
+    v_y = - vxGlobal * sinyaw + vyGlobal * cosyaw
 
     ## Initialize values
-    desiredState.roll = 0
-    desiredState.pitch = 0
-    desiredState.vx = 0
-    desiredState.vy = 0
-    desiredState.yaw_rate = 0
-    desiredState.altitude = 1.0
-
+    desired_state = [0, 0, 0, 0]
     forwardDesired = 0
     sidewaysDesired = 0
     yawDesired = 0
@@ -149,29 +131,19 @@ while robot.step(timestep) != -1:
     ## Example how to get sensor data
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
-
-
-    desiredState.yaw_rate = yawDesired;
-
-    ## PID velocity controller with fixed height
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
-    pid_velocity_fixed_height_controller(actualState, desiredState,
-    gainsPID, dt, motorPower);
     
+    desired_state[0] = forwardDesired
+    desired_state[1] = sidewaysDesired
+    desired_state[2] = yawDesired
+    desired_state[3] = 1
+    ## PID velocity controller with fixed height
+    motor_power = PID_CF.pid(dt, desired_state, roll, pitch, yaw_rate,
+                            altitude, v_x, v_y)
 
-    ## PID attitude controller with fixed height
-    '''
-    desiredState.roll = sidewaysDesired;
-    desiredState.pitch = forwardDesired;
-     pid_attitude_fixed_height_controller(actualState, desiredState,
-    gainsPID, dt, motorPower);
-    '''
-
-    m1_motor.setVelocity(-motorPower.m1)
-    m2_motor.setVelocity(motorPower.m2)
-    m3_motor.setVelocity(-motorPower.m3)
-    m4_motor.setVelocity(motorPower.m4)
+    m1_motor.setVelocity(-motor_power[0])
+    m2_motor.setVelocity(motor_power[1])
+    m3_motor.setVelocity(-motor_power[2])
+    m4_motor.setVelocity(motor_power[3])
     
     past_time = robot.getTime()
     pastXGlobal = xGlobal
