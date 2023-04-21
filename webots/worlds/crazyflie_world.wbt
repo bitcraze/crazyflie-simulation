@@ -5,13 +5,11 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/Floor.proto"
 
-
-
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.12577821568808165 0.8804431530844167 0.45716484406075336 0.8071583944978193
-  position -0.6915100278560411 -0.36483795282963377 0.6236285609441987
+  orientation -0.07385539700858673 0.9327769938687757 0.3528065476175779 0.7219789445158288
+  position -0.38715368865588295 -0.12529250851059962 0.28682163590934284
   follow "Crazyflie"
 }
 TexturedBackground {
@@ -86,10 +84,31 @@ Robot {
       centerOfThrust 0.031 -0.031 0.008
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
+      fastHelixThreshold 50
       device RotationalMotor {
         name "m1_motor"
         maxVelocity 600
         maxTorque 30
+      }
+      fastHelix Solid {
+        translation 0.031 -0.031 0.008
+        children [
+          DEF FASTHELIX Shape {
+            appearance PBRAppearance {
+              baseColor 0.1 0.1 0.1
+              baseColorMap ImageTexture {
+                url [
+                  "../../meshes/textures/fast_helix.png"
+                ]
+              }
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.001
+              radius 0.025
+            }
+          }
+        ]
       }
       slowHelix Solid {
         translation 0.031 -0.031 0.008
@@ -113,10 +132,17 @@ Robot {
       centerOfThrust -0.031 -0.031 0.008
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
+      fastHelixThreshold 50
       device RotationalMotor {
         name "m2_motor"
         maxVelocity 600
         maxTorque 30
+      }
+      fastHelix Solid {
+        translation -0.031 -0.031 0.008
+        children [
+          USE FASTHELIX
+        ]
       }
       slowHelix Solid {
         translation -0.031 -0.031 0.008
@@ -130,10 +156,17 @@ Robot {
       centerOfThrust -0.031 0.031 0.008
       thrustConstants -4e-05 0
       torqueConstants 2.4e-06 0
+      fastHelixThreshold 50
       device RotationalMotor {
         name "m3_motor"
         maxVelocity 600
         maxTorque 30
+      }
+      fastHelix Solid {
+        translation -0.031 0.031 0.008
+        children [
+          USE FASTHELIX
+        ]
       }
       slowHelix Solid {
         translation -0.031 0.031 0.008
@@ -147,10 +180,17 @@ Robot {
       centerOfThrust 0.031 0.031 0.008
       thrustConstants 4e-05 0
       torqueConstants 2.4e-06 0
+      fastHelixThreshold 50
       device RotationalMotor {
         name "m4_motor"
         maxVelocity 600
         maxTorque 30
+      }
+      fastHelix Solid {
+        translation 0.031 0.031 0.008
+        children [
+          USE FASTHELIX
+        ]
       }
       slowHelix DEF PROP Solid {
         translation 0.031 0.031 0.007
