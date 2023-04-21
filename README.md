@@ -43,9 +43,25 @@ Then just run the following
 
     webots webots/worlds/crazyflie_world.wbt
 
-## Chhange controller
+## Change controller
 
 In webots, change controller to either `crazyflie_controller_c` or `crazyflie_controller_py` to try out a simple controller in different languages
+
+## Try wallfollowing
+
+Run the following world
+
+    webots webots/worlds/crazyflie_appartement.wbt
+
+Go to the `webots/controller/crazyflie_controller_py_wallfollowing/` and look into crazyflie_controller_py_wallfollowing.py. 
+
+Make sure this line is pointing to the cflib's wallfollowing script (make sure to update the [crazyflie-lib-python repository](https://github.com/bitcraze/crazyflie-lib-python))
+
+    sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
+
+
+You can toggle wallfollowing with with the 'a' key on your keyboard.
+
 
 ## Firmware python bindings
 As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitcraze/crazyflie-firmware/pull/1021) it is possible to use the python bindings of the controllers of the actual crazyflie controller directly in webots.

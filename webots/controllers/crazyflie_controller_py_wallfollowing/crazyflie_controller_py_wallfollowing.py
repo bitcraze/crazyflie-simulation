@@ -29,7 +29,7 @@ import sys
 sys.path.append('../../../controllers/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
 
-sys.path.append('/home/kimberly/Development/bitcraze/python/crazyflie-lib-python/examples/multiranger/wall_following')
+sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
 from wall_following import WallFollowing
 
 FLYING_ATTITUDE = 1
