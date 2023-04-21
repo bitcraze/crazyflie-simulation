@@ -29,6 +29,9 @@ import sys
 sys.path.append('../../../controllers/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
 
+sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
+from wall_following import WallFollowing
+
 FLYING_ATTITUDE = 1
 
 if __name__ == '__main__':
@@ -85,6 +88,11 @@ if __name__ == '__main__':
 
     height_desired = FLYING_ATTITUDE
 
+    wall_following = WallFollowing(angle_value_buffer= 0.01, ref_distance_from_wall = 0.5, max_forward_speed = 0.3, init_state = WallFollowing.StateWF.FORWARD)
+
+    autonomous_mode = False
+
+
     print("\n");
 
     print("====== Controls =======\n\n");
@@ -94,6 +102,7 @@ if __name__ == '__main__':
     print("- Use the up, back, right and left button to move in the horizontal plane\n");
     print("- Use Q and E to rotate around yaw ");
     print("- Use W and S to go up and down\n ")
+    print("- Press A to toggle autonomous mode\n")
 
     # Main loop:
     while robot.step(timestep) != -1:
@@ -143,16 +152,27 @@ if __name__ == '__main__':
                 height_diff_desired = 0.1
             elif key == ord('S'):
                 height_diff_desired = - 0.1
+            elif key == ord('A'):
+                autonomous_mode = not autonomous_mode
+                print("Autonomous mode: ", autonomous_mode)
 
             key = keyboard.getKey()
 
-        
         height_desired += height_diff_desired * dt
 
         ## Example how to get sensor data
         ## range_front_value = range_front.getValue();
         ## cameraData = camera.getImage()
+        range_front_value = range_front.getValue()/1000
+        range_right_value = range_right.getValue()/1000
 
+        direction  = 1
+        cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(range_front_value, range_right_value, yaw, direction, robot.getTime())
+
+        if autonomous_mode:
+            sideways_desired = cmd_vel_y
+            forward_desired = cmd_vel_x
+            yaw_desired = cmd_ang_w
 
         ## PID velocity controller with fixed height
         motor_power = PID_CF.pid(dt, forward_desired, sideways_desired,
