@@ -30,8 +30,10 @@ sys.path.append('../../../controllers/')
 from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
 from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
 
-sys.path.append('C:/Users/kimbe/Development/bitcraze/python/crazyflie-lib-python/examples/multiranger/wall_following')
-from wall_following_multiranger import WallFollowingMultiranger
+#sys.path.append('C:/Users/kimbe/Development/bitcraze/python/crazyflie-lib-python/examples/multiranger/wall_following')
+sys.path.append('/home/kimberly/Development/bitcraze/python/crazyflie-lib-python/examples/multiranger/wall_following')
+
+from wall_following import WallFollowing
 
 
 
@@ -100,7 +102,7 @@ motorPower = MotorPower_t()
 
 print('Take off!')
 
-wall_following = WallFollowingMultiranger(angle_value_buffer= 0.01, ref_distance_from_wall = 0.5, max_forward_speed = 0.3, init_state = WallFollowingMultiranger.StateWF.FORWARD)
+wall_following = WallFollowing(angle_value_buffer= 0.01, ref_distance_from_wall = 0.5, max_forward_speed = 0.3, init_state = WallFollowing.StateWF.FORWARD)
 
 # Main loop:
 while robot.step(timestep) != -1:
@@ -157,18 +159,18 @@ while robot.step(timestep) != -1:
     ## Example how to get sensor data
     ## range_front_value = range_front.getValue();
     ## cameraData = camera.getImage()
-
+    
+    # uncomment to do wall following
     range_front_value = range_front.getValue()/1000
     range_right_value = range_right.getValue()/1000
 
     direction  = 1
-
     cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(range_front_value, range_right_value, actualYaw, direction, robot.getTime())
     sidewaysDesired = cmd_vel_y
     forwardDesired = cmd_vel_x
     yawDesired = cmd_ang_w
     print('state_wf: ', state_wf)
-
+    
 
     desiredState.yaw_rate = yawDesired;
 
