@@ -19,18 +19,19 @@ import numpy as np
 
 class pid_velocity_fixed_height_controller():
     def __init__(self):
-        self.past_vx_error = 0
-        self.past_vy_error = 0
-        self.past_alt_error = 0
-        self.past_pitch_error = 0
-        self.past_roll_error = 0
+        self.past_vx_error = 0.0
+        self.past_vy_error = 0.0
+        self.past_alt_error = 0.0
+        self.past_pitch_error = 0.0
+        self.past_roll_error = 0.0
+        self.alt_integrator = 0.0
         self.last_time = 0.0
 
     def pid(self, dt, desired_vx, desired_vy, desired_yaw_rate, desired_alt, actual_roll, actual_pitch, actual_yaw_rate,
             actual_alt, actual_vx, actual_vy):
         # Velocity PID control (converted from Crazyflie c code)
         gains = {"kp_att_y": 1, "kd_att_y": 0.5, "kp_att_rp": 0.5, "kd_att_rp": 0.1,
-                "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 10, "ki_z": 50, "kd_z": 5}
+                "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 10, "ki_z": 5, "kd_z": 5}
 
         # Velocity PID control
         vx_error = desired_vx - actual_vx
@@ -45,7 +46,8 @@ class pid_velocity_fixed_height_controller():
         # Altitude PID control
         alt_error = desired_alt - actual_alt
         alt_deriv = (alt_error - self.past_alt_error) / dt
-        alt_command = gains["kp_z"] * np.clip(alt_error, -1, 1) + gains["kd_z"] * alt_deriv + gains["ki_z"]
+        self.alt_integrator += alt_error * dt
+        alt_command = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + gains["ki_z"] * np.clip(self.alt_integrator, -2, 2) + 48
         self.past_alt_error = alt_error
 
         # Attitude PID control
