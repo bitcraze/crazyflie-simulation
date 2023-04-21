@@ -25,7 +25,7 @@
 #include <webots/camera.h>
 #include <webots/distance_sensor.h>
 
-#include "../../../controllers/pid_controller.h"
+#include "../../../controllers/c_based/pid_controller.h"
 
 int main(int argc, char **argv) {
   wb_robot_init();
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   gainsPID.kp_vel_xy = 2;
   gainsPID.kd_vel_xy = 0.5;
   gainsPID.kp_z = 10;
-  gainsPID.ki_z = 50;
+  gainsPID.ki_z = 5;
   gainsPID.kd_z = 5;
   init_pid_attitude_fixed_height_controller();
 
@@ -135,22 +135,22 @@ int main(int argc, char **argv) {
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          forwardDesired = + 0.2;
+          forwardDesired = + 0.5;
           break;
         case WB_KEYBOARD_DOWN:
-          forwardDesired = - 0.2;
+          forwardDesired = - 0.5;
           break;
         case WB_KEYBOARD_RIGHT:
-          sidewaysDesired = - 0.2;
+          sidewaysDesired = - 0.5;
           break;
         case WB_KEYBOARD_LEFT:
-          sidewaysDesired = + 0.2;
+          sidewaysDesired = + 0.5;
           break;
         case 'Q':
-          yawDesired = 0.5;
+          yawDesired = 1.0;
           break;
         case 'E':
-          yawDesired = - 0.5;
+          yawDesired = - 1.0;
           break;
         }
       key = wb_keyboard_get_key();
