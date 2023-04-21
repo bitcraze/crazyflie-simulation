@@ -83,6 +83,8 @@ if __name__ == '__main__':
     PID_update_last_time = robot.getTime()
     sensor_read_last_time = robot.getTime()
 
+    height_desired = FLYING_ATTITUDE
+
     # Main loop:
     while robot.step(timestep) != -1:
 
@@ -111,6 +113,7 @@ if __name__ == '__main__':
         forward_desired = 0
         sideways_desired = 0
         yaw_desired = 0
+        height_diff_desired = 0
 
         key = keyboard.getKey()
         while key>0:
@@ -126,14 +129,20 @@ if __name__ == '__main__':
                 yaw_desired =  + 1
             elif key == ord('E'):
                 yaw_desired = - 1
+            elif key == ord('W'):
+                height_diff_desired = 0.1
+            elif key == ord('S'):
+                height_diff_desired = - 0.1
 
             key = keyboard.getKey()
+
+        
+        height_desired += height_diff_desired * dt
 
         ## Example how to get sensor data
         ## range_front_value = range_front.getValue();
         ## cameraData = camera.getImage()
 
-        height_desired = FLYING_ATTITUDE
 
         ## PID velocity controller with fixed height
         motor_power = PID_CF.pid(dt, forward_desired, sideways_desired,
