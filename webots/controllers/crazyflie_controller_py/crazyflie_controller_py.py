@@ -85,6 +85,16 @@ if __name__ == '__main__':
 
     height_desired = FLYING_ATTITUDE
 
+    print("\n");
+
+    print("====== Controls =======\n\n");
+
+    print(" The Crazyflie can be controlled from your keyboard!\n");
+    print(" All controllable movement is in body coordinates\n");
+    print("- Use the up, back, right and left button to move in the horizontal plane\n");
+    print("- Use Q and E to rotate around yaw ");
+    print("- Use W and S to go up and down\n ")
+
     # Main loop:
     while robot.step(timestep) != -1:
 

@@ -27,6 +27,8 @@
 
 #include "../../../controllers/c_based/pid_controller.h"
 
+#define FLYING_ALTITUDE 1.0
+
 int main(int argc, char **argv) {
   wb_robot_init();
 
@@ -92,10 +94,21 @@ int main(int argc, char **argv) {
   gainsPID.kd_z = 5;
   init_pid_attitude_fixed_height_controller();
 
+  double height_desired = FLYING_ALTITUDE;
+
   // Initialize struct for motor power
   MotorPower_t motorPower;
 
-  printf("Take off!\n");
+  printf(" Take off! \n");
+  printf("\n");
+
+  printf("====== Controls =======");
+
+  printf(" The Crazyflie can be controlled from your keyboard!");
+  printf(" All controllable movement is in body coordinates");
+  printf("- Use the up, back, right and left button to move in the horizontal plane");
+  printf("- Use Q and E to rotate around yaw ");
+  printf("- Use W and S to go up and down ");
 
   while (wb_robot_step(timestep) != -1) {
 
@@ -124,11 +137,12 @@ int main(int argc, char **argv) {
     desiredState.vx = 0;
     desiredState.vy = 0;
     desiredState.yaw_rate = 0;
-    desiredState.altitude = 1.0;
+    desiredState.altitude = 0.0;
 
     double forwardDesired = 0;
     double sidewaysDesired = 0;
     double yawDesired = 0;
+    double heightDiffDesired = 0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
@@ -152,9 +166,17 @@ int main(int argc, char **argv) {
         case 'E':
           yawDesired = - 1.0;
           break;
+        case 'W':
+          heightDiffDesired = 0.1;
+          break;
+        case 'S':
+          heightDiffDesired = - 0.1;
+          break;
         }
       key = wb_keyboard_get_key();
     }
+
+    height_desired += heightDiffDesired * dt;
     
     // Example how to get sensor data
     // range_front_value = wb_distance_sensor_get_value(range_front));
@@ -163,17 +185,12 @@ int main(int argc, char **argv) {
 
     desiredState.yaw_rate = yawDesired;
 
-    // PID velocity controller with fixed height
+    // PID velocity controller
     desiredState.vy = sidewaysDesired;
     desiredState.vx = forwardDesired;
+    desiredState.altitude = height_desired;
     pid_velocity_fixed_height_controller(actualState, &desiredState,
     gainsPID, dt, &motorPower);
-
-    // PID attitude controller with fixed height
-    /*desiredState.roll = sidewaysDesired;
-    desiredState.pitch = forwardDesired;
-     pid_attitude_fixed_height_controller(actualState, &desiredState,
-    gainsPID, dt, &motorPower);*/
     
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, - motorPower.m1);
