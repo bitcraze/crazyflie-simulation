@@ -256,5 +256,5 @@ Robot {
     density -1
     mass 0.05
   }
-  controller "crazyflie_controller_py_firmware_pid"
+  controller "crazyflie_controller_py"
 }

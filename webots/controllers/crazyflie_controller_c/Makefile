@@ -35,7 +35,7 @@
 ###
 ### ---- C Sources ----
 ### if your program uses several C source files:
-C_SOURCES = crazyflie_controller.c ../../../controllers/pid_controller.c
+C_SOURCES = crazyflie_controller.c ../../../controllers/c_based/pid_controller.c
 ###
 ### ---- C++ Sources ----
 ### if your program uses several C++ source files:

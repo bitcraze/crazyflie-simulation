@@ -26,155 +26,126 @@ from controller import DistanceSensor
 from math import cos, sin
 
 import sys
-sys.path.append('../../../controllers/')
-from  pid_controller import init_pid_attitude_fixed_height_controller, pid_velocity_fixed_height_controller
-from pid_controller import MotorPower_t, ActualState_t, GainsPID_t, DesiredState_t
-robot = Robot()
+sys.path.append('../../../controllers/python_based')
+from pid_controller import pid_velocity_fixed_height_controller
 
-timestep = int(robot.getBasicTimeStep())
+FLYING_ATTITUDE = 1
 
-## Initialize motors
-m1_motor = robot.getDevice("m1_motor");
-m1_motor.setPosition(float('inf'))
-m1_motor.setVelocity(-1)
-m2_motor = robot.getDevice("m2_motor");
-m2_motor.setPosition(float('inf'))
-m2_motor.setVelocity(1)
-m3_motor = robot.getDevice("m3_motor");
-m3_motor.setPosition(float('inf'))
-m3_motor.setVelocity(-1)
-m4_motor = robot.getDevice("m4_motor");
-m4_motor.setPosition(float('inf'))
-m4_motor.setVelocity(1)
+if __name__ == '__main__':
 
-## Initialize Sensors
-imu = robot.getDevice("inertial unit")
-imu.enable(timestep)
-gps = robot.getDevice("gps")
-gps.enable(timestep)
-gyro = robot.getDevice("gyro")
-gyro.enable(timestep)
-camera = robot.getDevice("camera")
-camera.enable(timestep)
-range_front = robot.getDevice("range_front")
-range_front.enable(timestep)
-range_left = robot.getDevice("range_left")
-range_left.enable(timestep)
-range_back = robot.getDevice("range_back")
-range_back.enable(timestep)
-range_right = robot.getDevice("range_right")
-range_right.enable(timestep)
+    robot = Robot()
+    timestep = int(robot.getBasicTimeStep())
 
-## Get keyboard
-keyboard = Keyboard()
-keyboard.enable(timestep)
-    
-## Initialize variables
-actualState = ActualState_t()
-desiredState = DesiredState_t()
-pastXGlobal = 0
-pastYGlobal = 0
-past_time = robot.getTime()
+    ## Initialize motors
+    m1_motor = robot.getDevice("m1_motor");
+    m1_motor.setPosition(float('inf'))
+    m1_motor.setVelocity(-1)
+    m2_motor = robot.getDevice("m2_motor");
+    m2_motor.setPosition(float('inf'))
+    m2_motor.setVelocity(1)
+    m3_motor = robot.getDevice("m3_motor");
+    m3_motor.setPosition(float('inf'))
+    m3_motor.setVelocity(-1)
+    m4_motor = robot.getDevice("m4_motor");
+    m4_motor.setPosition(float('inf'))
+    m4_motor.setVelocity(1)
 
-## Initialize PID gains.
-gainsPID = GainsPID_t()
-gainsPID.kp_att_y = 1
-gainsPID.kd_att_y = 0.5
-gainsPID.kp_att_rp =0.5
-gainsPID.kd_att_rp = 0.1
-gainsPID.kp_vel_xy = 2;
-gainsPID.kd_vel_xy = 0.5;
-gainsPID.kp_z = 10
-gainsPID.ki_z = 50
-gainsPID.kd_z = 5
-init_pid_attitude_fixed_height_controller();
+    ## Initialize Sensors
+    imu = robot.getDevice("inertial unit")
+    imu.enable(timestep)
+    gps = robot.getDevice("gps")
+    gps.enable(timestep)
+    gyro = robot.getDevice("gyro")
+    gyro.enable(timestep)
+    camera = robot.getDevice("camera")
+    camera.enable(timestep)
+    range_front = robot.getDevice("range_front")
+    range_front.enable(timestep)
+    range_left = robot.getDevice("range_left")
+    range_left.enable(timestep)
+    range_back = robot.getDevice("range_back")
+    range_back.enable(timestep)
+    range_right = robot.getDevice("range_right")
+    range_right.enable(timestep)
 
-## Initialize struct for motor power
-motorPower = MotorPower_t()
+    ## Get keyboard
+    keyboard = Keyboard()
+    keyboard.enable(timestep)
+        
+    ## Initialize variables
 
-print('Take off!')
+    past_x_global = 0
+    past_y_global = 0
+    past_time = robot.getTime()
 
-# Main loop:
-while robot.step(timestep) != -1:
+    # Crazyflie velocity PID controller
+    PID_CF = pid_velocity_fixed_height_controller()
+    PID_update_last_time = robot.getTime()
+    sensor_read_last_time = robot.getTime()
 
-    dt = robot.getTime() - past_time;
+    # Main loop:
+    while robot.step(timestep) != -1:
 
-    ## Get measurements
-    actualState.roll = imu.getRollPitchYaw()[0]
-    actualState.pitch = imu.getRollPitchYaw()[1]
-    actualState.yaw_rate = gyro.getValues()[2];
-    actualState.altitude = gps.getValues()[2];
-    xGlobal = gps.getValues()[0]
-    vxGlobal = (xGlobal - pastXGlobal)/dt
-    yGlobal = gps.getValues()[1]
-    vyGlobal = (yGlobal - pastYGlobal)/dt
+        dt = robot.getTime() - past_time
+        actual_state = {}
 
-    ## Get body fixed velocities
-    actualYaw = imu.getRollPitchYaw()[2];
-    cosyaw = cos(actualYaw)
-    sinyaw = sin(actualYaw)
-    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw
-    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw
+        ## Get sensor data
+        roll = imu.getRollPitchYaw()[0]
+        pitch = imu.getRollPitchYaw()[1]
+        yaw = imu.getRollPitchYaw()[2]
+        yaw_rate = gyro.getValues()[2]
+        altitude = gps.getValues()[2]
+        x_global = gps.getValues()[0]
+        v_x_global = (x_global - past_x_global)/dt
+        y_global = gps.getValues()[1]
+        v_y_global = (y_global - past_y_global)/dt
 
+        ## Get body fixed velocities
+        cosyaw = cos(yaw)
+        sinyaw = sin(yaw)
+        v_x = v_x_global * cosyaw + v_y_global * sinyaw
+        v_y = - v_x_global * sinyaw + v_y_global * cosyaw
 
-    ## Initialize values
-    desiredState.roll = 0
-    desiredState.pitch = 0
-    desiredState.vx = 0
-    desiredState.vy = 0
-    desiredState.yaw_rate = 0
-    desiredState.altitude = 1.0
-
-    forwardDesired = 0
-    sidewaysDesired = 0
-    yawDesired = 0
-
-    key = keyboard.getKey()
-    while key>0:
-        if key == Keyboard.UP:
-            forwardDesired += 0.2
-        elif key == Keyboard.DOWN:
-            forwardDesired -= 0.2
-        elif key == Keyboard.RIGHT:
-            sidewaysDesired -= 0.2
-        elif key == Keyboard.LEFT:
-            sidewaysDesired += 0.2
-        elif key == ord('Q'):
-            yawDesired =  + 0.5
-        elif key == ord('E'):
-            yawDesired = - 0.5
+        ## Initialize values
+        desired_state = [0, 0, 0, 0]
+        forward_desired = 0
+        sideways_desired = 0
+        yaw_desired = 0
 
         key = keyboard.getKey()
+        while key>0:
+            if key == Keyboard.UP:
+                forward_desired += 0.5
+            elif key == Keyboard.DOWN:
+                forward_desired -= 0.5
+            elif key == Keyboard.RIGHT:
+                sideways_desired -= 0.5
+            elif key == Keyboard.LEFT:
+                sideways_desired += 0.5
+            elif key == ord('Q'):
+                yaw_desired =  + 1
+            elif key == ord('E'):
+                yaw_desired = - 1
 
-    ## Example how to get sensor data
-    ## range_front_value = range_front.getValue();
-    ## cameraData = camera.getImage()
+            key = keyboard.getKey()
 
+        ## Example how to get sensor data
+        ## range_front_value = range_front.getValue();
+        ## cameraData = camera.getImage()
 
-    desiredState.yaw_rate = yawDesired;
+        height_desired = FLYING_ATTITUDE
 
-    ## PID velocity controller with fixed height
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
-    pid_velocity_fixed_height_controller(actualState, desiredState,
-    gainsPID, dt, motorPower);
-    
+        ## PID velocity controller with fixed height
+        motor_power = PID_CF.pid(dt, forward_desired, sideways_desired,
+                                yaw_desired, height_desired,
+                                roll, pitch, yaw_rate,
+                                altitude, v_x, v_y)
 
-    ## PID attitude controller with fixed height
-    '''
-    desiredState.roll = sidewaysDesired;
-    desiredState.pitch = forwardDesired;
-     pid_attitude_fixed_height_controller(actualState, desiredState,
-    gainsPID, dt, motorPower);
-    '''
-
-    m1_motor.setVelocity(-motorPower.m1)
-    m2_motor.setVelocity(motorPower.m2)
-    m3_motor.setVelocity(-motorPower.m3)
-    m4_motor.setVelocity(motorPower.m4)
-    
-    past_time = robot.getTime()
-    pastXGlobal = xGlobal
-    pastYGlobal = yGlobal
-
-    pass
+        m1_motor.setVelocity(-motor_power[0])
+        m2_motor.setVelocity(motor_power[1])
+        m3_motor.setVelocity(-motor_power[2])
+        m4_motor.setVelocity(motor_power[3])
+        
+        past_time = robot.getTime()
+        past_x_global = x_global
+        past_y_global = y_global

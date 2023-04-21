@@ -42,13 +42,10 @@ Install webots from the [cyberbotics' website](https://cyberbotics.com/). We use
 Then just run the following
 
     webots webots/worlds/crazyflie_world.wbt
-## Python controller
-Go into the crazyflie_simulation/controllers/ folder and run the following:
 
-    swig -python pid_controller.i
-    python3 setup.py build_ext --inplace
+## Chhange controller
 
-Change controller in crazyflie robot model to crazyflie_controller_py to try it out. 
+In webots, change controller to either `crazyflie_controller_c` or `crazyflie_controller_py` to try out a simple controller in different languages
 
 ## Firmware python bindings
 As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitcraze/crazyflie-firmware/pull/1021) it is possible to use the python bindings of the controllers of the actual crazyflie controller directly in webots.
