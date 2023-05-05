@@ -3,7 +3,7 @@
 #  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
 #  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
+
 # MIT License
 
 # Copyright (c) 2022 Bitcraze
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     m4_motor.setVelocity(1)
 
     ## Initialize Sensors
-    imu = robot.getDevice("inertial unit")
+    imu = robot.getDevice("inertial_unit")
     imu.enable(timestep)
     gps = robot.getDevice("gps")
     gps.enable(timestep)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     ## Get keyboard
     keyboard = Keyboard()
     keyboard.enable(timestep)
-        
+
     ## Initialize variables
 
     past_x_global = 0
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
             key = keyboard.getKey()
 
-        
+
         height_desired += height_diff_desired * dt
 
         ## Example how to get sensor data
@@ -164,7 +164,7 @@ if __name__ == '__main__':
         m2_motor.setVelocity(motor_power[1])
         m3_motor.setVelocity(-motor_power[2])
         m4_motor.setVelocity(motor_power[3])
-        
+
         past_time = robot.getTime()
         past_x_global = x_global
         past_y_global = y_global
