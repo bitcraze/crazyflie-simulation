@@ -1,30 +1,46 @@
-/* 
+/*
+ * Copyright 2022 Bitcraze AB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
  *  ...........       ____  _ __
  *  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  *  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  *  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- *  
- * MIT License
- * 
- * Copyright (c) 2022 Bitcraze
- * 
+ *
+ *
  * @file crazyflie_controller.c
- * Controls the crazyflie motors in webots
+ * Description: Controls the crazyflie in webots
+ * Author:      Kimberly McGuire (Bitcraze AB)
  */
 
 #include <math.h>
 #include <stdio.h>
 
-#include <webots/robot.h>
-#include <webots/motor.h>
+#include <webots/camera.h>
+#include <webots/distance_sensor.h>
 #include <webots/gps.h>
 #include <webots/gyro.h>
 #include <webots/inertial_unit.h>
 #include <webots/keyboard.h>
-#include <webots/camera.h>
-#include <webots/distance_sensor.h>
+#include <webots/motor.h>
+#include <webots/robot.h>
 
+// Add external controller
+// #include "pid_controller.h"
 #include "../../../controllers/c_based/pid_controller.h"
 
 #define FLYING_ALTITUDE 1.0
@@ -32,7 +48,7 @@
 int main(int argc, char **argv) {
   wb_robot_init();
 
-  int timestep = (int)wb_robot_get_basic_time_step();
+  const int timestep = (int)wb_robot_get_basic_time_step();
 
   // Initialize motors
   WbDeviceTag m1_motor = wb_robot_get_device("m1_motor");
@@ -48,7 +64,7 @@ int main(int argc, char **argv) {
   wb_motor_set_position(m4_motor, INFINITY);
   wb_motor_set_velocity(m4_motor, 1.0);
 
-  // Initialize Sensors
+  // Initialize sensors
   WbDeviceTag imu = wb_robot_get_device("inertial unit");
   wb_inertial_unit_enable(imu, timestep);
   WbDeviceTag gps = wb_robot_get_device("gps");
@@ -67,7 +83,6 @@ int main(int argc, char **argv) {
   WbDeviceTag range_right = wb_robot_get_device("range_right");
   wb_distance_sensor_enable(range_right, timestep);
 
-
   // Wait for 2 seconds
   while (wb_robot_step(timestep) != -1) {
     if (wb_robot_get_time() > 2.0)
@@ -75,135 +90,129 @@ int main(int argc, char **argv) {
   }
 
   // Initialize variables
-  ActualState_t actualState = {0};
-  DesiredState_t desiredState = {0};
-  double pastXGlobal =0;
-  double pastYGlobal=0;
+  actual_state_t actual_state = {0};
+  desired_state_t desired_state = {0};
+  double past_x_global = 0;
+  double past_y_global = 0;
   double past_time = wb_robot_get_time();
 
   // Initialize PID gains.
-  GainsPID_t gainsPID;
-  gainsPID.kp_att_y = 1;
-  gainsPID.kd_att_y = 0.5;
-  gainsPID.kp_att_rp =0.5;
-  gainsPID.kd_att_rp = 0.1;
-  gainsPID.kp_vel_xy = 2;
-  gainsPID.kd_vel_xy = 0.5;
-  gainsPID.kp_z = 10;
-  gainsPID.ki_z = 5;
-  gainsPID.kd_z = 5;
+  gains_pid_t gains_pid;
+  gains_pid.kp_att_y = 1;
+  gains_pid.kd_att_y = 0.5;
+  gains_pid.kp_att_rp = 0.5;
+  gains_pid.kd_att_rp = 0.1;
+  gains_pid.kp_vel_xy = 2;
+  gains_pid.kd_vel_xy = 0.5;
+  gains_pid.kp_z = 10;
+  gains_pid.ki_z = 5;
+  gains_pid.kd_z = 5;
   init_pid_attitude_fixed_height_controller();
 
   double height_desired = FLYING_ALTITUDE;
 
   // Initialize struct for motor power
-  MotorPower_t motorPower;
+  motor_power_t motor_power;
 
-  printf(" Take off! \n");
   printf("\n");
 
-  printf("====== Controls =======");
+  printf("====== Controls =======\n");
 
-  printf(" The Crazyflie can be controlled from your keyboard!");
-  printf(" All controllable movement is in body coordinates");
-  printf("- Use the up, back, right and left button to move in the horizontal plane");
-  printf("- Use Q and E to rotate around yaw ");
-  printf("- Use W and S to go up and down ");
+  printf(" The Crazyflie can be controlled from your keyboard!\n");
+  printf(" All controllable movement is in body coordinates\n");
+  printf("- Use the up, back, right and left button to move in the horizontal plane\n");
+  printf("- Use Q and E to rotate around yaw\n ");
+  printf("- Use W and S to go up and down\n");
 
   while (wb_robot_step(timestep) != -1) {
-
     const double dt = wb_robot_get_time() - past_time;
 
     // Get measurements
-    actualState.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
-    actualState.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
-    actualState.yaw_rate = wb_gyro_get_values(gyro)[2];
-    actualState.altitude = wb_gps_get_values(gps)[2];
-    double xGlobal= wb_gps_get_values(gps)[0];
-    double vxGlobal = (xGlobal - pastXGlobal)/dt;
-    double yGlobal = wb_gps_get_values(gps)[1];
-    double vyGlobal = (yGlobal - pastYGlobal)/dt;
+    actual_state.roll = wb_inertial_unit_get_roll_pitch_yaw(imu)[0];
+    actual_state.pitch = wb_inertial_unit_get_roll_pitch_yaw(imu)[1];
+    actual_state.yaw_rate = wb_gyro_get_values(gyro)[2];
+    actual_state.altitude = wb_gps_get_values(gps)[2];
+    double x_global = wb_gps_get_values(gps)[0];
+    double vx_global = (x_global - past_x_global) / dt;
+    double y_global = wb_gps_get_values(gps)[1];
+    double vy_global = (y_global - past_y_global) / dt;
 
     // Get body fixed velocities
     double actualYaw = wb_inertial_unit_get_roll_pitch_yaw(imu)[2];
     double cosyaw = cos(actualYaw);
     double sinyaw = sin(actualYaw);
-    actualState.vx = vxGlobal * cosyaw + vyGlobal * sinyaw;
-    actualState.vy = - vxGlobal * sinyaw + vyGlobal * cosyaw;
+    actual_state.vx = vx_global * cosyaw + vy_global * sinyaw;
+    actual_state.vy = -vx_global * sinyaw + vy_global * cosyaw;
 
     // Initialize values
-    desiredState.roll = 0;
-    desiredState.pitch = 0;
-    desiredState.vx = 0;
-    desiredState.vy = 0;
-    desiredState.yaw_rate = 0;
-    desiredState.altitude = 0.0;
+    desired_state.roll = 0;
+    desired_state.pitch = 0;
+    desired_state.vx = 0;
+    desired_state.vy = 0;
+    desired_state.yaw_rate = 0;
+    desired_state.altitude = 1.0;
 
-    double forwardDesired = 0;
-    double sidewaysDesired = 0;
-    double yawDesired = 0;
-    double heightDiffDesired = 0;
+    double forward_desired = 0;
+    double sideways_desired = 0;
+    double yaw_desired = 0;
+    double height_diff_desired = 0;
 
     // Control altitude
     int key = wb_keyboard_get_key();
     while (key > 0) {
       switch (key) {
         case WB_KEYBOARD_UP:
-          forwardDesired = + 0.5;
+          forward_desired = +0.5;
           break;
         case WB_KEYBOARD_DOWN:
-          forwardDesired = - 0.5;
+          forward_desired = -0.5;
           break;
         case WB_KEYBOARD_RIGHT:
-          sidewaysDesired = - 0.5;
+          sideways_desired = -0.5;
           break;
         case WB_KEYBOARD_LEFT:
-          sidewaysDesired = + 0.5;
+          sideways_desired = +0.5;
           break;
         case 'Q':
-          yawDesired = 1.0;
+          yaw_desired = 1.0;
           break;
         case 'E':
-          yawDesired = - 1.0;
+          yaw_desired = -1.0;
           break;
         case 'W':
-          heightDiffDesired = 0.1;
+          height_diff_desired = 0.1;
           break;
         case 'S':
-          heightDiffDesired = - 0.1;
+          height_diff_desired = -0.1;
           break;
-        }
+      }
       key = wb_keyboard_get_key();
     }
 
-    height_desired += heightDiffDesired * dt;
-    
+    height_desired += height_diff_desired * dt;
+
     // Example how to get sensor data
     // range_front_value = wb_distance_sensor_get_value(range_front));
     // const unsigned char *image = wb_camera_get_image(camera);
 
+    desired_state.yaw_rate = yaw_desired;
 
-    desiredState.yaw_rate = yawDesired;
+    // PID velocity controller with fixed height
+    desired_state.vy = sideways_desired;
+    desired_state.vx = forward_desired;
+    desired_state.altitude = height_desired;
+    pid_velocity_fixed_height_controller(actual_state, &desired_state, gains_pid, dt, &motor_power);
 
-    // PID velocity controller
-    desiredState.vy = sidewaysDesired;
-    desiredState.vx = forwardDesired;
-    desiredState.altitude = height_desired;
-    pid_velocity_fixed_height_controller(actualState, &desiredState,
-    gainsPID, dt, &motorPower);
-    
     // Setting motorspeed
-    wb_motor_set_velocity(m1_motor, - motorPower.m1);
-    wb_motor_set_velocity(m2_motor, motorPower.m2);
-    wb_motor_set_velocity(m3_motor, - motorPower.m3);
-    wb_motor_set_velocity(m4_motor, motorPower.m4);
-    
+    wb_motor_set_velocity(m1_motor, -motor_power.m1);
+    wb_motor_set_velocity(m2_motor, motor_power.m2);
+    wb_motor_set_velocity(m3_motor, -motor_power.m3);
+    wb_motor_set_velocity(m4_motor, motor_power.m4);
+
     // Save past time for next time step
     past_time = wb_robot_get_time();
-    pastXGlobal = xGlobal;
-    pastYGlobal = yGlobal;
-
-
+    past_x_global = x_global;
+    past_y_global = y_global;
   };
 
   wb_robot_cleanup();

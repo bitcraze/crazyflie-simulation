@@ -10,12 +10,17 @@
 #
 #  Copyright (C) 2023 Bitcraze AB
 #
-# pid_controller.py
-# A simple PID controller for the Crazyflie
-#        
 
+"""
+file: pid_controller.py
+
+A simple PID controller for the Crazyflie
+ported from pid_controller.c in the c-based controller of the Crazyflie
+in Webots
+"""
 
 import numpy as np
+
 
 class pid_velocity_fixed_height_controller():
     def __init__(self):
@@ -24,14 +29,14 @@ class pid_velocity_fixed_height_controller():
         self.past_alt_error = 0.0
         self.past_pitch_error = 0.0
         self.past_roll_error = 0.0
-        self.alt_integrator = 0.0
+        self.altitude_integrator = 0.0
         self.last_time = 0.0
 
-    def pid(self, dt, desired_vx, desired_vy, desired_yaw_rate, desired_alt, actual_roll, actual_pitch, actual_yaw_rate,
-            actual_alt, actual_vx, actual_vy):
+    def pid(self, dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude, actual_roll, actual_pitch, actual_yaw_rate,
+            actual_altitude, actual_vx, actual_vy):
         # Velocity PID control (converted from Crazyflie c code)
         gains = {"kp_att_y": 1, "kd_att_y": 0.5, "kp_att_rp": 0.5, "kd_att_rp": 0.1,
-                "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 10, "ki_z": 5, "kd_z": 5}
+                 "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 10, "ki_z": 5, "kd_z": 5}
 
         # Velocity PID control
         vx_error = desired_vx - actual_vx
@@ -44,10 +49,11 @@ class pid_velocity_fixed_height_controller():
         self.past_vy_error = vy_error
 
         # Altitude PID control
-        alt_error = desired_alt - actual_alt
+        alt_error = desired_altitude - actual_altitude
         alt_deriv = (alt_error - self.past_alt_error) / dt
-        self.alt_integrator += alt_error * dt
-        alt_command = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + gains["ki_z"] * np.clip(self.alt_integrator, -2, 2) + 48
+        self.altitude_integrator += alt_error * dt
+        alt_command = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + \
+            gains["ki_z"] * np.clip(self.altitude_integrator, -2, 2) + 48
         self.past_alt_error = alt_error
 
         # Attitude PID control
@@ -63,10 +69,10 @@ class pid_velocity_fixed_height_controller():
         self.past_roll_error = roll_error
 
         # Motor mixing
-        m1 =  alt_command - roll_command + pitch_command + yaw_command
-        m2 =  alt_command - roll_command - pitch_command - yaw_command
-        m3 =  alt_command + roll_command - pitch_command + yaw_command
-        m4 =  alt_command + roll_command + pitch_command - yaw_command
+        m1 = alt_command - roll_command + pitch_command + yaw_command
+        m2 = alt_command - roll_command - pitch_command - yaw_command
+        m3 = alt_command + roll_command - pitch_command + yaw_command
+        m4 = alt_command + roll_command + pitch_command - yaw_command
 
         # Limit the motor command
         m1 = np.clip(m1, 0, 600)
