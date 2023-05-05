@@ -3,7 +3,7 @@
 #  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
 #  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
+
 # MIT License
 
 # Copyright (c) 2022 Bitcraze
@@ -23,7 +23,7 @@ from controller import Keyboard
 from controller import Camera
 from controller import DistanceSensor
 
-from math import cos, sin, degrees, radians 
+from math import cos, sin, degrees, radians
 
 import sys
 # Change this path to your crazyflie-firmware folder
@@ -49,7 +49,7 @@ m4_motor.setPosition(float('inf'))
 m4_motor.setVelocity(1)
 
 ## Initialize Sensors
-imu = robot.getDevice("inertial unit")
+imu = robot.getDevice("inertial_unit")
 imu.enable(timestep)
 gps = robot.getDevice("gps")
 gps.enable(timestep)
@@ -113,7 +113,7 @@ while robot.step(timestep) != -1:
     state.velocity.x = vxGlobal
     state.velocity.y = vyGlobal
     state.velocity.z = vzGlobal
-    
+
     # Put gyro in sensor data
     sensors = cffirmware.sensorData_t()
     sensors.gyro.x = degrees(roll_rate)
@@ -163,7 +163,7 @@ while robot.step(timestep) != -1:
     tick = 100 #this value makes sure that the position controller and attitude controller are always always initiated
     cffirmware.controllerPid(control, setpoint,sensors,state,tick)
 
-    ## 
+    ##
     cmd_roll = radians(control.roll)
     cmd_pitch = radians(control.pitch)
     cmd_yaw = -radians(control.yaw)
@@ -180,7 +180,7 @@ while robot.step(timestep) != -1:
     m2_motor.setVelocity(motorPower_m2/scaling)
     m3_motor.setVelocity(-motorPower_m3/scaling)
     m4_motor.setVelocity(motorPower_m4/scaling)
-    
+
     past_time = robot.getTime()
     pastXGlobal = xGlobal
     pastYGlobal = yGlobal
