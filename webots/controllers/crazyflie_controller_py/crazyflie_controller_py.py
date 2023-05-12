@@ -26,6 +26,7 @@ from math import cos, sin
 import sys
 sys.path.append('../../../controllers/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
+from pid_controller import pid_position_controller
 
 FLYING_ATTITUDE = 1
 
@@ -78,11 +79,13 @@ if __name__ == '__main__':
     first_time = True
 
     # Crazyflie velocity PID controller
-    PID_crazyflie = pid_velocity_fixed_height_controller()
+    PID_crazyflie = pid_position_controller()
     PID_update_last_time = robot.getTime()
     sensor_read_last_time = robot.getTime()
 
     height_desired = FLYING_ATTITUDE
+    forward_desired = 0
+    sideways_desired = 0
 
     print("\n")
 
@@ -105,6 +108,8 @@ if __name__ == '__main__':
             past_y_global = gps.getValues()[1]
             past_time = robot.getTime()
             first_time = False
+            forward_desired = gps.getValues()[0]
+            sideways_desired = gps.getValues()[1]
 
         # Get sensor data
         roll = imu.getRollPitchYaw()[0]
@@ -122,24 +127,26 @@ if __name__ == '__main__':
         sin_yaw = sin(yaw)
         v_x = v_x_global * cos_yaw + v_y_global * sin_yaw
         v_y = - v_x_global * sin_yaw + v_y_global * cos_yaw
+        x = x_global * cos_yaw + y_global * sin_yaw
+        y = - x_global * sin_yaw + y_global * cos_yaw
 
         # Initialize values
         desired_state = [0, 0, 0, 0]
-        forward_desired = 0
-        sideways_desired = 0
+        forward_diff_desired = 0
+        sideways_diff_desired = 0
         yaw_desired = 0
         height_diff_desired = 0
 
         key = keyboard.getKey()
         while key > 0:
             if key == Keyboard.UP:
-                forward_desired += 0.5
+                forward_diff_desired += 0.5
             elif key == Keyboard.DOWN:
-                forward_desired -= 0.5
+                forward_diff_desired -= 0.5
             elif key == Keyboard.RIGHT:
-                sideways_desired -= 0.5
+                sideways_diff_desired -= 0.5
             elif key == Keyboard.LEFT:
-                sideways_desired += 0.5
+                sideways_diff_desired += 0.5
             elif key == ord('Q'):
                 yaw_desired = + 1
             elif key == ord('E'):
@@ -151,6 +158,9 @@ if __name__ == '__main__':
             key = keyboard.getKey()
 
         height_desired += height_diff_desired * dt
+        forward_desired += forward_diff_desired * dt
+        print(forward_desired, forward_diff_desired, dt)
+        sideways_desired += sideways_diff_desired * dt
 
         # get range in meters
         range_front_value = range_front.getValue() / 1000
@@ -161,7 +171,7 @@ if __name__ == '__main__':
         motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
                                         yaw_desired, height_desired,
                                         roll, pitch, yaw_rate,
-                                        altitude, v_x, v_y)
+                                        altitude, x, y, v_x, v_y)
 
         m1_motor.setVelocity(-motor_power[0])
         m2_motor.setVelocity(motor_power[1])

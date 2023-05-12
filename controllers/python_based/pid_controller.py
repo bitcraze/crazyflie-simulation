@@ -22,6 +22,36 @@ in Webots
 import numpy as np
 
 
+class pid_position_controller():
+    def __init__(self):
+        self.past_x_error = 0.0
+        self.past_y_error = 0.0
+        self.past_alt_error = 0.0
+        self.past_pitch_error = 0.0
+        self.past_roll_error = 0.0
+        self.altitude_integrator = 0.0
+        self.last_time = 0.0
+        self.pid_velocity_fixed_height_controller = pid_velocity_fixed_height_controller()
+
+    def pid(self, dt, desired_x, desired_y, desired_yaw_rate, desired_altitude, actual_roll, actual_pitch, actual_yaw_rate,
+            actual_altitude, actual_x, actual_y, actual_vx, actual_vy):
+        # Velocity PID control (converted from Crazyflie c code)
+        gains = {"kp_pos_xy": 1.0, "kd_pos_xy": 0.0}
+
+        # Velocity PID control
+        x_error = desired_x - actual_x
+        x_deriv = (x_error - self.past_x_error) / dt
+        y_error = desired_y - actual_y
+        y_deriv = (y_error - self.past_y_error) / dt
+        desired_vx = gains["kp_pos_xy"] * np.clip(x_error, -1, 1) + gains["kd_pos_xy"] * x_deriv
+        desired_vy = gains["kp_pos_xy"] * np.clip(y_error, -1, 1) - gains["kd_pos_xy"] * y_deriv
+        self.past_x_error = x_error
+        self.past_y_error = y_error
+
+        return self.pid_velocity_fixed_height_controller.pid(dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude,
+                                                                actual_roll, actual_pitch, actual_yaw_rate,
+                                                                actual_altitude, actual_vx, actual_vy)
+
 class pid_velocity_fixed_height_controller():
     def __init__(self):
         self.past_vx_error = 0.0
