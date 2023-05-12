@@ -32,16 +32,22 @@ class pid_position_controller():
         self.past_yaw_error = 0.0
         self.altitude_integrator = 0.0
         self.last_time = 0.0
-        self.pid_velocity_fixed_height_controller = pid_velocity_fixed_height_controller()
+        self.pid_velocity_controller = pid_velocity_controller()
 
     def pid(self, dt, ctrl_mode, desired_state, actual_state):
-        #desired_state = [x, y, z, vx, vy, vz, roll pitch yaw yawrate]
+        '''
+        PID controller for position control
+
+        dt = time difference in seconds
+        ctrl_mode = [ctrl_mode_xy, ctrl_mode_z, ctrl_mode_yaw]
+        desired_state = [x, y, z, yaw] or [vx, vy, vz, yaw] (depending on ctrl_mode)
+        actual_state = [x, y, z, vx, vy, vz, roll, pitch, yaw, yaw_rate]
+        '''
         gains = {"kp_pos_xy": 1.0, "kd_pos_xy": 0.0, "kp_z": 10, "ki_z": 5, "kd_z": 5,
                     "kp_yaw": 1.0, "kd_yaw": 0.0}
         ctrl_mode_xy = ctrl_mode[0]
         ctrl_mode_z = ctrl_mode[1]
         ctrl_mode_yaw = ctrl_mode[2]
-
 
         actual_x = actual_state[0]
         actual_y = actual_state[1]
@@ -54,6 +60,7 @@ class pid_position_controller():
         actual_yaw = actual_state[8]
         actual_yaw_rate = actual_state[9]
 
+        # Horizontal position controller
         if ctrl_mode_xy == 0:
             desired_x = desired_state[0]
             desired_y = desired_state[1]
@@ -72,6 +79,7 @@ class pid_position_controller():
             desired_vx = desired_state[0]
             desired_vy = desired_state[1]
 
+        # Vertical position controller
         if ctrl_mode_z == 0:
             desired_altitude = desired_state[2]
             actual_altitude = actual_state[2]
@@ -80,11 +88,12 @@ class pid_position_controller():
             self.altitude_integrator += alt_error * dt
             desired_altitude_velocity = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + \
                 gains["ki_z"] * np.clip(self.altitude_integrator, -2, 2) + 48
-
+            print(desired_altitude_velocity, alt_error)
             self.past_alt_error = alt_error
         elif ctrl_mode_z == 1:
             desired_altitude_velocity = desired_state[2]
 
+        # Yaw controller
         if ctrl_mode_yaw == 0:
             desired_yaw = desired_state[3]
             actual_yaw = actual_state[8]
@@ -95,11 +104,12 @@ class pid_position_controller():
         elif ctrl_mode_yaw == 1:
             desired_yaw_rate = desired_state[3]
 
-        return self.pid_velocity_fixed_height_controller.pid(dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude_velocity,
+        # Now run the velocity controller with the desired velocities
+        return self.pid_velocity_controller.pid(dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude_velocity,
                                                                 actual_roll, actual_pitch, actual_yaw_rate,
                                                                 actual_altitude_velocity, actual_vx, actual_vy)
 
-class pid_velocity_fixed_height_controller():
+class pid_velocity_controller():
     def __init__(self):
         self.past_vx_error = 0.0
         self.past_vy_error = 0.0
@@ -125,7 +135,7 @@ class pid_velocity_fixed_height_controller():
         self.past_vx_error = vx_error
         self.past_vy_error = vy_error
 
-        # Altitude PID control
+        # Altitude velocity PID control
         alt_error = desired_altitude - actual_altitude
         alt_deriv = (alt_error - self.past_alt_error) / dt
         self.altitude_integrator += alt_error * dt
@@ -138,12 +148,14 @@ class pid_velocity_fixed_height_controller():
         pitch_deriv = (pitch_error - self.past_pitch_error) / dt
         roll_error = desired_roll - actual_roll
         roll_deriv = (roll_error - self.past_roll_error) / dt
-        yaw_rate_error = desired_yaw_rate - actual_yaw_rate
         roll_command = gains["kp_att_rp"] * np.clip(roll_error, -1, 1) + gains["kd_att_rp"] * roll_deriv
         pitch_command = -gains["kp_att_rp"] * np.clip(pitch_error, -1, 1) - gains["kd_att_rp"] * pitch_deriv
-        yaw_command = gains["kp_att_y"] * np.clip(yaw_rate_error, -1, 1)
         self.past_pitch_error = pitch_error
         self.past_roll_error = roll_error
+
+        # Yaw rate PID control
+        yaw_rate_error = desired_yaw_rate - actual_yaw_rate
+        yaw_command = gains["kp_att_y"] * np.clip(yaw_rate_error, -1, 1)
 
         # Motor mixing
         m1 = alt_command - roll_command + pitch_command + yaw_command
