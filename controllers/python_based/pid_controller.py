@@ -29,28 +29,75 @@ class pid_position_controller():
         self.past_alt_error = 0.0
         self.past_pitch_error = 0.0
         self.past_roll_error = 0.0
+        self.past_yaw_error = 0.0
         self.altitude_integrator = 0.0
         self.last_time = 0.0
         self.pid_velocity_fixed_height_controller = pid_velocity_fixed_height_controller()
 
-    def pid(self, dt, desired_x, desired_y, desired_yaw_rate, desired_altitude, actual_roll, actual_pitch, actual_yaw_rate,
-            actual_altitude, actual_x, actual_y, actual_vx, actual_vy):
-        # Velocity PID control (converted from Crazyflie c code)
-        gains = {"kp_pos_xy": 1.0, "kd_pos_xy": 0.0}
+    def pid(self, dt, ctrl_mode, desired_state, actual_state):
+        #desired_state = [x, y, z, vx, vy, vz, roll pitch yaw yawrate]
+        gains = {"kp_pos_xy": 1.0, "kd_pos_xy": 0.0, "kp_z": 10, "ki_z": 5, "kd_z": 5,
+                    "kp_yaw": 1.0, "kd_yaw": 0.0}
+        ctrl_mode_xy = ctrl_mode[0]
+        ctrl_mode_z = ctrl_mode[1]
+        ctrl_mode_yaw = ctrl_mode[2]
 
-        # Velocity PID control
-        x_error = desired_x - actual_x
-        x_deriv = (x_error - self.past_x_error) / dt
-        y_error = desired_y - actual_y
-        y_deriv = (y_error - self.past_y_error) / dt
-        desired_vx = gains["kp_pos_xy"] * np.clip(x_error, -1, 1) + gains["kd_pos_xy"] * x_deriv
-        desired_vy = gains["kp_pos_xy"] * np.clip(y_error, -1, 1) - gains["kd_pos_xy"] * y_deriv
-        self.past_x_error = x_error
-        self.past_y_error = y_error
 
-        return self.pid_velocity_fixed_height_controller.pid(dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude,
+        actual_x = actual_state[0]
+        actual_y = actual_state[1]
+        actual_altitude = actual_state[2]
+        actual_vx = actual_state[3]
+        actual_vy = actual_state[4]
+        actual_altitude_velocity = actual_state[5]
+        actual_roll = actual_state[6]
+        actual_pitch = actual_state[7]
+        actual_yaw = actual_state[8]
+        actual_yaw_rate = actual_state[9]
+
+        if ctrl_mode_xy == 0:
+            desired_x = desired_state[0]
+            desired_y = desired_state[1]
+            actual_x = actual_state[0]
+            actual_y = actual_state[1]
+
+            x_error = desired_x - actual_x
+            x_deriv = (x_error - self.past_x_error) / dt
+            y_error = desired_y - actual_y
+            y_deriv = (y_error - self.past_y_error) / dt
+            desired_vx = gains["kp_pos_xy"] * np.clip(x_error, -1, 1) + gains["kd_pos_xy"] * x_deriv
+            desired_vy = gains["kp_pos_xy"] * np.clip(y_error, -1, 1) - gains["kd_pos_xy"] * y_deriv
+            self.past_x_error = x_error
+            self.past_y_error = y_error
+        elif ctrl_mode_xy == 1:
+            desired_vx = desired_state[0]
+            desired_vy = desired_state[1]
+
+        if ctrl_mode_z == 0:
+            desired_altitude = desired_state[2]
+            actual_altitude = actual_state[2]
+            alt_error = desired_altitude - actual_altitude
+            alt_deriv = (alt_error - self.past_alt_error) / dt
+            self.altitude_integrator += alt_error * dt
+            desired_altitude_velocity = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + \
+                gains["ki_z"] * np.clip(self.altitude_integrator, -2, 2) + 48
+
+            self.past_alt_error = alt_error
+        elif ctrl_mode_z == 1:
+            desired_altitude_velocity = desired_state[2]
+
+        if ctrl_mode_yaw == 0:
+            desired_yaw = desired_state[3]
+            actual_yaw = actual_state[8]
+            yaw_error = desired_yaw - actual_yaw
+            yaw_deriv = (yaw_error - self.past_yaw_error) / dt
+            desired_yaw_rate = gains["kp_yaw"] * yaw_error + gains["kd_yaw"] * yaw_deriv
+            self.past_yaw_error = yaw_error
+        elif ctrl_mode_yaw == 1:
+            desired_yaw_rate = desired_state[3]
+
+        return self.pid_velocity_fixed_height_controller.pid(dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude_velocity,
                                                                 actual_roll, actual_pitch, actual_yaw_rate,
-                                                                actual_altitude, actual_vx, actual_vy)
+                                                                actual_altitude_velocity, actual_vx, actual_vy)
 
 class pid_velocity_fixed_height_controller():
     def __init__(self):
@@ -64,9 +111,9 @@ class pid_velocity_fixed_height_controller():
 
     def pid(self, dt, desired_vx, desired_vy, desired_yaw_rate, desired_altitude, actual_roll, actual_pitch, actual_yaw_rate,
             actual_altitude, actual_vx, actual_vy):
-        # Velocity PID control (converted from Crazyflie c code)
+
         gains = {"kp_att_y": 1, "kd_att_y": 0.5, "kp_att_rp": 0.5, "kd_att_rp": 0.1,
-                 "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 10, "ki_z": 5, "kd_z": 5}
+                 "kp_vel_xy": 2, "kd_vel_xy": 0.5, "kp_z": 1.1, "ki_z": 0, "kd_z": 0.5}
 
         # Velocity PID control
         vx_error = desired_vx - actual_vx
@@ -83,7 +130,7 @@ class pid_velocity_fixed_height_controller():
         alt_deriv = (alt_error - self.past_alt_error) / dt
         self.altitude_integrator += alt_error * dt
         alt_command = gains["kp_z"] * alt_error + gains["kd_z"] * alt_deriv + \
-            gains["ki_z"] * np.clip(self.altitude_integrator, -2, 2) + 48
+            gains["ki_z"] * np.clip(self.altitude_integrator, -2, 2) + 30
         self.past_alt_error = alt_error
 
         # Attitude PID control
