@@ -109,8 +109,6 @@ if __name__ == '__main__':
             past_altitude = gps.getValues()[2]
             past_time = robot.getTime()
             first_time = False
-            forward_desired = gps.getValues()[0]
-            sideways_desired = gps.getValues()[1]
 
         # Get sensor data
         roll = imu.getRollPitchYaw()[0]
@@ -134,21 +132,21 @@ if __name__ == '__main__':
 
         # Initialize values
         desired_state = [0, 0, 0, 0]
-        forward_diff_desired = 0
-        sideways_diff_desired = 0
+        forward_desired = 0
+        sideways_desired = 0
         yaw_desired = 0
         height_diff_desired = 0
 
         key = keyboard.getKey()
         while key > 0:
             if key == Keyboard.UP:
-                forward_diff_desired += 0.5
+                forward_desired += 0.5
             elif key == Keyboard.DOWN:
-                forward_diff_desired -= 0.5
+                forward_desired -= 0.5
             elif key == Keyboard.RIGHT:
-                sideways_diff_desired -= 0.5
+                sideways_desired -= 0.5
             elif key == Keyboard.LEFT:
-                sideways_diff_desired += 0.5
+                sideways_desired += 0.5
             elif key == ord('Q'):
                 yaw_desired = + 1
             elif key == ord('E'):
@@ -160,8 +158,6 @@ if __name__ == '__main__':
             key = keyboard.getKey()
 
         height_desired += height_diff_desired * dt
-        forward_desired = forward_diff_desired
-        sideways_desired = sideways_diff_desired
 
         # get range in meters
         range_front_value = range_front.getValue() / 1000
@@ -171,7 +167,7 @@ if __name__ == '__main__':
         # PID velocity controller with fixed height
         desired_state = [forward_desired, sideways_desired, height_desired, yaw_desired]
         actual_state = [x, y, altitude, v_x, v_y, v_z, roll, pitch, yaw, yaw_rate]
-        ctrl_mode = [1, 0, 0]
+        ctrl_mode = [1, 0, 1]
         motor_power = PID_crazyflie.pid(dt, ctrl_mode , desired_state, actual_state)
 
         m1_motor.setVelocity(-motor_power[0])

@@ -27,7 +27,7 @@ from math import cos, sin
 
 import sys
 sys.path.append('../../../controllers/python_based')
-from pid_controller import pid_velocity_fixed_height_controller
+from pid_controller import pid_position_controller
 
 sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
 from wall_following import WallFollowing
@@ -79,11 +79,12 @@ if __name__ == '__main__':
 
     past_x_global = 0
     past_y_global = 0
+    past_altitude = 0
     past_time = 0
     first_time = True
 
     # Crazyflie velocity PID controller
-    PID_crazyflie = pid_velocity_fixed_height_controller()
+    PID_crazyflie = pid_position_controller()
     PID_update_last_time = robot.getTime()
     sensor_read_last_time = robot.getTime()
 
@@ -115,6 +116,7 @@ if __name__ == '__main__':
         if first_time:
             past_x_global = gps.getValues()[0]
             past_y_global = gps.getValues()[1]
+            past_altitude = gps.getValues()[2]
             past_time = robot.getTime()
             first_time = False
 
@@ -128,12 +130,15 @@ if __name__ == '__main__':
         y_global = gps.getValues()[1]
         v_y_global = (y_global - past_y_global)/dt
         altitude = gps.getValues()[2]
+        v_z = (altitude - past_altitude)/dt
 
         # Get body fixed velocities
         cos_yaw = cos(yaw)
         sin_yaw = sin(yaw)
         v_x = v_x_global * cos_yaw + v_y_global * sin_yaw
         v_y = - v_x_global * sin_yaw + v_y_global * cos_yaw
+        x = x_global * cos_yaw + y_global * sin_yaw
+        y = - x_global * sin_yaw + y_global * cos_yaw
 
         # Initialize values
         desired_state = [0, 0, 0, 0]
@@ -195,10 +200,10 @@ if __name__ == '__main__':
             yaw_desired = cmd_ang_w
 
         # PID velocity controller with fixed height
-        motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
-                                        yaw_desired, height_desired,
-                                        roll, pitch, yaw_rate,
-                                        altitude, v_x, v_y)
+        desired_state = [forward_desired, sideways_desired, height_desired, yaw_desired]
+        actual_state = [x, y, altitude, v_x, v_y, v_z, roll, pitch, yaw, yaw_rate]
+        ctrl_mode = [1, 0, 1]
+        motor_power = PID_crazyflie.pid(dt, ctrl_mode , desired_state, actual_state)
 
         m1_motor.setVelocity(-motor_power[0])
         m2_motor.setVelocity(motor_power[1])
