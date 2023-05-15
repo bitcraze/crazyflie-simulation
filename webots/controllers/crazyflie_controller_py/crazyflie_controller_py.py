@@ -84,8 +84,32 @@ if __name__ == '__main__':
     sensor_read_last_time = robot.getTime()
 
     height_desired = FLYING_ATTITUDE
-    forward_desired = 0
-    sideways_desired = 0
+
+
+    ctrl_mode = {
+        'ctrl_mode_xy': 1,
+        'ctrl_mode_z': 0,
+        'ctrl_mode_yaw': 1
+    }
+    gains = {
+        "kp_pos_xy": 1.0,
+        "kd_pos_xy": 0.0,
+        "kp_z": 10,
+        "ki_z": 5, 
+        "kd_z": 5,
+        "kp_yaw": 1.0,
+        "kd_yaw": 0.0,
+        "kp_att_yaw": 1,
+        "kd_att_yaw": 0.5,
+        "kp_att_rp": 0.5,
+        "kd_att_rp": 0.1,
+        "kp_vel_xy": 2,
+        "kd_vel_xy": 0.5,
+        "kp_vel_z": 1.1,
+        "ki_vel_z": 0,
+        "kd_vel_z": 0.5
+    }
+
 
     print("\n")
 
@@ -165,10 +189,25 @@ if __name__ == '__main__':
         range_left_value = range_left.getValue() / 1000
 
         # PID velocity controller with fixed height
-        desired_state = [forward_desired, sideways_desired, height_desired, yaw_desired]
-        actual_state = [x, y, altitude, v_x, v_y, v_z, roll, pitch, yaw, yaw_rate]
-        ctrl_mode = [1, 0, 1]
-        motor_power = PID_crazyflie.pid(dt, ctrl_mode , desired_state, actual_state)
+        desired_state = {
+            'x': forward_desired,
+            'y': sideways_desired,
+            'z': height_desired,
+            'yaw': yaw_desired
+        }
+        actual_state = {
+            'x': x,
+            'y': y,
+            'z': altitude,
+            'v_x': v_x,
+            'v_y': v_y,
+            'v_z': v_z,
+            'roll': roll,
+            'pitch': pitch,
+            'yaw': yaw,
+            'yaw_rate': yaw_rate
+        }
+        motor_power = PID_crazyflie.pid(dt, ctrl_mode , desired_state, actual_state, gains)
 
         m1_motor.setVelocity(-motor_power[0])
         m2_motor.setVelocity(motor_power[1])
