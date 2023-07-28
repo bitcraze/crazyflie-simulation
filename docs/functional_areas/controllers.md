@@ -1,14 +1,14 @@
 ---
-title: Controllers
+title: Shared Controllers
 page_id: controllers
 sort_order: 3
 ---
 
-This page explains about the control of the simulated Crazyflie.
+This page explains about the shared control files of the different simulators to fly a simulated Crazyflie.
 
 ## Simple PID controller
 
-A very simple height fixed and horizontal velocity based was build for this simulator that is written in both c and python. These can be found in the folder '/controllers' and the idea is that they can be used interchangably between de Gazebo and Webots simulation. They are therefore meant to be stand alone.
+A very simple height fixed and horizontal velocity based was build for this simulator that is written in both c and python. These can be found in the folder `/shared_controllers` and the idea is that they can be used interchangably between de Gazebo and Webots simulation. They are therefore meant to be stand alone.
 
 In webots, change controller to either `crazyflie_controller_c` or `crazyflie_controller_py` to try out a simple controller in different languages.
 
@@ -17,9 +17,7 @@ As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitc
 
 > The python bindings only works in Webots for now.
 
-Go the crazyflie-firmware directory in a terminal and write:
-
-    make bindings_python
+[Clone the crazyflie-firmware](https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/building-and-flashing/build/#cloning) in another folder, then make the python bindings [via these instructions](https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/building-and-flashing/build/#build-python-bindings).
 
 Change the controller in the crazyflie robot model in webots to crazyflie_controller_py_firmware_pid, and adjust the following line to point to your crazyflie-firmware repo:
 
