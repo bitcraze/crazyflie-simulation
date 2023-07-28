@@ -1,9 +1,8 @@
 ---
 title: Installation Instructions Webots
-page_id: install
+page_id: install_webots
+sort_order: 1
 ---
-
-## From latest release
 
 Go to the [cyberbotics website](https://cyberbotics.com/) and install the latest Webots simulator. Make sure to read their [installation instructions](https://cyberbotics.com/doc/guide/installing-webots).
 
