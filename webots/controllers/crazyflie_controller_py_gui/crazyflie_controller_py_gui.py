@@ -1,231 +1,210 @@
-'''
-Controls the crazyflie from the GUI client over a socket connection
+# -*- coding: utf-8 -*-
+#
+#  ...........       ____  _ __
+#  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
+#  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+#  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+#     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
 
-Authors: Kimberly McGuire (Bitcraze AB) & Simon D. Levy
+# MIT License
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+# Copyright (c) 2023 Bitcraze
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 51
-Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-'''
+"""
+file: crazyflie_py_wallfollowing.py
 
-import math
-import socket
-import threading
-import time
-import struct
-import sys
+Controls the crazyflie and implements a wall following method in webots in Python
+
+Author:   Kimberly McGuire (Bitcraze AB)
+"""
+
 
 from controller import Robot
+from controller import Keyboard
 
-import cffirmware
+from math import cos, sin
 
-sys.path.append('../../../controllers/python_based/')
+import sys
+sys.path.append('../../../controllers/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
 
-HOST = '127.0.0.1'
-PORT = 5000
+sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
+from wall_following import WallFollowing
 
-PID_TICK = 100
-MOTOR_SCALEDOWN = 1000
-THROTTLE_SCALEDOWN = 100
-CYCLIC_SCALEDOWN = 60
-YAW_SCALEUP = 5
-
-
-def mix(thrust, roll, pitch, yaw):
-    '''Mixer converts demands to motor values'''
-
-    m1 = thrust - roll + pitch - yaw
-    m2 = thrust - roll - pitch + yaw
-    m3 = thrust + roll - pitch - yaw
-    m4 = thrust + roll + pitch + yaw
-
-    return -m1, +m2, -m3, +m4
-
-
-def threadfun(conn, pose, client_data):
-    '''Threaded Gommunication with GUI client'''
-
-    while True:
-
-        try:
-            conn.send(struct.pack('ffffff',
-                                  pose['x'],
-                                  pose['y'],
-                                  pose['z'],
-                                  math.degrees(pose['phi']),
-                                  math.degrees(pose['theta']),
-                                  math.degrees(pose['psi'])))
-
-            (
-                    client_data[0],
-                    client_data[1],
-                    client_data[2],
-                    client_data[3],
-                    client_data[4]) = struct.unpack('fffff', conn.recv(20))
-
-        except Exception:  # client disconnected
-            break
-
-        time.sleep(0.001)
-
-
-def mkmotor(name, spin):
-    '''Helper'''
-
-    motor = robot.getDevice(name)
-    motor.setPosition(float('inf'))
-    motor.setVelocity(spin)
-
-    return motor
-
-
-def mksensor(robot, name, timestep):
-    '''Helper'''
-
-    sensor = robot.getDevice(name)
-    sensor.enable(timestep)
-
-    return sensor
-
-
-def deadband(x):
-    '''Stick deadband for roll, pitch'''
-
-    y = x / CYCLIC_SCALEDOWN
-
-    return 0 if abs(y) < 0.2 else +0.5 if y > 0 else -0.5
-
+FLYING_ATTITUDE = 1
 
 if __name__ == '__main__':
 
-    # Make socket to talk to the client and wait for client ot join
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
-    sock.bind((HOST, PORT))
-    sock.listen(1)
-    conn, _ = sock.accept()
-
-    # Need to get assist mode and raw stick values from client
-    client_data = [0, 0, 0, 0, 0]
-
-    # This data will be sent to the GUI
-    pose = {'x': 0, 'y': 0, 'z': 0, 'phi': 0, 'theta': 0, 'psi': 0}
-
-    # Start thread for communicating with client
-    threading.Thread(target=threadfun,
-                     args=(conn, pose, client_data)).start()
-
     robot = Robot()
-
     timestep = int(robot.getBasicTimeStep())
 
     # Initialize motors
-    m1_motor = mkmotor('m1_motor', -1)
-    m2_motor = mkmotor('m2_motor', +1)
-    m3_motor = mkmotor('m3_motor', -1)
-    m4_motor = mkmotor('m4_motor', +1)
+    m1_motor = robot.getDevice("m1_motor")
+    m1_motor.setPosition(float('inf'))
+    m1_motor.setVelocity(-1)
+    m2_motor = robot.getDevice("m2_motor")
+    m2_motor.setPosition(float('inf'))
+    m2_motor.setVelocity(1)
+    m3_motor = robot.getDevice("m3_motor")
+    m3_motor.setPosition(float('inf'))
+    m3_motor.setVelocity(-1)
+    m4_motor = robot.getDevice("m4_motor")
+    m4_motor.setPosition(float('inf'))
+    m4_motor.setVelocity(1)
 
-    # Initialize sensors
-    imu = mksensor(robot, 'inertial_unit', timestep)
-    loco = mksensor(robot, 'position', timestep)
-    gyro = mksensor(robot, 'gyro', timestep)
+    # Initialize Sensors
+    imu = robot.getDevice("inertial_unit")
+    imu.enable(timestep)
+    gps = robot.getDevice("position")
+    gps.enable(timestep)
+    gyro = robot.getDevice("gyro")
+    gyro.enable(timestep)
+    camera = robot.getDevice("camera")
+    camera.enable(timestep)
+    range_front = robot.getDevice("range_front")
+    range_front.enable(timestep)
+    range_left = robot.getDevice("range_left")
+    range_left.enable(timestep)
+    range_back = robot.getDevice("range_back")
+    range_back.enable(timestep)
+    range_right = robot.getDevice("range_right")
+    range_right.enable(timestep)
 
-    # Init firmware PID controller
-    cffirmware.controllerPidInit()
+    # Get keyboard
+    keyboard = Keyboard()
+    keyboard.enable(timestep)
 
-    # Initialize previous position, time
-    loco_x_prev, loco_y_prev, loco_z_prev = 0, 0, 0
-    time_prev = robot.getTime()
+    # Initialize variables
 
-    # In altitude-hold or hover mode, we'll maintain this altitude
-    altitude_target = 1
+    past_x_global = 0
+    past_y_global = 0
+    past_time = 0
+    first_time = True
+
+    # Crazyflie velocity PID controller
+    PID_crazyflie = pid_velocity_fixed_height_controller()
+    PID_update_last_time = robot.getTime()
+    sensor_read_last_time = robot.getTime()
+
+    height_desired = FLYING_ATTITUDE
+
+    wall_following = WallFollowing(angle_value_buffer=0.01, reference_distance_from_wall=0.5,
+                                   max_forward_speed=0.3, init_state=WallFollowing.StateWallFollowing.FORWARD)
+
+    autonomous_mode = False
+
+    print("\n")
+
+    print("====== Controls =======\n\n")
+
+    print(" The Crazyflie can be controlled from your keyboard!\n")
+    print(" All controllable movement is in body coordinates\n")
+    print("- Use the up, back, right and left button to move in the horizontal plane\n")
+    print("- Use Q and E to rotate around yaw\n ")
+    print("- Use W and S to go up and down\n ")
+    print("- Press A to start autonomous mode\n")
+    print("- Press D to disable autonomous mode\n")
 
     # Main loop:
     while robot.step(timestep) != -1:
 
-        # Read sensors
-        phi, theta, psi = imu.getRollPitchYaw()
-        dphi_dt, dtheta_dt, dpsi_dt = gyro.getValues()
+        dt = robot.getTime() - past_time
+        actual_state = {}
 
-        # First-difference current and previous times to get DeltaT
-        robot_time = robot.getTime()
-        dt = robot_time - time_prev
-        time_prev = robot_time
+        if first_time:
+            past_x_global = gps.getValues()[0]
+            past_y_global = gps.getValues()[1]
+            past_time = robot.getTime()
+            first_time = False
 
-        # First-difference position to get inertial-frame velocity
-        loco_x, loco_y, loco_z = loco.getValues()
-        loco_vx = (loco_x - loco_x_prev) / dt
-        loco_vy = (loco_y - loco_y_prev) / dt
-        loco_vz = (loco_z - loco_z_prev) / dt
-        loco_x_prev = loco_x
-        loco_y_prev = loco_y
-        loco_z_prev = loco_z
+        # Get sensor data
+        roll = imu.getRollPitchYaw()[0]
+        pitch = imu.getRollPitchYaw()[1]
+        yaw = imu.getRollPitchYaw()[2]
+        yaw_rate = gyro.getValues()[2]
+        x_global = gps.getValues()[0]
+        v_x_global = (x_global - past_x_global)/dt
+        y_global = gps.getValues()[1]
+        v_y_global = (y_global - past_y_global)/dt
+        altitude = gps.getValues()[2]
 
-        # Set up state vector
-        state = cffirmware.state_t()
-        state.attitude.roll = math.degrees(phi)
-        state.attitude.pitch = -math.degrees(theta)  # note negation
-        state.attitude.yaw = math.degrees(psi)
+        # Get body fixed velocities
+        cos_yaw = cos(yaw)
+        sin_yaw = sin(yaw)
+        v_x = v_x_global * cos_yaw + v_y_global * sin_yaw
+        v_y = - v_x_global * sin_yaw + v_y_global * cos_yaw
 
-        # Put location into state
-        state.position.z = loco_z
-        state.velocity.z = loco_vz
-        state.velocity.x = loco_vx
-        state.velocity.y = loco_vy
+        # Initialize values
+        desired_state = [0, 0, 0, 0]
+        forward_desired = 0
+        sideways_desired = 0
+        yaw_desired = 0
+        height_diff_desired = 0
 
-        # Put rotational velocity into state
-        sensors = cffirmware.sensorData_t()
-        sensors.gyro.x = math.degrees(dphi_dt)
-        sensors.gyro.y = math.degrees(dtheta_dt)
-        sensors.gyro.z = math.degrees(dpsi_dt)
+        key = keyboard.getKey()
+        while key > 0:
+            if key == Keyboard.UP:
+                forward_desired += 0.5
+            elif key == Keyboard.DOWN:
+                forward_desired -= 0.5
+            elif key == Keyboard.RIGHT:
+                sideways_desired -= 0.5
+            elif key == Keyboard.LEFT:
+                sideways_desired += 0.5
+            elif key == ord('Q'):
+                yaw_desired = + 1
+            elif key == ord('E'):
+                yaw_desired = - 1
+            elif key == ord('W'):
+                height_diff_desired = 0.1
+            elif key == ord('S'):
+                height_diff_desired = - 0.1
+            elif key == ord('A'):
+                if autonomous_mode is False:
+                    autonomous_mode = True
+                    print("Autonomous mode: ON")
+            elif key == ord('D'):
+                if autonomous_mode is True:
+                    autonomous_mode = False
+                    print("Autonomous mode: OFF")
+            key = keyboard.getKey()
 
-        # Get stick demands from GUI client
+        height_desired += height_diff_desired * dt
 
-        # Get desired assist mode: 1 = none; 2 = altitude-hold; 3 = hover
-        # XXX We currently ignore this and stay in mode 3
-        mode = int(client_data[0])
+        camera_data = camera.getImage()
 
-        # Use stick demands from GUI client for setpoints
-        altitude_target += client_data[1] / THROTTLE_SCALEDOWN
-        sideways_demand = -deadband(client_data[2])  # note negation
-        forward_demand = deadband(client_data[3])
-        yaw_demand = -client_data[4] * YAW_SCALEUP  # note negation
+        # get range in meters
+        range_front_value = range_front.getValue() / 1000
+        range_right_value = range_right.getValue() / 1000
+        range_left_value = range_left.getValue() / 1000
 
-        # Fill in setpoints
-        setpoint = cffirmware.setpoint_t()
-        setpoint.mode.z = cffirmware.modeAbs
-        setpoint.position.z = altitude_target
-        setpoint.mode.yaw = cffirmware.modeVelocity
-        setpoint.attitudeRate.yaw = math.degrees(psi) + yaw_demand
-        setpoint.mode.x = cffirmware.modeVelocity
-        setpoint.mode.y = cffirmware.modeVelocity
-        setpoint.velocity.x = forward_demand
-        setpoint.velocity.y = sideways_demand
-        setpoint.velocity_body = True
+        # Choose a wall following direction
+        # if you choose direction left, use the right range value
+        # if you choose direction right, use the left range value
+        direction = WallFollowing.WallFollowingDirection.LEFT
+        range_side_value = range_right_value
 
-        # Make firmware PID bindings
-        control = cffirmware.control_t()
-        cffirmware.controllerPid(control, setpoint, sensors, state, PID_TICK)
+        # Get the velocity commands from the wall following state machine
+        cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(
+            range_front_value, range_side_value, yaw, direction, robot.getTime())
 
-        # Run mixer on modified demands to get motor values
-        m1, m2, m3, m4 = mix(
-                control.thrust,
-                math.radians(control.roll),
-                math.radians(control.pitch),
-                math.radians(control.yaw))
+        if autonomous_mode:
+            sideways_desired = cmd_vel_y
+            forward_desired = cmd_vel_x
+            yaw_desired = cmd_ang_w
 
-        # Set motor values
-        m1_motor.setVelocity(m1 / MOTOR_SCALEDOWN)
-        m2_motor.setVelocity(m2 / MOTOR_SCALEDOWN)
-        m3_motor.setVelocity(m3 / MOTOR_SCALEDOWN)
-        m4_motor.setVelocity(m4 / MOTOR_SCALEDOWN)
+        # PID velocity controller with fixed height
+        motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
+                                        yaw_desired, height_desired,
+                                        roll, pitch, yaw_rate,
+                                        altitude, v_x, v_y)
+
+        m1_motor.setVelocity(-motor_power[0])
+        m2_motor.setVelocity(motor_power[1])
+        m3_motor.setVelocity(-motor_power[2])
+        m4_motor.setVelocity(motor_power[3])
+
+        past_time = robot.getTime()
+        past_x_global = x_global
+        past_y_global = y_global
