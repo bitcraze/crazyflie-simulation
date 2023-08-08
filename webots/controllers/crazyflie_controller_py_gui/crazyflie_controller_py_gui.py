@@ -22,10 +22,14 @@ import socket
 import threading
 import time
 import struct
+import sys
 
 from controller import Robot
 
 import cffirmware
+
+sys.path.append('../../../controllers/python_based/')
+from pid_controller import pid_velocity_fixed_height_controller
 
 HOST = '127.0.0.1'
 PORT = 5000
