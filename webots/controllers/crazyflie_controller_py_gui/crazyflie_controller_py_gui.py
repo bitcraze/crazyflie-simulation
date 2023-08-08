@@ -25,19 +25,14 @@ import struct
 
 from controller import Robot
 
+import cffirmware
+
 from pids import AltitudePidController
 from pids import PositionPidController
 from pids import AnglePidController
 
 HOST = '127.0.0.1'
 PORT = 5000
-
-# State vector from Eqn 11 in Bouabdallah, Murrieri, Siegwart(2004)
-STATE_VARIABLE_NAMES = (
-        'x', 'dx', 'y', 'dy', 'z', 'dz',
-        'phi', 'dphi', 'theta', 'dtheta', 'psi', 'dpsi')
-
-DEMAND_NAMES = 'throttle', 'roll', 'pitch', 'yaw'
 
 
 def mix(demands):
@@ -57,18 +52,18 @@ def mix(demands):
     return -m1, +m2, -m3, +m4
 
 
-def _threadfun(conn, state, client_data):
+def _threadfun(conn, pose, client_data):
 
     while True:
 
         try:
             conn.send(struct.pack('ffffff',
-                                  state['x'],
-                                  state['y'],
-                                  state['z'],
-                                  np.degrees(state['phi']),
-                                  np.degrees(state['theta']),
-                                  np.degrees(state['psi'])))
+                                  pose['x'],
+                                  pose['y'],
+                                  pose['z'],
+                                  np.degrees(pose['phi']),
+                                  np.degrees(pose['theta']),
+                                  np.degrees(pose['psi'])))
 
             (
                     client_data[0],
@@ -107,8 +102,6 @@ def deadband(x):
 
 if __name__ == '__main__':
 
-    state = {name: 0 for name in STATE_VARIABLE_NAMES}
-
     # Make socket to talk to the client and wait for client ot join
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -119,9 +112,12 @@ if __name__ == '__main__':
     # Need to get assist mode and raw stick values from client
     client_data = [0, 0, 0, 0, 0]
 
+    # This data will be sent to the GUI
+    pose = {'x': 0, 'y': 0, 'z': 0, 'phi': 0, 'theta': 0, 'psi': 0}
+
     # Start thread for communicating with client
     threading.Thread(target=_threadfun,
-                     args=(conn, state, client_data)).start()
+                     args=(conn, pose, client_data)).start()
 
     robot = Robot()
 
@@ -140,40 +136,24 @@ if __name__ == '__main__':
     camera = mksensor(robot, 'camera', timestep)
 
     # Initialize variables for computing timestep, horizontal velocity
-    statex_prev = 0
-    statey_prev = 0
+    pose_x_prev = 0
+    pose_y_prev = 0
     time_prev = 0
-
-    # Create PID controllers
-    pos_pid_controller = PositionPidController()
-    ang_pid_controller = AnglePidController()
-    alt_pid_controller = AltitudePidController()
-
-    sensor_read_last_time = robot.getTime()
 
     # Main loop:
     while robot.step(timestep) != -1:
 
-        # Get vehicle state from sensor data
-        state['x'] = pos.getValues()[0]
-        state['y'] = pos.getValues()[1]
-        state['z'] = pos.getValues()[2]
-        state['phi'] = imu.getRollPitchYaw()[0]
-        state['theta'] = imu.getRollPitchYaw()[1]
-        state['psi'] = imu.getRollPitchYaw()[2]
-        state['dpsi'] = gyro.getValues()[2]
+        # Read sensors
+        phi, theta, psi = imu.getRollPitchYaw()
+        dphi_dt, dtheta_dt, dpsi_dt = gyro.getValues()
 
         # We need a previous time to compute the timestep
         if time_prev != 0:
 
             dt = robot.getTime() - time_prev
 
-            # Compute horizontal velocities in world coordinates from position
-            # and timestep
-            state['dx'] = (state['x'] - statex_prev) / dt
-            state['dy'] = (state['y'] - statey_prev) / dt
-
             # Convert stick demands to [-1, +1]
+            '''
             demands = {
                     key: val for key, val in zip(
                         DEMAND_NAMES,
@@ -184,6 +164,7 @@ if __name__ == '__main__':
                             client_data[4] / -200)
                         )
                     }
+            '''
 
             # Get desired assist mode
             mode = int(client_data[0])
@@ -191,16 +172,14 @@ if __name__ == '__main__':
             # Based on mode, run PID controllers on stick demands to get
             # modified demands
 
-            if mode in (2, 3):  # Height hold or HOver
-                demands = alt_pid_controller.run(dt, demands, state)
+            if mode in (2, 3):  # Height hold or Hover
+                print('altitude hold')
 
             if mode == 3:  # Hover
-                demands = pos_pid_controller.run(dt, demands, state)
-
-            demands = ang_pid_controller.run(dt, demands, state)
+                print('hover')
 
             # Run mixer on modified demand to get motor vlaues
-            m1, m2, m3, m4 = mix(demands)
+            m1, m2, m3, m4 = 0, 0, 0, 0 # mix(demands)
 
             # Set motor values
             m1_motor.setVelocity(m1)
@@ -210,5 +189,5 @@ if __name__ == '__main__':
 
         # Track previous time and vehicle location
         time_prev = robot.getTime()
-        statex_prev = state['x']
-        statey_prev = state['y']
+        pose_x_prev = pose['x']
+        pose_y_prev = pose['y']
