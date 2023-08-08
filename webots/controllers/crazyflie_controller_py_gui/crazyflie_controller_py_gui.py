@@ -79,6 +79,24 @@ def deadband(x):
     return 0 if abs(y) < 0.2 else +0.5 if y > 0 else -0.5
 
 
+def make_motor(robot, motor_name, spin):
+    '''Helper'''
+
+    motor = robot.getDevice(motor_name)
+    motor.setPosition(float('inf'))
+    motor.setVelocity(spin)
+
+    return motor
+
+
+def make_sensor(robot, sensor_name, timestep):
+
+    sensor = robot.getDevice(sensor_name)
+    sensor.enable(timestep)
+
+    return sensor
+
+
 if __name__ == '__main__':
 
     # Make socket to talk to the client and wait for client ot join
@@ -101,29 +119,17 @@ if __name__ == '__main__':
     timestep = int(robot.getBasicTimeStep())
 
     # Initialize motors
-    m1_motor = robot.getDevice("m1_motor")
-    m1_motor.setPosition(float('inf'))
-    m1_motor.setVelocity(-1)
-    m2_motor = robot.getDevice("m2_motor")
-    m2_motor.setPosition(float('inf'))
-    m2_motor.setVelocity(1)
-    m3_motor = robot.getDevice("m3_motor")
-    m3_motor.setPosition(float('inf'))
-    m3_motor.setVelocity(-1)
-    m4_motor = robot.getDevice("m4_motor")
-    m4_motor.setPosition(float('inf'))
-    m4_motor.setVelocity(1)
+    m1_motor = make_motor(robot, 'm1_motor', +1)
+    m2_motor = make_motor(robot, 'm2_motor', -1)
+    m3_motor = make_motor(robot, 'm3_motor', +1)
+    m4_motor = make_motor(robot, 'm4_motor', -1)
 
     # Initialize Sensors
-    imu = robot.getDevice("inertial_unit")
-    imu.enable(timestep)
-    gps = robot.getDevice("position")
-    gps.enable(timestep)
-    gyro = robot.getDevice("gyro")
-    gyro.enable(timestep)
+    imu = make_sensor(robot, 'inertial_unit', timestep)
+    gps = make_sensor(robot, 'position', timestep)
+    gyro = make_sensor(robot, 'gyro', timestep)
 
     # Initialize variables
-
     past_x_global = 0
     past_y_global = 0
     past_time = 0
