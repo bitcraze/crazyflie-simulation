@@ -14,8 +14,7 @@
 """
 file: crazyflie_py_wallfollowing.py
 
-Controls the crazyflie and implements a wall following method in webots in
-Python
+Controls the crazyflie via the Python GUI client
 
 Author:   Kimberly McGuire (Bitcraze AB) and Simon D. Levy
 """
@@ -25,7 +24,8 @@ from controller import Robot
 from controller import Keyboard
 
 import socket
-import threading
+from struct import pack, unpack
+from threading import Thread
 from math import cos, sin, degrees
 from time import sleep
 
@@ -40,7 +40,7 @@ HOST = '127.0.0.1'
 PORT = 5000
 
 # Scaling factors between client sticks demands and PID inputs
-THROTTLE_SCALEDOWN = 100
+THROTTLE_SCALEDOWN = 10
 CYCLIC_SCALEDOWN = 60
 YAW_SCALEUP = 5
 
@@ -51,25 +51,25 @@ def threadfun(conn, pose, client_data):
     while True:
 
         try:
-            conn.send(struct.pack('ffffff',
-                                  pose['x'],
-                                  pose['y'],
-                                  pose['z'],
-                                  math.degrees(pose['phi']),
-                                  math.degrees(pose['theta']),
-                                  math.degrees(pose['psi'])))
+            conn.send(pack('ffffff',
+                           pose['x'],
+                           pose['y'],
+                           pose['z'],
+                           degrees(pose['phi']),
+                           degrees(pose['theta']),
+                           degrees(pose['psi'])))
 
-            (
-                    client_data[0],
-                    client_data[1],
-                    client_data[2],
-                    client_data[3],
-                    client_data[4]) = struct.unpack('fffff', conn.recv(20))
+            (client_data[0],
+             client_data[1],
+             client_data[2],
+             client_data[3],
+             client_data[4]) = unpack('fffff', conn.recv(20))
 
-        except Exception:  # client disconnected
+        except Exception as e:  # client disconnected
+            print('Error on comms thread: ' + str(e))
             break
 
-        time.sleep(0)  # yield to main thread
+        sleep(0)  # yield to main thread
 
 
 def deadband(x):
@@ -96,8 +96,7 @@ if __name__ == '__main__':
     pose = {'x': 0, 'y': 0, 'z': 0, 'phi': 0, 'theta': 0, 'psi': 0}
 
     # Start thread for communicating with client
-    threading.Thread(target=threadfun,
-                     args=(conn, pose, client_data)).start()
+    Thread(target=threadfun, args=(conn, pose, client_data)).start()
 
     robot = Robot()
     timestep = int(robot.getBasicTimeStep())
@@ -123,16 +122,6 @@ if __name__ == '__main__':
     gps.enable(timestep)
     gyro = robot.getDevice("gyro")
     gyro.enable(timestep)
-    camera = robot.getDevice("camera")
-    camera.enable(timestep)
-    range_front = robot.getDevice("range_front")
-    range_front.enable(timestep)
-    range_left = robot.getDevice("range_left")
-    range_left.enable(timestep)
-    range_back = robot.getDevice("range_back")
-    range_back.enable(timestep)
-    range_right = robot.getDevice("range_right")
-    range_right.enable(timestep)
 
     # Initialize variables
 
@@ -161,7 +150,7 @@ if __name__ == '__main__':
         mode = int(client_data[0])
 
         # Get stick demands from client
-        gui_height_diff_desired = client_data[1] / THROTTLE_SCALEDOWN
+        height_diff_desired = client_data[1] / THROTTLE_SCALEDOWN
         gui_sideways_demand = -deadband(client_data[2])  # note negation
         gui_forward_demand = deadband(client_data[3])
         gui_yaw_demand = -client_data[4] * YAW_SCALEUP  # note negation
@@ -197,7 +186,6 @@ if __name__ == '__main__':
         forward_desired = 0
         sideways_desired = 0
         yaw_desired = 0
-        height_diff_desired = 0
 
         key = keyboard.getKey()
         while key > 0:
@@ -213,13 +201,7 @@ if __name__ == '__main__':
                 yaw_desired = + 1
             elif key == ord('E'):
                 yaw_desired = - 1
-            elif key == ord('W'):
-                height_diff_desired = 0.1
-            elif key == ord('S'):
-                height_diff_desired = - 0.1
             key = keyboard.getKey()
-
-
 
         height_desired += height_diff_desired * dt
 
