@@ -17,7 +17,7 @@ this program; if not, write to the Free Software Foundation, Inc., 51
 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 '''
 
-import numpy as np
+import math
 import socket
 import threading
 import time
@@ -31,28 +31,30 @@ from pids import AltitudePidController
 from pids import PositionPidController
 from pids import AnglePidController
 
+
 HOST = '127.0.0.1'
 PORT = 5000
 
+PID_TICK = 100
+MOTOR_SCALEDOWN = 1000
+THROTTLE_SCALEDOWN = 100
+CYCLIC_SCALEDOWN = 60
+YAW_SCALEUP = 5
 
-def mix(demands):
 
-    # Rescale throttle from [0,1] to [48,58]
-    t = 10 * demands['throttle'] + 48
+def mix(thrust, roll, pitch, yaw):
+    '''Mixer converts demands to motor values'''
 
-    r = demands['roll']
-    p = demands['pitch']
-    y = demands['yaw']
-
-    m1 = t - r + p + y
-    m2 = t - r - p - y
-    m3 = t + r - p + y
-    m4 = t + r + p - y
+    m1 = thrust - roll + pitch - yaw
+    m2 = thrust - roll - pitch + yaw
+    m3 = thrust + roll - pitch - yaw
+    m4 = thrust + roll + pitch + yaw
 
     return -m1, +m2, -m3, +m4
 
 
-def _threadfun(conn, pose, client_data):
+def threadfun(conn, pose, client_data):
+    '''Threaded Gommunication with GUI client'''
 
     while True:
 
@@ -61,9 +63,9 @@ def _threadfun(conn, pose, client_data):
                                   pose['x'],
                                   pose['y'],
                                   pose['z'],
-                                  np.degrees(pose['phi']),
-                                  np.degrees(pose['theta']),
-                                  np.degrees(pose['psi'])))
+                                  math.degrees(pose['phi']),
+                                  math.degrees(pose['theta']),
+                                  math.degrees(pose['psi'])))
 
             (
                     client_data[0],
@@ -79,6 +81,7 @@ def _threadfun(conn, pose, client_data):
 
 
 def mkmotor(name, spin):
+    '''Helper'''
 
     motor = robot.getDevice(name)
     motor.setPosition(float('inf'))
@@ -88,6 +91,7 @@ def mkmotor(name, spin):
 
 
 def mksensor(robot, name, timestep):
+    '''Helper'''
 
     sensor = robot.getDevice(name)
     sensor.enable(timestep)
@@ -96,8 +100,11 @@ def mksensor(robot, name, timestep):
 
 
 def deadband(x):
+    '''Stick deadband for roll, pitch'''
 
-    return 0 if abs(x) < 0.2 else +0.5 if x > 0 else -0.5
+    y = x / CYCLIC_SCALEDOWN
+
+    return 0 if abs(y) < 0.2 else +0.5 if y > 0 else -0.5
 
 
 if __name__ == '__main__':
@@ -116,7 +123,7 @@ if __name__ == '__main__':
     pose = {'x': 0, 'y': 0, 'z': 0, 'phi': 0, 'theta': 0, 'psi': 0}
 
     # Start thread for communicating with client
-    threading.Thread(target=_threadfun,
+    threading.Thread(target=threadfun,
                      args=(conn, pose, client_data)).start()
 
     robot = Robot()
@@ -131,14 +138,18 @@ if __name__ == '__main__':
 
     # Initialize sensors
     imu = mksensor(robot, 'inertial_unit', timestep)
-    pos = mksensor(robot, 'position', timestep)
+    loco = mksensor(robot, 'position', timestep)
     gyro = mksensor(robot, 'gyro', timestep)
-    camera = mksensor(robot, 'camera', timestep)
 
-    # Initialize variables for computing timestep, horizontal velocity
-    pose_x_prev = 0
-    pose_y_prev = 0
-    time_prev = 0
+    # Init firmware PID controller
+    cffirmware.controllerPidInit()
+
+    # Initialize previous position, time
+    loco_x_prev, loco_y_prev, loco_z_prev = 0, 0, 0
+    time_prev = robot.getTime()
+        
+    # In altitude-hold or hover mode, we'll maintain this altitude
+    altitude_target = 1
 
     # Main loop:
     while robot.step(timestep) != -1:
@@ -147,47 +158,75 @@ if __name__ == '__main__':
         phi, theta, psi = imu.getRollPitchYaw()
         dphi_dt, dtheta_dt, dpsi_dt = gyro.getValues()
 
-        # We need a previous time to compute the timestep
-        if time_prev != 0:
+        # First-difference current and previous times to get DeltaT
+        robot_time = robot.getTime()
+        dt = robot_time - time_prev
+        time_prev = robot_time
 
-            dt = robot.getTime() - time_prev
+        # First-difference position to get inertial-frame velocity
+        loco_x, loco_y, loco_z = loco.getValues()
+        loco_vx = (loco_x - loco_x_prev) / dt
+        loco_vy = (loco_y - loco_y_prev) / dt
+        loco_vz = (loco_z - loco_z_prev) / dt
+        loco_x_prev = loco_x
+        loco_y_prev = loco_y
+        loco_z_prev = loco_z
 
-            # Convert stick demands to [-1, +1]
-            '''
-            demands = {
-                    key: val for key, val in zip(
-                        DEMAND_NAMES,
-                        (
-                            client_data[1],
-                            deadband(client_data[2] / 60),
-                            deadband(client_data[3] / 60),
-                            client_data[4] / -200)
-                        )
-                    }
-            '''
+        # Set up state vector
+        state = cffirmware.state_t()
+        state.attitude.roll = math.degrees(phi)
+        state.attitude.pitch = -math.degrees(theta)  # note negation
+        state.attitude.yaw = math.degrees(psi)
 
-            # Get desired assist mode
-            mode = int(client_data[0])
+        # Put location into state
+        state.position.z = loco_z
+        state.velocity.z = loco_vz
+        state.velocity.x = loco_vx
+        state.velocity.y = loco_vy
 
-            # Based on mode, run PID controllers on stick demands to get
-            # modified demands
+        # Put rotational velocity into state
+        sensors = cffirmware.sensorData_t()
+        sensors.gyro.x = math.degrees(dphi_dt)
+        sensors.gyro.y = math.degrees(dtheta_dt)
+        sensors.gyro.z = math.degrees(dpsi_dt)
 
-            if mode in (2, 3):  # Height hold or Hover
-                print('altitude hold')
+        # Get stick demands from GUI client
 
-            if mode == 3:  # Hover
-                print('hover')
+        # Get desired assist mode: 1 = none; 2 = altitude-hold; 3 = hover
+        # XXX We currently ignore this and stay in mode 3
+        mode = int(client_data[0])
 
-            # Run mixer on modified demand to get motor vlaues
-            m1, m2, m3, m4 = 0, 0, 0, 0 # mix(demands)
+        # Use stick demands from GUI client for setpoints
+        altitude_target += client_data[1] / THROTTLE_SCALEDOWN
+        sideways_demand = -deadband(client_data[2])  # note negation
+        forward_demand = deadband(client_data[3])
+        yaw_demand = -client_data[4] * YAW_SCALEUP  # note negation
 
-            # Set motor values
-            m1_motor.setVelocity(m1)
-            m2_motor.setVelocity(m2)
-            m3_motor.setVelocity(m3)
-            m4_motor.setVelocity(m4)
+        # Fill in setpoints
+        setpoint = cffirmware.setpoint_t()
+        setpoint.mode.z = cffirmware.modeAbs
+        setpoint.position.z = altitude_target
+        setpoint.mode.yaw = cffirmware.modeVelocity
+        setpoint.attitudeRate.yaw = math.degrees(psi) + yaw_demand
+        setpoint.mode.x = cffirmware.modeVelocity
+        setpoint.mode.y = cffirmware.modeVelocity
+        setpoint.velocity.x = forward_demand
+        setpoint.velocity.y = sideways_demand
+        setpoint.velocity_body = True
 
-        # Track previous time and vehicle location
-        time_prev = robot.getTime()
-        pose_x_prev = pose['x']
-        pose_y_prev = pose['y']
+        # Make firmware PID bindings
+        control = cffirmware.control_t()
+        cffirmware.controllerPid(control, setpoint, sensors, state, PID_TICK)
+
+        # Run mixer on modified demands to get motor values
+        m1, m2, m3, m4 = mix(
+                control.thrust,
+                math.radians(control.roll),
+                math.radians(control.pitch),
+                math.radians(control.yaw))
+
+        # Set motor values
+        m1_motor.setVelocity(m1 / MOTOR_SCALEDOWN)
+        m2_motor.setVelocity(m2 / MOTOR_SCALEDOWN)
+        m3_motor.setVelocity(m3 / MOTOR_SCALEDOWN)
+        m4_motor.setVelocity(m4 / MOTOR_SCALEDOWN)
