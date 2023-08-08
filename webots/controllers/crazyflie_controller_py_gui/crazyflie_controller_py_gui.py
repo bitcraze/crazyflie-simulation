@@ -14,7 +14,8 @@
 """
 file: crazyflie_py_wallfollowing.py
 
-Controls the crazyflie and implements a wall following method in webots in Python
+Controls the crazyflie and implements a wall following method in webots in
+Python
 
 Author:   Kimberly McGuire (Bitcraze AB)
 """
@@ -28,9 +29,6 @@ from math import cos, sin
 import sys
 sys.path.append('../../../controllers/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
-
-sys.path.append('../../../../../python/crazyflie-lib-python/examples/multiranger/wall_following')
-from wall_following import WallFollowing
 
 FLYING_ATTITUDE = 1
 
@@ -89,16 +87,14 @@ if __name__ == '__main__':
 
     height_desired = FLYING_ATTITUDE
 
-    wall_following = WallFollowing(angle_value_buffer=0.01, reference_distance_from_wall=0.5,
-                                   max_forward_speed=0.3, init_state=WallFollowing.StateWallFollowing.FORWARD)
-
     print("\n")
 
     print("====== Controls =======\n\n")
 
     print(" The Crazyflie can be controlled from your keyboard!\n")
     print(" All controllable movement is in body coordinates\n")
-    print("- Use the up, back, right and left button to move in the horizontal plane\n")
+    print("- Use the up, back, right and left button to move in " +
+          "the horizontal plane\n")
     print("- Use Q and E to rotate around yaw\n ")
     print("- Use W and S to go up and down\n ")
 
@@ -159,23 +155,6 @@ if __name__ == '__main__':
             key = keyboard.getKey()
 
         height_desired += height_diff_desired * dt
-
-        camera_data = camera.getImage()
-
-        # get range in meters
-        range_front_value = range_front.getValue() / 1000
-        range_right_value = range_right.getValue() / 1000
-        range_left_value = range_left.getValue() / 1000
-
-        # Choose a wall following direction
-        # if you choose direction left, use the right range value
-        # if you choose direction right, use the left range value
-        direction = WallFollowing.WallFollowingDirection.LEFT
-        range_side_value = range_right_value
-
-        # Get the velocity commands from the wall following state machine
-        cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(
-            range_front_value, range_side_value, yaw, direction, robot.getTime())
 
         # PID velocity controller with fixed height
         motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
