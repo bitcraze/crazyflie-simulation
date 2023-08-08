@@ -160,21 +160,17 @@ if __name__ == '__main__':
         actual_state = {}
 
         if first_time:
-            past_x_global = gps.getValues()[0]
-            past_y_global = gps.getValues()[1]
+            past_x_global, past_y_global, _ = gps.getValues()
             past_time = robot.getTime()
             first_time = False
 
         # Get sensor data
-        roll = imu.getRollPitchYaw()[0]
-        pitch = imu.getRollPitchYaw()[1]
-        yaw = imu.getRollPitchYaw()[2]
-        yaw_rate = gyro.getValues()[2]
-        x_global = gps.getValues()[0]
+        roll, pitch, yaw = imu.getRollPitchYaw()
+        _, _, yaw_rate = gyro.getValues()
+        x_global, y_global, altitude = gps.getValues()
+
         v_x_global = (x_global - past_x_global)/dt
-        y_global = gps.getValues()[1]
         v_y_global = (y_global - past_y_global)/dt
-        altitude = gps.getValues()[2]
 
         # Get body fixed velocities
         cos_yaw = cos(yaw)
