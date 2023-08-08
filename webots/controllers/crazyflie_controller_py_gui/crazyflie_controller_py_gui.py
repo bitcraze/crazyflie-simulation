@@ -21,7 +21,6 @@ Author:   Kimberly McGuire (Bitcraze AB) and Simon D. Levy
 
 
 from controller import Robot
-from controller import Keyboard
 
 import socket
 from struct import pack, unpack
@@ -42,7 +41,7 @@ PORT = 5000
 # Scaling factors between client sticks demands and PID inputs
 THROTTLE_SCALEDOWN = 10
 CYCLIC_SCALEDOWN = 60
-YAW_SCALEUP = 5
+YAW_SCALEDOWN = 500
 
 
 def threadfun(conn, pose, client_data):
@@ -137,10 +136,6 @@ if __name__ == '__main__':
 
     height_desired = FLYING_ATTITUDE
 
-    # Get keyboard
-    keyboard = Keyboard()
-    keyboard.enable(timestep)
-
     # Main loop:
     while robot.step(timestep) != -1:
 
@@ -151,9 +146,9 @@ if __name__ == '__main__':
 
         # Get stick demands from client
         height_diff_desired = client_data[1] / THROTTLE_SCALEDOWN
-        gui_sideways_demand = -deadband(client_data[2])  # note negation
-        gui_forward_demand = deadband(client_data[3])
-        gui_yaw_demand = -client_data[4] * YAW_SCALEUP  # note negation
+        sideways_desired = -deadband(client_data[2])  # note negation
+        forward_desired = deadband(client_data[3])
+        yaw_desired = -client_data[4] / YAW_SCALEDOWN  # note negation
 
         dt = robot.getTime() - past_time
         actual_state = {}
@@ -180,28 +175,6 @@ if __name__ == '__main__':
         sin_yaw = sin(yaw)
         v_x = v_x_global * cos_yaw + v_y_global * sin_yaw
         v_y = - v_x_global * sin_yaw + v_y_global * cos_yaw
-
-        # Initialize values
-        desired_state = [0, 0, 0, 0]
-        forward_desired = 0
-        sideways_desired = 0
-        yaw_desired = 0
-
-        key = keyboard.getKey()
-        while key > 0:
-            if key == Keyboard.UP:
-                forward_desired += 0.5
-            elif key == Keyboard.DOWN:
-                forward_desired -= 0.5
-            elif key == Keyboard.RIGHT:
-                sideways_desired -= 0.5
-            elif key == Keyboard.LEFT:
-                sideways_desired += 0.5
-            elif key == ord('Q'):
-                yaw_desired = + 1
-            elif key == ord('E'):
-                yaw_desired = - 1
-            key = keyboard.getKey()
 
         height_desired += height_diff_desired * dt
 
