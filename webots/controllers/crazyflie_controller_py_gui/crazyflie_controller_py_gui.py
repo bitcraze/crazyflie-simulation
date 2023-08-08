@@ -92,8 +92,6 @@ if __name__ == '__main__':
     wall_following = WallFollowing(angle_value_buffer=0.01, reference_distance_from_wall=0.5,
                                    max_forward_speed=0.3, init_state=WallFollowing.StateWallFollowing.FORWARD)
 
-    autonomous_mode = False
-
     print("\n")
 
     print("====== Controls =======\n\n")
@@ -103,8 +101,6 @@ if __name__ == '__main__':
     print("- Use the up, back, right and left button to move in the horizontal plane\n")
     print("- Use Q and E to rotate around yaw\n ")
     print("- Use W and S to go up and down\n ")
-    print("- Press A to start autonomous mode\n")
-    print("- Press D to disable autonomous mode\n")
 
     # Main loop:
     while robot.step(timestep) != -1:
@@ -160,14 +156,6 @@ if __name__ == '__main__':
                 height_diff_desired = 0.1
             elif key == ord('S'):
                 height_diff_desired = - 0.1
-            elif key == ord('A'):
-                if autonomous_mode is False:
-                    autonomous_mode = True
-                    print("Autonomous mode: ON")
-            elif key == ord('D'):
-                if autonomous_mode is True:
-                    autonomous_mode = False
-                    print("Autonomous mode: OFF")
             key = keyboard.getKey()
 
         height_desired += height_diff_desired * dt
@@ -188,11 +176,6 @@ if __name__ == '__main__':
         # Get the velocity commands from the wall following state machine
         cmd_vel_x, cmd_vel_y, cmd_ang_w, state_wf = wall_following.wall_follower(
             range_front_value, range_side_value, yaw, direction, robot.getTime())
-
-        if autonomous_mode:
-            sideways_desired = cmd_vel_y
-            forward_desired = cmd_vel_x
-            yaw_desired = cmd_ang_w
 
         # PID velocity controller with fixed height
         motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
