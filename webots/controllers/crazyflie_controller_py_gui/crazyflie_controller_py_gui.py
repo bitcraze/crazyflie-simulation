@@ -27,11 +27,6 @@ from controller import Robot
 
 import cffirmware
 
-from pids import AltitudePidController
-from pids import PositionPidController
-from pids import AnglePidController
-
-
 HOST = '127.0.0.1'
 PORT = 5000
 
@@ -147,7 +142,7 @@ if __name__ == '__main__':
     # Initialize previous position, time
     loco_x_prev, loco_y_prev, loco_z_prev = 0, 0, 0
     time_prev = robot.getTime()
-        
+
     # In altitude-hold or hover mode, we'll maintain this altitude
     altitude_target = 1
 
