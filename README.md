@@ -76,6 +76,13 @@ Change the controller in the crazyflie robot model in webots to crazyflie_contro
 
 Press play with the simulator and use your keyboard to  control it 
 
+## Crazyflie PC Client
+
+Once you've installed the firmware Python bindings (see previous subsection), you can use the
+Crazyflie PC Client GUI to fly the Webots simulation with a game controller:
+
+1. 
+
 # Gazebo
 
 *Just mind that this model does not fly properly yet.* 
