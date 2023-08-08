@@ -145,7 +145,7 @@ if __name__ == '__main__':
     # Main loop:
     while robot.step(timestep) != -1:
 
-        # Get desired assist mode from client: 
+        # Get desired assist mode from client:
         # 1 = none; 2 = altitude-hold; 3 = hover
         # XXX We currently ignore this and stay in mode 3
         mode = int(client_data[0])
@@ -180,12 +180,13 @@ if __name__ == '__main__':
 
         height_desired += height_diff_desired * dt
 
-        # PID velocity controller with fixed height
+        # Run PID velocity controller with fixed height
         motor_power = PID_crazyflie.pid(dt, forward_desired, sideways_desired,
                                         yaw_desired, height_desired,
                                         roll, pitch, yaw_rate,
                                         altitude, v_x, v_y)
 
+        # Run motors
         m1_motor.setVelocity(-motor_power[0])
         m2_motor.setVelocity(motor_power[1])
         m3_motor.setVelocity(-motor_power[2])
