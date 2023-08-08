@@ -82,7 +82,7 @@ Once you've installed the firmware Python bindings (see previous subsection), yo
 Crazyflie PC Client GUI to fly the Webots simulation with a game controller:
 
 1. In webots/worlds/crazyflie_appartement.wbt, change the controller to crazyflie_controller_py_wallfollowing
-2. Launch webots and open that world file
+2. Launch webots and open the crazyflie_appartement.wbt that you just modified
 3. Launch the Crazyflie Python client GUI and select webots as the interface
 
 # Gazebo
