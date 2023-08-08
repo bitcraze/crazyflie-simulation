@@ -87,6 +87,7 @@ PROTO Crazyflie [
         height 324
       }
       GPS {
+        name "position"
       }
       Gyro {
       }
