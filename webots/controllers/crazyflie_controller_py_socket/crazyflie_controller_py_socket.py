@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     # Initialize Sensors
     imu = make_sensor(robot, 'inertial_unit', timestep)
-    gps = make_sensor(robot, 'position', timestep)
+    gps = make_sensor(robot, 'gps', timestep)
     gyro = make_sensor(robot, 'gyro', timestep)
 
     # Initialize variables
