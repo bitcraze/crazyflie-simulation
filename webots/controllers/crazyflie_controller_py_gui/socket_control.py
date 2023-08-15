@@ -20,6 +20,7 @@ import socket
 import threading
 import time
 import struct
+import keyboard
 
 class WebotsConnection:
 
@@ -97,12 +98,29 @@ if __name__ == '__main__':
     conn = WebotsConnection()
     conn.start()
 
-    while True:
-        ## get position
-        print(conn.getPose())
-        time.sleep(0.1)
-        ## send control
-        conn.setModeAndSticks(0, [0, 0, 0, 0])
-        time.sleep(0.1)
+    # Handle keyboard interrupt
+    try:
+        while True:
+            time.sleep(0.1)
+            print(conn.getPose())
+            # get keyboard key pressed that doesn't block the loop
 
-    conn.stop()
+
+            if keyboard.is_pressed('w'):
+                conn.setModeAndSticks(0, [0, 0, 0.5, 0])
+            elif keyboard.is_pressed('s'):
+                conn.setModeAndSticks(0, [0, 0, -0.5, 0])
+            elif keyboard.is_pressed('a'):
+                conn.setModeAndSticks(0, [0, 0.5, 0, 0])
+            elif keyboard.is_pressed('d'):
+                conn.setModeAndSticks(0, [0, -0.5, 0, 0])
+            elif keyboard.is_pressed('q'):
+                conn.setModeAndSticks(0, [0, 0, 0, 0.5])
+            elif keyboard.is_pressed('e'):
+                conn.setModeAndSticks(0, [0, 0, 0, -0.5])
+            else:
+                conn.setModeAndSticks(0, [0, 0, 0, 0.0])
+    except KeyboardInterrupt:
+        print("Stopping server")
+        conn.stop()
+

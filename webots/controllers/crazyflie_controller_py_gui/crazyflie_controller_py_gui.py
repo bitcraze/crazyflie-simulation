@@ -150,11 +150,13 @@ if __name__ == '__main__':
         # XXX We currently ignore this and stay in mode 3
         mode = int(client_data[0])
 
+        print(client_data)
+
         # Get stick demands from client
         height_diff_desired = client_data[1] / THROTTLE_SCALEDOWN
-        sideways_desired = -deadband(client_data[2])  # note negation
-        forward_desired = deadband(client_data[3])
-        yaw_desired = -client_data[4] / YAW_SCALEDOWN  # note negation
+        sideways_desired = client_data[3]  # note negation
+        forward_desired = client_data[2]
+        yaw_desired = -client_data[4]
 
         dt = robot.getTime() - past_time
         actual_state = {}
