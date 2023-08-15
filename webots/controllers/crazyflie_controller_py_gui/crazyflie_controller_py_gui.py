@@ -58,26 +58,19 @@ def threadfun(conn, pose, client_data):
                            degrees(pose['theta']),
                            degrees(pose['psi'])))
 
+
             (client_data[0],
              client_data[1],
              client_data[2],
-             client_data[3],
-             client_data[4]) = unpack('fffff', conn.recv(20))
+             client_data[3]) = unpack('ffff', conn.recv(16))
+
+
 
         except Exception as e:  # client disconnected
             print('Error on comms thread: ' + str(e))
             break
 
         sleep(0)  # yield to main thread
-
-
-def deadband(x):
-    '''Stick deadband for roll, pitch'''
-
-    y = x / CYCLIC_SCALEDOWN
-
-    return 0 if abs(y) < 0.2 else +0.5 if y > 0 else -0.5
-
 
 def make_motor(robot, motor_name, spin):
     '''Helper'''
@@ -87,7 +80,6 @@ def make_motor(robot, motor_name, spin):
     motor.setVelocity(spin)
 
     return motor
-
 
 def make_sensor(robot, sensor_name, timestep):
 
@@ -107,13 +99,13 @@ if __name__ == '__main__':
     conn, _ = sock.accept()
 
     # Need to get assist mode and raw stick values from client
-    client_data = [0, 0, 0, 0, 0]
+    velocity_socket_data = [0, 0, 0, 0]
 
     # This data will be sent to the GUI
     pose = {'x': 0, 'y': 0, 'z': 0, 'phi': 0, 'theta': 0, 'psi': 0}
 
     # Start thread for communicating with client
-    Thread(target=threadfun, args=(conn, pose, client_data)).start()
+    Thread(target=threadfun, args=(conn, pose, velocity_socket_data)).start()
 
     robot = Robot()
     timestep = int(robot.getBasicTimeStep())
@@ -148,15 +140,14 @@ if __name__ == '__main__':
         # Get desired assist mode from client:
         # 1 = none; 2 = altitude-hold; 3 = hover
         # XXX We currently ignore this and stay in mode 3
-        mode = int(client_data[0])
 
-        print(client_data)
+        #print(client_data)
 
         # Get stick demands from client
-        height_diff_desired = client_data[1] / THROTTLE_SCALEDOWN
-        sideways_desired = client_data[3]  # note negation
-        forward_desired = client_data[2]
-        yaw_desired = -client_data[4]
+        forward_desired = velocity_socket_data[0]
+        sideways_desired = velocity_socket_data[1]  # note negation
+        height_diff_desired = velocity_socket_data[2]
+        yaw_desired = -velocity_socket_data[3]
 
         dt = robot.getTime() - past_time
         actual_state = {}
