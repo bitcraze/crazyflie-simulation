@@ -94,27 +94,33 @@ if __name__ == '__main__':
     conn = WebotsConnection()
     conn.start()
 
+
+    print("\n");
+
+    print("====== External Socket Script Webots =======\n\n");
+
     # Handle keyboard interrupt
     try:
         while True:
             time.sleep(0.1)
-            print(conn.getPose())
+            print(f"x: {conn.pose[0]:.2f}, y: {conn.pose[1]:.2f}, z: {conn.pose[2]:.2f}, yaw: {conn.pose[5]:.2f}")
+
             # get keyboard key pressed that doesn't block the loop
-            if keyboard.is_pressed('w'):
+            if keyboard.is_pressed('up'):
                 conn.setDesiredVelocity([0.5, 0, 0, 0])
-            elif keyboard.is_pressed('s'):
+            elif keyboard.is_pressed('down'):
                 conn.setDesiredVelocity([-0.5, 0, 0, 0])
-            elif keyboard.is_pressed('a'):
+            elif keyboard.is_pressed('left'):
                 conn.setDesiredVelocity([0, 0.5, 0, 0])
-            elif keyboard.is_pressed('d'):
+            elif keyboard.is_pressed('right'):
                 conn.setDesiredVelocity([0, -0.5, 0, 0])
             elif keyboard.is_pressed('q'):
                 conn.setDesiredVelocity([0, 0, 0, 0.5])
             elif keyboard.is_pressed('e'):
                 conn.setDesiredVelocity([0, 0, 0, -0.5])
-            elif keyboard.is_pressed('t'):
+            elif keyboard.is_pressed('w'):
                 conn.setDesiredVelocity([0, 0, 0.1, 0])
-            elif keyboard.is_pressed('b'):
+            elif keyboard.is_pressed('s'):
                 conn.setDesiredVelocity([0, 0, -0.1, 0])
             else:
                 conn.setDesiredVelocity([0, 0, 0, 0.0])

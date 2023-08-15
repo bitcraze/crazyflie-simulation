@@ -12,9 +12,9 @@
 
 
 """
-file: crazyflie_py_wallfollowing.py
+file: crazyflie_controller_py_socket.py
 
-Controls the crazyflie via the Python GUI client
+Controls the crazyflie via a socket in Python
 
 Author:   Kimberly McGuire (Bitcraze AB) and Simon D. Levy
 """
@@ -44,7 +44,7 @@ CYCLIC_SCALEDOWN = 60
 YAW_SCALEDOWN = 500
 
 
-def threadfun(conn, pose, client_data):
+def threadfun(conn, pose, velocity_socket_data):
     '''Threaded Gommunication with GUI client'''
 
     while True:
@@ -59,10 +59,10 @@ def threadfun(conn, pose, client_data):
                            degrees(pose['psi'])))
 
 
-            (client_data[0],
-             client_data[1],
-             client_data[2],
-             client_data[3]) = unpack('ffff', conn.recv(16))
+            (velocity_socket_data[0],
+             velocity_socket_data[1],
+             velocity_socket_data[2],
+             velocity_socket_data[3]) = unpack('ffff', conn.recv(16))
 
 
 
@@ -137,17 +137,11 @@ if __name__ == '__main__':
     # Main loop:
     while robot.step(timestep) != -1:
 
-        # Get desired assist mode from client:
-        # 1 = none; 2 = altitude-hold; 3 = hover
-        # XXX We currently ignore this and stay in mode 3
-
-        #print(client_data)
-
         # Get stick demands from client
         forward_desired = velocity_socket_data[0]
-        sideways_desired = velocity_socket_data[1]  # note negation
+        sideways_desired = velocity_socket_data[1]
         height_diff_desired = velocity_socket_data[2]
-        yaw_desired = -velocity_socket_data[3]
+        yaw_desired = -velocity_socket_data[3] # note the minus sign
 
         dt = robot.getTime() - past_time
         actual_state = {}
@@ -161,6 +155,14 @@ if __name__ == '__main__':
         roll, pitch, yaw = imu.getRollPitchYaw()
         _, _, yaw_rate = gyro.getValues()
         x_global, y_global, altitude = gps.getValues()
+
+        # Fill in pose
+        pose['x'] = x_global
+        pose['y'] = y_global
+        pose['z'] = altitude
+        pose['phi'] = roll
+        pose['theta'] = pitch
+        pose['psi'] = yaw
 
         v_x_global = (x_global - past_x_global)/dt
         v_y_global = (y_global - past_y_global)/dt

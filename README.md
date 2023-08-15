@@ -13,7 +13,7 @@ Currently contains:
 * [Webots](https://cyberbotics.com/) simulation files
     * Currently with velocity control fixed height and firmware python bindings
     * Camera and multiranger sensors
-* [Gazebo](https://gazebosim.org/) 
+* [Gazebo](https://gazebosim.org/)
     * sdf files
     * no control yet
 
@@ -53,7 +53,7 @@ Run the following world
 
     webots webots/worlds/crazyflie_appartement.wbt
 
-Go to the `webots/controller/crazyflie_controller_py_wallfollowing/` and look into crazyflie_controller_py_wallfollowing.py. 
+Go to the `webots/controller/crazyflie_controller_py_wallfollowing/` and look into crazyflie_controller_py_wallfollowing.py.
 
 Make sure this line is pointing to the cflib's wallfollowing script (make sure to update the [crazyflie-lib-python repository](https://github.com/bitcraze/crazyflie-lib-python))
 
@@ -74,24 +74,25 @@ Change the controller in the crazyflie robot model in webots to crazyflie_contro
 
     sys.path.append('../../../../../C/crazyflie-firmware')
 
-Press play with the simulator and use your keyboard to  control it 
+Press play with the simulator and use your keyboard to  control it
 
-## Crazyflie PC Client
+## External socket control
 
-Once you've installed the firmware Python bindings (see previous subsection), you can use the
-Crazyflie PC Client GUI to fly the Webots simulation with a game controller:
+There is also an example that shows controlling the crazyflie with an socket connection.
 
-1. In webots/worlds/crazyflie_appartement.wbt, change the controller to crazyflie_controller_py_wallfollowing
-2. Launch webots and open the crazyflie_appartement.wbt that you just modified
-3. Launch the Crazyflie Python client GUI and select webots as the interface
+Change the controller to `crazyflie_controller_py_socket` and start the simulation. Then in a seperate terminal outside of the webots simulator run:
+
+    python3 webots/controllers/crazyflie_controller_py_socket/socket_control.py
+
+You can use the arrow keys and q e w s to control the drone in velocity mode.
 
 # Gazebo
 
-*Just mind that this model does not fly properly yet.* 
+*Just mind that this model does not fly properly yet.*
 
 1- First install gazebo garden: https://ignitionrobotics.org/docs/garden/install
 
-2- Clone this repo: 
+2- Clone this repo:
     git clone https://github.com/bitcraze/crazyflie_simulation.git
 
 3- Put this repo in your ~/.bashrc and source it in your terminal
@@ -100,10 +101,10 @@ Crazyflie PC Client GUI to fly the Webots simulation with a game controller:
 
 *Note that indeed this is still IGN_GAZEBO_RESOURCE_PATH, eventhough gazebo dropped the name IGN so this should be updated at one point*
 
-4- Try out the crazyflie world with: 
+4- Try out the crazyflie world with:
     gz sim crazyflie_world.sdf
 
-5- Spin motors 
+5- Spin motors
 
     gz topic -t /crazyflie/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[250,250,250,250]'
 
