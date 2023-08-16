@@ -17,3 +17,16 @@ ToDo
 
 Go to the [contribute page](https://www.bitcraze.io/development/contribute/) on our website to learn more.
 
+
+
+## External socket control
+TO BE MOVED TO REPO DOC
+
+There is also an example that shows controlling the crazyflie with an socket connection.
+
+Change the controller to `crazyflie_controller_py_socket` and start the simulation. Then in a seperate terminal outside of the webots simulator run:
+
+    python3 webots/controllers/crazyflie_controller_py_socket/socket_control.py
+
+You can use the arrow keys and q e w s to control the drone in velocity mode.
+
