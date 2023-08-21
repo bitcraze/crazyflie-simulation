@@ -7,11 +7,14 @@ Currently it contains low resolution meshes based on the design of the actual [c
 
 ## Installation
 
-see the  [installation instructions](/docs/installing/) in the Github docs folder.
+See the  [installation instructions](/docs/installing/) in the Github docs folder.
 
 ## Official documentation
 
 https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/
+
+
+Check out the [Bitcraze crazyflie-simulation documentation](https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/) on our website.
 
 ## Contribute
 
