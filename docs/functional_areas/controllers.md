@@ -25,3 +25,12 @@ Change the controller in the crazyflie robot model in webots to crazyflie_contro
 
 Press play with the simulator and use your keyboard to  control it.
 
+## External socket control
+
+There is also an example that shows controlling the crazyflie with an socket connection.
+
+Change the controller to `crazyflie_controller_py_socket` and start the simulation. Then in a seperate terminal outside of the webots simulator run:
+
+    python3 webots/controllers/crazyflie_controller_py_socket/socket_control.py
+
+You can use the arrow keys and q e w s to control the drone in velocity mode.
