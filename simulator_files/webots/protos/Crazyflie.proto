@@ -39,7 +39,7 @@ PROTO Crazyflie [
           }
           CadShape {
             url [
-                "../../meshes/collada_files/cf2_assembly.dae"
+                "../../../meshes/collada_files/cf2_assembly.dae"
             ]
           }
         ]
@@ -112,7 +112,7 @@ PROTO Crazyflie [
                 baseColor 0.1 0.1 0.1
                 baseColorMap ImageTexture {
                   url [
-                    "../../meshes/textures/fast_helix.png"
+                    "../../../meshes/textures/fast_helix.png"
                   ]
                 }
                 metalness 0
@@ -134,7 +134,7 @@ PROTO Crazyflie [
               }
               geometry Mesh {
                 url [
-                    "../../meshes/collada_files/ccw_prop.dae"
+                    "../../../meshes/collada_files/ccw_prop.dae"
                 ]
               }
             }
