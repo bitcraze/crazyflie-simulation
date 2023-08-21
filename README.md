@@ -7,26 +7,12 @@ Currently it contains low resolution meshes based on the design of the actual [c
 
 ## Installation
 
-see the  [installation instructions](/docs/index.md) in the Github docs folder.
+see the  [installation instructions](/docs/installing/) in the Github docs folder.
 
 ## Official documentation
 
-ToDo
+https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/
 
 ## Contribute
 
 Go to the [contribute page](https://www.bitcraze.io/development/contribute/) on our website to learn more.
-
-
-
-## External socket control
-TO BE MOVED TO REPO DOC
-
-There is also an example that shows controlling the crazyflie with an socket connection.
-
-Change the controller to `crazyflie_controller_py_socket` and start the simulation. Then in a seperate terminal outside of the webots simulator run:
-
-    python3 webots/controllers/crazyflie_controller_py_socket/socket_control.py
-
-You can use the arrow keys and q e w s to control the drone in velocity mode.
-
