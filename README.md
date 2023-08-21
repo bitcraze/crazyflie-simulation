@@ -11,9 +11,6 @@ See the  [installation instructions](/docs/installing/) in the Github docs folde
 
 ## Official documentation
 
-https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/
-
-
 Check out the [Bitcraze crazyflie-simulation documentation](https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/) on our website.
 
 ## Contribute
