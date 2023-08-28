@@ -41,7 +41,8 @@
 
 // Add external controller
 // #include "pid_controller.h"
-#include "../../../../shared_controllers/c_based/pid_controller.h"
+#include "../../../../controllers_shared/c_based/pid_controller.h"
+
 
 #define FLYING_ALTITUDE 1.0
 
