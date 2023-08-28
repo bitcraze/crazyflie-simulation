@@ -29,7 +29,7 @@ from math import cos, sin, degrees
 from time import sleep
 
 import sys
-sys.path.append('../../../controllers/python_based')
+sys.path.append('../../../../controllers_shared/python_based')
 from pid_controller import pid_velocity_fixed_height_controller
 
 FLYING_ATTITUDE = 1
