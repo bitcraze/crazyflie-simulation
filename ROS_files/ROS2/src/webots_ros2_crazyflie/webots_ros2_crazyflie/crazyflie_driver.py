@@ -20,7 +20,7 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 import numpy as np
 from geometry_msgs.msg import TransformStamped
-from tf2_ros import StaticTransformBroadcaster
+from tf2_ros import TransformBroadcaster
 import tf_transformations
 
 from math import cos, sin
@@ -86,7 +86,7 @@ class CrazyflieDriver:
         self.node = rclpy.create_node('crazyflie_driver')
         self.node.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 1)
         self.laser_publisher = self.node.create_publisher(LaserScan, '/scan', 1)
-        self.static_broadcaster = StaticTransformBroadcaster(self.node)
+        self.static_broadcaster = TransformBroadcaster(self.node)
         self.first_time = True
         
     def cmd_vel_callback(self, twist):
