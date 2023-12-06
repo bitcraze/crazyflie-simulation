@@ -83,6 +83,7 @@ class CrazyflieDriver:
         self.node = rclpy.create_node('crazyflie_driver')
         self.node.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 1)
 
+        self.first_time = True
 
     def cmd_vel_callback(self, twist):
         self.vel_cmd_twist = twist
@@ -90,13 +91,18 @@ class CrazyflieDriver:
     def step(self):
 
         rclpy.spin_once(self.node, timeout_sec=0)
+        if self.first_time:
+            self.past_x_global = self.gps.getValues()[0]
+            self.past_y_global = self.gps.getValues()[1]
+            self.past_time = self.robot.getTime()
+            self.first_time = False
 
         dt = self.robot.getTime() - self.past_time
         actual_state = {}
 
         ## Get sensor data
         roll = self.imu.getRollPitchYaw()[0]
-        pitch = self.imu.getRollPitchYaw()[1]
+        pitch = -self.imu.getRollPitchYaw()[1]
         yaw = self.imu.getRollPitchYaw()[2]
         yaw_rate = self.gyro.getValues()[2]
         altitude = self.gps.getValues()[2]
@@ -116,9 +122,11 @@ class CrazyflieDriver:
         forward_desired = self.vel_cmd_twist.linear.x
         sideways_desired = self.vel_cmd_twist.linear.y
         yaw_desired = self.vel_cmd_twist.angular.z
-        height_diff_desired = self.vel_cmd_twist.linear.x
+        height_diff_desired = self.vel_cmd_twist.linear.z
 
         self.height_desired += height_diff_desired * dt
+
+
 
         ## Example how to get sensor data
         ## range_front_value = range_front.getValue();
@@ -130,7 +138,7 @@ class CrazyflieDriver:
                                 yaw_desired, self.height_desired,
                                 roll, pitch, yaw_rate,
                                 altitude, v_x, v_y)
-
+    
         self.m1_motor.setVelocity(-motor_power[0])
         self.m2_motor.setVelocity(motor_power[1])
         self.m3_motor.setVelocity(-motor_power[2])
