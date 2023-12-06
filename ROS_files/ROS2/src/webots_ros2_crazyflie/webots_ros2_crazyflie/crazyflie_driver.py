@@ -17,7 +17,11 @@
 import math
 import rclpy
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
 import numpy as np
+from geometry_msgs.msg import TransformStamped
+from tf2_ros import StaticTransformBroadcaster
+import tf_transformations
 
 from math import cos, sin
 
@@ -65,7 +69,6 @@ class CrazyflieDriver:
         self.range_right.enable(self.timestep)
 
         ## Initialize variables
-
         self.past_x_global = 0
         self.past_y_global = 0
         self.past_time = self.robot.getTime()
@@ -82,23 +85,25 @@ class CrazyflieDriver:
         rclpy.init(args=None)
         self.node = rclpy.create_node('crazyflie_driver')
         self.node.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 1)
-
+        self.laser_publisher = self.node.create_publisher(LaserScan, '/scan', 1)
+        self.static_broadcaster = StaticTransformBroadcaster(self.node)
         self.first_time = True
-
+        
     def cmd_vel_callback(self, twist):
         self.vel_cmd_twist = twist
 
     def step(self):
 
         rclpy.spin_once(self.node, timeout_sec=0)
+        dt = self.robot.getTime() - self.past_time
+
         if self.first_time:
             self.past_x_global = self.gps.getValues()[0]
             self.past_y_global = self.gps.getValues()[1]
             self.past_time = self.robot.getTime()
             self.first_time = False
-
-        dt = self.robot.getTime() - self.past_time
-        actual_state = {}
+        else:
+            dt = self.robot.getTime() - self.past_time
 
         ## Get sensor data
         roll = self.imu.getRollPitchYaw()[0]
@@ -110,6 +115,7 @@ class CrazyflieDriver:
         v_x_global = (x_global - self.past_x_global)/dt
         y_global = self.gps.getValues()[1]
         v_y_global = (y_global - self.past_y_global)/dt
+        z_global = self.gps.getValues()[2]
 
         ## Get body fixed velocities
         cosyaw = cos(yaw)
@@ -118,7 +124,6 @@ class CrazyflieDriver:
         v_y = - v_x_global * sinyaw + v_y_global * cosyaw
 
         ## Initialize values
-        desired_state = [0, 0, 0, 0]
         forward_desired = self.vel_cmd_twist.linear.x
         sideways_desired = self.vel_cmd_twist.linear.y
         yaw_desired = self.vel_cmd_twist.angular.z
@@ -126,12 +131,37 @@ class CrazyflieDriver:
 
         self.height_desired += height_diff_desired * dt
 
-
-
         ## Example how to get sensor data
-        ## range_front_value = range_front.getValue();
-        ## cameraData = camera.getImage()
+        ranges = [self.range_back.getValue()/1000.0, self.range_left.getValue()/1000.0, self.range_front.getValue()/1000.0, self.range_right.getValue()/1000.0]
 
+        ## Publish laser scan
+        scan_msg = LaserScan()
+        scan_msg.header.stamp = self.node.get_clock().now().to_msg()
+        scan_msg.header.frame_id = 'crazyflie'
+        scan_msg.angle_min = -0.5 * 2 * math.pi
+        scan_msg.angle_max = 0.25 * 2 * math.pi
+        scan_msg.angle_increment = 1.0 * math.pi/2
+        scan_msg.range_min = 0.1
+        scan_msg.range_max = 2.0
+        scan_msg.ranges = ranges
+        self.laser_publisher.publish(scan_msg)
+
+        ## Publish static transform
+        laser_transform = TransformStamped()
+        q = tf_transformations.quaternion_from_euler(roll, pitch, yaw)
+        laser_transform = TransformStamped()
+        laser_transform.header.stamp = self.node.get_clock().now().to_msg()
+        laser_transform.header.frame_id = 'odom'
+        laser_transform.child_frame_id = 'crazyflie'
+        laser_transform.transform.translation.x = x_global
+        laser_transform.transform.translation.y = y_global
+        laser_transform.transform.translation.z = z_global
+        laser_transform.transform.rotation.x = q[0]
+        laser_transform.transform.rotation.y = q[1]
+        laser_transform.transform.rotation.z = q[2]
+        laser_transform.transform.rotation.w = q[3]
+
+        self.static_broadcaster.sendTransform(laser_transform)
 
         ## PID velocity controller with fixed height
         motor_power = self.PID_CF.pid(dt, forward_desired, sideways_desired,
