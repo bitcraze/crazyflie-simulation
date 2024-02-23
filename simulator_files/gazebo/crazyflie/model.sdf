@@ -40,7 +40,7 @@ Copyright (c) 2022 Bitcraze
             <geometry>
                 <mesh>
                     <scale>1 1 1</scale>
-                    <uri>../../meshes/collada_files/cf2_assembly.dae</uri>
+                    <uri>../../../meshes/collada_files/cf2_assembly.dae</uri>
                 </mesh>
             </geometry>
         </visual>
@@ -64,7 +64,7 @@ Copyright (c) 2022 Bitcraze
                 <geometry>
                     <mesh>
                         <scale>1 1 1</scale>
-                        <uri>../../meshes/collada_files/ccw_prop.dae</uri>
+                        <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
                     </mesh>
                 </geometry>
             </visual>
@@ -88,7 +88,7 @@ Copyright (c) 2022 Bitcraze
                 <geometry>
                     <mesh>
                         <scale>1 1 1</scale>
-                        <uri>../../meshes/collada_files/cw_prop.dae</uri>
+                        <uri>../../../meshes/collada_files/cw_prop.dae</uri>
                     </mesh>
                 </geometry>
             </visual>
@@ -112,7 +112,7 @@ Copyright (c) 2022 Bitcraze
                 <geometry>
                     <mesh>
                         <scale>1 1 1</scale>
-                        <uri>../../meshes/collada_files/ccw_prop.dae</uri>
+                        <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
                     </mesh>
                 </geometry>
             </visual>
@@ -136,7 +136,7 @@ Copyright (c) 2022 Bitcraze
                 <geometry>
                     <mesh>
                         <scale>1 1 1</scale>
-                        <uri>../../meshes/collada_files/cw_prop.dae</uri>
+                        <uri>../../../meshes/collada_files/cw_prop.dae</uri>
                     </mesh>
                 </geometry>
             </visual>
