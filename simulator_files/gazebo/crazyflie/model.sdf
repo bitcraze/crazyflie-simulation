@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
-<!-- 
+<!--
  ...........       ____  _ __
  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
+
 MIT License
 
 Copyright (c) 2022 Bitcraze
@@ -201,9 +201,10 @@ Copyright (c) 2022 Bitcraze
                 </dynamics>
             </axis>
         </joint>
+
     <plugin
         filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m1_joint</jointName>
         <linkName>crazyflie/m1_prop</linkName>
@@ -223,7 +224,7 @@ Copyright (c) 2022 Bitcraze
       </plugin>
       <plugin
         filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m2_joint</jointName>
         <linkName>crazyflie/m2_prop</linkName>
@@ -280,10 +281,49 @@ Copyright (c) 2022 Bitcraze
         <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
         <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
         <motorType>velocity</motorType>
-      </plugin> 
+      </plugin>
+     <plugin
+        filename="gz-sim-multicopter-control-system"
+        name="gz::sim::systems::MulticopterVelocityControl">
+        <robotNamespace>crazyflie</robotNamespace>
+        <commandSubTopic>gazebo/command/twist</commandSubTopic>
+        <enableSubTopic>enable</enableSubTopic>
+        <comLinkName>crazyflie/body</comLinkName>
+        <velocityGain>1000 1000 5000</velocityGain>
+        <attitudeGain>0.5 0.5 0.5</attitudeGain>
+        <angularRateGain>1.5 1.5 1.5</angularRateGain>
+        <maximumAngularVelocity>3 3 3</maximumAngularVelocity>
+
+        <rotorConfiguration>
+          <rotor>
+            <jointName>crazyflie/m1_joint</jointName>
+            <forceConstant>1.28192e-08</forceConstant>
+            <momentConstant>0.005964552</momentConstant>
+            <direction>1</direction>
+          </rotor>
+          <rotor>
+            <jointName>crazyflie/m2_joint</jointName>
+            <forceConstant>1.28192e-08</forceConstant>
+            <momentConstant>0.005964552</momentConstant>
+            <direction>-1</direction>
+          </rotor>
+          <rotor>
+            <jointName>crazyflie/m3_joint</jointName>
+            <forceConstant>1.28192e-08</forceConstant>
+            <momentConstant>0.005964552</momentConstant>
+            <direction>1</direction>
+          </rotor>
+          <rotor>
+            <jointName>crazyflie/m4_joint</jointName>
+            <forceConstant>1.28192e-08</forceConstant>
+            <momentConstant>0.005964552</momentConstant>
+            <direction>-1</direction>
+          </rotor>
+        </rotorConfiguration>
+      </plugin>
       <plugin
-        filename="ignition-gazebo-odometry-publisher-system"
-        name="ignition::gazebo::systems::OdometryPublisher">
+        filename="gz-sim-odometry-publisher-system"
+        name="gz::sim::systems::OdometryPublisher">
         <dimensions>3</dimensions>
       </plugin>
     </model>
