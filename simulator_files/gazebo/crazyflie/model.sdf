@@ -43,6 +43,11 @@ Copyright (c) 2022 Bitcraze
                     <uri>../../../meshes/collada_files/cf2_assembly.dae</uri>
                 </mesh>
             </geometry>
+            <sensor name="imu_sensor" type="imu">
+                <pose degrees="true">0 0 0 180 0 0</pose>
+                <always_on>1</always_on>
+                <update_rate>1000.0</update_rate>
+            </sensor>
         </visual>
         </link>
         <link name="crazyflie/m1_prop">
@@ -51,9 +56,9 @@ Copyright (c) 2022 Bitcraze
                 <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
-                    <ixx>0.000000002*70</ixx>
-                    <iyy>0.000000167*70</iyy>
-                    <izz>0.000000168*70</izz>
+                    <ixx>8.33333E-09</ixx>
+                    <iyy>1.08333E-07</iyy>
+                    <izz>1.13333E-07</izz>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
                     <iyz>0</iyz>
@@ -70,14 +75,14 @@ Copyright (c) 2022 Bitcraze
             </visual>
         </link>
         <link name="crazyflie/m2_prop">
-            <pose>-0.031 -0.031 0.021 0 0 0</pose>
+            <pose>-0.031 0.031 0.021 0 0 0</pose>
             <inertial>
                 <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
-                    <ixx>0.000000002*50</ixx>
-                    <iyy>0.000000167*50</iyy>
-                    <izz>0.000000168*50</izz>
+                    <ixx>8.33333E-09</ixx>
+                    <iyy>1.08333E-07</iyy>
+                    <izz>1.13333E-07</izz>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
                     <iyz>0</iyz>
@@ -94,14 +99,14 @@ Copyright (c) 2022 Bitcraze
             </visual>
         </link>
         <link name="crazyflie/m3_prop">
-            <pose >-0.031 0.031 0.021 0 0 0</pose>
+            <pose >0.031 0.031 0.021 0 0 0</pose>
             <inertial>
                 <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
-                    <ixx>0.000000002*50</ixx>
-                    <iyy>0.000000167*50</iyy>
-                    <izz>0.000000168*50</izz>
+                    <ixx>8.33333E-09</ixx>
+                    <iyy>1.08333E-07</iyy>
+                    <izz>1.13333E-07</izz>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
                     <iyz>0</iyz>
@@ -118,14 +123,14 @@ Copyright (c) 2022 Bitcraze
             </visual>
         </link>
         <link name="crazyflie/m4_prop">
-            <pose>0.031 0.031 0.021 0 0 0</pose>
+            <pose>-0.031 -0.031 0.021 0 0 0</pose>
             <inertial>
                 <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
-                    <ixx>0.000000002*50</ixx>
-                    <iyy>0.000000167*50</iyy>
-                    <izz>0.000000168*50</izz>
+                    <ixx>8.33333E-09</ixx>
+                    <iyy>1.08333E-07</iyy>
+                    <izz>1.13333E-07</izz>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
                     <iyz>0</iyz>
@@ -151,8 +156,7 @@ Copyright (c) 2022 Bitcraze
                     <upper>1e+16</upper>
                 </limit>
                 <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
+                    <damping>0.004</damping>
                 </dynamics>
             </axis>
         </joint>
@@ -166,8 +170,7 @@ Copyright (c) 2022 Bitcraze
                     <upper>1e+16</upper>
                 </limit>
                 <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
+                    <damping>0.004</damping>
                 </dynamics>
             </axis>
         </joint>
@@ -181,8 +184,7 @@ Copyright (c) 2022 Bitcraze
                     <upper>1e+16</upper>
                 </limit>
                 <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
+                    <damping>0.004</damping>
                 </dynamics>
             </axis>
         </joint>
@@ -196,8 +198,7 @@ Copyright (c) 2022 Bitcraze
                     <upper>1e+16</upper>
                 </limit>
                 <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
+                    <damping>0.004</damping>
                 </dynamics>
             </axis>
         </joint>
@@ -213,11 +214,11 @@ Copyright (c) 2022 Bitcraze
         <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>1.28192e-08</motorConstant>
-        <momentConstant>0.005964552</momentConstant>
+        <momentConstant>0.016</momentConstant>
         <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>0</motorNumber>
+        <actuator_number>0</actuator_number>
         <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-        <rollingMomentCoefficient>0.0000001</rollingMomentCoefficient>
+        <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
         <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
         <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
         <motorType>velocity</motorType>
@@ -228,16 +229,16 @@ Copyright (c) 2022 Bitcraze
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m2_joint</jointName>
         <linkName>crazyflie/m2_prop</linkName>
-        <turningDirection>cw</turningDirection>
+        <turningDirection>ccw</turningDirection>
         <timeConstantUp>0.0125</timeConstantUp>
         <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>1.28192e-08</motorConstant>
-        <momentConstant>0.005964552</momentConstant>
+        <momentConstant>0.016</momentConstant>
         <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>1</motorNumber>
+        <actuator_number>1</actuator_number>
         <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-        <rollingMomentCoefficient>0.0000001</rollingMomentCoefficient>
+        <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
         <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
         <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
         <motorType>velocity</motorType>
@@ -248,16 +249,16 @@ Copyright (c) 2022 Bitcraze
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m3_joint</jointName>
         <linkName>crazyflie/m3_prop</linkName>
-        <turningDirection>ccw</turningDirection>
+        <turningDirection>cw</turningDirection>
         <timeConstantUp>0.0125</timeConstantUp>
         <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>1.28192e-08</motorConstant>
-        <momentConstant>0.005964552</momentConstant>
+        <momentConstant>0.016</momentConstant>
         <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>2</motorNumber>
+        <actuator_number>2</actuator_number>
         <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-        <rollingMomentCoefficient>0.0000001</rollingMomentCoefficient>
+        <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
         <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
         <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
         <motorType>velocity</motorType>
@@ -273,11 +274,11 @@ Copyright (c) 2022 Bitcraze
         <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>1.28192e-08</motorConstant>
-        <momentConstant>0.005964552</momentConstant>
+        <momentConstant>0.016</momentConstant>
         <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>3</motorNumber>
+        <actuator_number>3</actuator_number>
         <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
-        <rollingMomentCoefficient>0.000001</rollingMomentCoefficient>
+        <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
         <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
         <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
         <motorType>velocity</motorType>
@@ -290,33 +291,33 @@ Copyright (c) 2022 Bitcraze
         <enableSubTopic>enable</enableSubTopic>
         <comLinkName>crazyflie/body</comLinkName>
         <velocityGain>1000 1000 5000</velocityGain>
-        <attitudeGain>0.5 0.5 0.5</attitudeGain>
-        <angularRateGain>1.5 1.5 1.5</angularRateGain>
-        <maximumAngularVelocity>3 3 3</maximumAngularVelocity>
+        <velocityGain>0.03 0.03 0.03</velocityGain>
+        <attitudeGain>0.02 0.02 0.02</attitudeGain>
+        <angularRateGain>0.005 0.005 0.005</angularRateGain>
 
         <rotorConfiguration>
           <rotor>
             <jointName>crazyflie/m1_joint</jointName>
             <forceConstant>1.28192e-08</forceConstant>
-            <momentConstant>0.005964552</momentConstant>
+            <momentConstant>0.016</momentConstant>
             <direction>1</direction>
           </rotor>
           <rotor>
             <jointName>crazyflie/m2_joint</jointName>
             <forceConstant>1.28192e-08</forceConstant>
-            <momentConstant>0.005964552</momentConstant>
-            <direction>-1</direction>
+            <momentConstant>0.016</momentConstant>
+            <direction>1</direction>
           </rotor>
           <rotor>
             <jointName>crazyflie/m3_joint</jointName>
             <forceConstant>1.28192e-08</forceConstant>
-            <momentConstant>0.005964552</momentConstant>
-            <direction>1</direction>
+            <momentConstant>0.016</momentConstant>
+            <direction>-1</direction>
           </rotor>
           <rotor>
             <jointName>crazyflie/m4_joint</jointName>
             <forceConstant>1.28192e-08</forceConstant>
-            <momentConstant>0.005964552</momentConstant>
+            <momentConstant>0.016</momentConstant>
             <direction>-1</direction>
           </rotor>
         </rotorConfiguration>
