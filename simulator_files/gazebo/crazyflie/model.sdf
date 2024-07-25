@@ -326,7 +326,6 @@ Copyright (c) 2022 Bitcraze
       <commandSubTopic>gazebo/command/twist</commandSubTopic>
       <enableSubTopic>enable</enableSubTopic>
       <comLinkName>crazyflie/body</comLinkName>
-      <velocityGain>1000 1000 5000</velocityGain>
       <velocityGain>0.03 0.03 0.03</velocityGain>
       <attitudeGain>0.02 0.02 0.02</attitudeGain>
       <angularRateGain>0.005 0.005 0.005</angularRateGain>
