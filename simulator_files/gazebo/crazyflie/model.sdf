@@ -240,8 +240,8 @@ Copyright (c) 2022 Bitcraze
     </joint>
 
     <plugin
-    filename="gz-sim-multicopter-motor-model-system"
-    name="gz::sim::systems::MulticopterMotorModel">
+      filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
       <robotNamespace>crazyflie</robotNamespace>
       <jointName>crazyflie/m1_joint</jointName>
       <linkName>crazyflie/m1_prop</linkName>
@@ -260,8 +260,8 @@ Copyright (c) 2022 Bitcraze
       <motorType>velocity</motorType>
     </plugin>
     <plugin
-    filename="gz-sim-multicopter-motor-model-system"
-    name="gz::sim::systems::MulticopterMotorModel">
+      filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
       <robotNamespace>crazyflie</robotNamespace>
       <jointName>crazyflie/m2_joint</jointName>
       <linkName>crazyflie/m2_prop</linkName>
@@ -280,8 +280,8 @@ Copyright (c) 2022 Bitcraze
       <motorType>velocity</motorType>
     </plugin>
     <plugin
-    filename="gz-sim-multicopter-motor-model-system"
-    name="gz::sim::systems::MulticopterMotorModel">
+      filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
       <robotNamespace>crazyflie</robotNamespace>
       <jointName>crazyflie/m3_joint</jointName>
       <linkName>crazyflie/m3_prop</linkName>
