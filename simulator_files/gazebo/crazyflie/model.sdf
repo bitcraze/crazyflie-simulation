@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<!--
+<!-- 
  ...........       ____  _ __
  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
-
+ 
 MIT License
 
 Copyright (c) 2022 Bitcraze
@@ -43,12 +43,12 @@ Copyright (c) 2022 Bitcraze
             <uri>../../../meshes/collada_files/cf2_assembly.dae</uri>
           </mesh>
         </geometry>
-        <sensor name="imu_sensor" type="imu">
-          <pose degrees="true">0 0 0 180 0 0</pose>
-          <always_on>1</always_on>
-          <update_rate>1000.0</update_rate>
-        </sensor>
       </visual>
+      <sensor name="imu_sensor" type="imu">
+        <pose degrees="true">0 0 0 180 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>1000.0</update_rate>
+      </sensor>
     </link>
     <link name="crazyflie/m1_prop">
       <pose>0.031 -0.031 0.021 0 0 0</pose>
@@ -64,6 +64,15 @@ Copyright (c) 2022 Bitcraze
           <iyz>0</iyz>
         </inertia>
       </inertial>
+      <collision name="collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
       <visual name="crazyflie/m1_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -88,6 +97,15 @@ Copyright (c) 2022 Bitcraze
           <iyz>0</iyz>
         </inertia>
       </inertial>
+      <collision name="collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>../../../meshes/collada_files/cw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
       <visual name="crazyflie/m2_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -112,6 +130,15 @@ Copyright (c) 2022 Bitcraze
           <iyz>0</iyz>
         </inertia>
       </inertial>
+      <collision name="collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
       <visual name="crazyflie/m3_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
@@ -136,6 +163,15 @@ Copyright (c) 2022 Bitcraze
           <iyz>0</iyz>
         </inertia>
       </inertial>
+      <collision name="collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>../../../meshes/collada_files/cw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
       <visual name="crazyflie/m4_visual">
         <pose>0 0 0 0 -0 0</pose>
         <geometry>
