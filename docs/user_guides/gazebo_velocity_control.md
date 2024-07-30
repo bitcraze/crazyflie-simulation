@@ -1,10 +1,10 @@
 ---
-title: Gazebo Spin Motors
-page_id: gazebo_spin_motors
+title: Gazebo Velocity Control
+page_id: gazebo_velocity_control
 sort_order: 3
 ---
 
-> *Just mind that this model does not fly properly yet and is considered experimental*
+> *Just mind that this model does not fly great yet and is considered experimental*
 
 1- First install gazebo harmonic: https://ignitionrobotics.org/docs/harmonic/install
 
@@ -18,8 +18,8 @@ sort_order: 3
 *Note that indeed this is still IGN_GAZEBO_RESOURCE_PATH, eventhough gazebo dropped the name IGN so this should be updated at one point*
 
 4- Try out the crazyflie world with: 
-    gz sim worlds/crazyflie_world.sdf
+    gz sim -r worlds/crazyflie_world.sdf
 
-5- Spin motors 
+5- Go to the right side of the gazebo gui and find the teleop plugin. Subscribe to the '/crazyflie/gazebo/command/twist' .
 
-    gz topic -t /crazyflie/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[250,250,250,250]'
+6- Make it take off with the top arrow, and press top to make it hover.
