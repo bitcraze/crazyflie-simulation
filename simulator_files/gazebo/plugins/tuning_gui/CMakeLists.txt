@@ -10,6 +10,13 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(gz-sim8 REQUIRED COMPONENTS gui)
 
+# Find gz-transport
+find_package(gz-transport13 REQUIRED COMPONENTS log parameters)
+
+#--------------------------------------
+# Find gz-msgs
+find_package(gz-msgs10 REQUIRED)
+
 QT5_ADD_RESOURCES(resources_RCC ${PROJECT_NAME}.qrc)
 
 add_library(${PROJECT_NAME} SHARED

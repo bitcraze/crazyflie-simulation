@@ -19,7 +19,8 @@
 #define GZ_SIM_TUNINGPLUGIN_HH_
 
 #include <gz/sim/gui/GuiSystem.hh>
-
+#include <gz/msgs.hh>
+#include <gz/transport.hh>
 class TuningPlugin : public gz::sim::GuiSystem
 {
   Q_OBJECT
@@ -35,7 +36,7 @@ class TuningPlugin : public gz::sim::GuiSystem
       gz::sim::EntityComponentManager &_ecm) override;
 
   signals: void TuningGainsChanged();
-
+  public: gz::transport::Node node;
 
   private: double number{1.0};
 
