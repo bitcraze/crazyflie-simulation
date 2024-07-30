@@ -16,9 +16,28 @@
 */
 import QtQuick 2.9
 import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.3
 
-// Display custom property text
-Text {
-  width: 300
-  text: TuningPlugin.customProperty
+
+
+GridLayout {
+  columns: 2
+
+  Label {
+    text: 'number'
+  }
+  Label {
+    text: TuningPlugin.number
+  }
+  Slider {
+      Layout.columnSpan: 2
+      from: 1.0
+      value: 1.0
+      to: 5.0
+      stepSize: 0.1
+      onMoved: function() {
+        TuningPlugin.number = value;
+      }
+  }
 }
+

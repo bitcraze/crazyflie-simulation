@@ -23,51 +23,21 @@
 
 #include "TuningPlugin.hh"
 
-/////////////////////////////////////////////////
 TuningPlugin::TuningPlugin() = default;
 
-/////////////////////////////////////////////////
 TuningPlugin::~TuningPlugin() = default;
 
-/////////////////////////////////////////////////
 void TuningPlugin::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
 {
   if (this->title.empty())
-    this->title = "Tunning plugin";
-
-  // Here you can read configuration from _pluginElem, if it's not null.
+    this->title = "Tuning plugin";
 }
 
-//////////////////////////////////////////////////
 void TuningPlugin::Update(const gz::sim::UpdateInfo & /*_info*/,
     gz::sim::EntityComponentManager &_ecm)
 {
-  // In the update loop, you can for example get the name of the world and set
-  // it as a property that can be read from the QML.
-  _ecm.Each<gz::sim::components::Name,
-            gz::sim::components::World>(
-    [&](const gz::sim::Entity &_entity,
-        const gz::sim::components::Name *_name,
-        const gz::sim::components::World *)->bool
-  {
-    this->SetCustomProperty(QString::fromStdString(_name->Data()));
-    return true;
-  });
+  this->TuningGainsChanged();
 }
 
-/////////////////////////////////////////////////
-QString TuningPlugin::CustomProperty() const
-{
-  return this->customProperty;
-}
-
-/////////////////////////////////////////////////
-void TuningPlugin::SetCustomProperty(const QString &_customProperty)
-{
-  this->customProperty = _customProperty;
-  this->CustomPropertyChanged();
-}
-
-// Register this plugin
 GZ_ADD_PLUGIN(TuningPlugin,
                     gz::gui::Plugin)

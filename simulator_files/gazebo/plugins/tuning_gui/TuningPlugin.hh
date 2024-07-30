@@ -15,66 +15,30 @@
  *
 */
 
-#ifndef GZ_SIM_GUISYSTEMPLUGIN_HH_
-#define GZ_SIM_GUISYSTEMPLUGIN_HH_
+#ifndef GZ_SIM_TUNINGPLUGIN_HH_
+#define GZ_SIM_TUNINGPLUGIN_HH_
 
 #include <gz/sim/gui/GuiSystem.hh>
 
-/// \brief Example of a GUI plugin that has access to entities and components.
 class TuningPlugin : public gz::sim::GuiSystem
 {
   Q_OBJECT
 
-    /// \brief Custom property. Use this to create properties that can be read
-    /// from the QML file. See the declarations below.
-    Q_PROPERTY(
-      QString customProperty
-      READ CustomProperty
-      WRITE SetCustomProperty
-      NOTIFY CustomPropertyChanged
-    )
+  Q_PROPERTY(double number MEMBER number NOTIFY TuningGainsChanged)
 
-  /// \brief Constructor
   public: TuningPlugin();
-
-  /// \brief Destructor
   public: ~TuningPlugin() override;
 
-  /// \brief `gz::gui::Plugin`s can overload this function to
-  /// receive custom configuration from an XML file. Here, it comes from the
-  /// SDF.
-  ///
-  /// <gui>
-  ///   <plugin ...> <!-- this is the plugin element -->
-  ///     ...
-  ///   </plugin>
-  /// </gui>
-  ///
-  /// \param[in] _pluginElem SDF <plugin> element. Will be null if the plugin
-  /// is loaded without any XML configuration.
   public: void LoadConfig(const tinyxml2::XMLElement *_pluginElem) override;
 
-  /// \brief GUI systems can overload this function to receive updated simulation
-  /// state. This is called whenever the server sends state updates to the GUI.
-  /// \param[in] _info Simulation information such as time.
-  /// \param[in] _ecm Entity component manager, which can be used to get the
-  /// latest information about entities and components.
   public: void Update(const gz::sim::UpdateInfo &_info,
       gz::sim::EntityComponentManager &_ecm) override;
 
-  /// \brief Get the custom property as a string.
-  /// \return Custom property
-  public: Q_INVOKABLE QString CustomProperty() const;
+  signals: void TuningGainsChanged();
 
-  /// \brief Set the custom property from a string.
-  /// \param[in] _customProperty Custom property
-  public: Q_INVOKABLE void SetCustomProperty(const QString &_customProperty);
 
-  /// \brief Notify that custom property has changed
-  signals: void CustomPropertyChanged();
+  private: double number{1.0};
 
-  /// \brief Custom property
-  private: QString customProperty;
-};
+  };
 
 #endif
