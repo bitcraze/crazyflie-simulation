@@ -202,8 +202,8 @@ Copyright (c) 2022 Bitcraze
             </axis>
         </joint>
     <plugin
-        filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m1_joint</jointName>
         <linkName>crazyflie/m1_prop</linkName>
@@ -222,8 +222,8 @@ Copyright (c) 2022 Bitcraze
         <motorType>velocity</motorType>
       </plugin>
       <plugin
-        filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m2_joint</jointName>
         <linkName>crazyflie/m2_prop</linkName>
@@ -242,8 +242,8 @@ Copyright (c) 2022 Bitcraze
         <motorType>velocity</motorType>
       </plugin>
       <plugin
-        filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m3_joint</jointName>
         <linkName>crazyflie/m3_prop</linkName>
@@ -262,8 +262,8 @@ Copyright (c) 2022 Bitcraze
         <motorType>velocity</motorType>
       </plugin>
       <plugin
-        filename="ignition-gazebo-multicopter-motor-model-system"
-        name="ignition::gazebo::systems::MulticopterMotorModel">
+        filename="gz-sim-multicopter-motor-model-system"
+        name="gz::sim::systems::MulticopterMotorModel">
         <robotNamespace>crazyflie</robotNamespace>
         <jointName>crazyflie/m4_joint</jointName>
         <linkName>crazyflie/m4_prop</linkName>
@@ -321,8 +321,8 @@ Copyright (c) 2022 Bitcraze
       </rotorConfiguration>
     </plugin>
       <plugin
-        filename="ignition-gazebo-odometry-publisher-system"
-        name="ignition::gazebo::systems::OdometryPublisher">
+        filename="gz-sim-odometry-publisher-system"
+        name="gz::sim::systems::OdometryPublisher">
         <dimensions>3</dimensions>
       </plugin>
     </model>
