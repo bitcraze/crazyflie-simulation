@@ -20,6 +20,6 @@ sort_order: 3
 4- Try out the crazyflie world with: 
     gz sim -r worlds/crazyflie_world.sdf
 
-5- Go to the right side of the gazebo gui and find the teleop plugin. Subscribe to the /crazyflie/gazebo/command/twist.
+5- Go to the right side of the gazebo gui and find the teleop plugin. Subscribe to the '/crazyflie/gazebo/command/twist' .
 
 6- Make it take off with the top arrow, and press top to make it hover.
