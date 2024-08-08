@@ -16,19 +16,14 @@ Copyright (c) 2022 Bitcraze
         <pose>0 0 0.0 0 0 3.14</pose>
         <link name="crazyflie/body">
         <inertial>
-            <pose>0 0 0 0 0 0</pose>
             <mass>0.025</mass>
             <inertia>
                 <ixx>0.000016572</ixx>
-                <ixy>0.00</ixy>
-                <ixz>0.00</ixz>
                 <iyy>0.000016656</iyy>
-                <iyz>0.00000</iyz>
                 <izz>0.000029262</izz>
             </inertia>
         </inertial>
         <collision name="crazyflie/body_collision">
-            <pose>0 0 0 0 0 0</pose>
             <geometry>
                 <box>
                     <size>0.10 0.10 0.03</size>
@@ -36,10 +31,8 @@ Copyright (c) 2022 Bitcraze
             </geometry>
         </collision>
         <visual name="crazyflie/body_visual">
-            <pose>0 0 0 0 -0 0</pose>
             <geometry>
                 <mesh>
-                    <scale>1 1 1</scale>
                     <uri>../../../meshes/collada_files/cf2_assembly.dae</uri>
                 </mesh>
             </geometry>
@@ -48,22 +41,16 @@ Copyright (c) 2022 Bitcraze
         <link name="crazyflie/m1_prop">
             <pose>0.031 -0.031 0.021 0 0 0</pose>
             <inertial>
-                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
                     <ixx>8.33333E-09</ixx>
                     <iyy>1.08333E-07</iyy>
                     <izz>1.13333E-07</izz>
-                    <ixy>0</ixy>
-                    <ixz>0</ixz>
-                    <iyz>0</iyz>
                 </inertia>
             </inertial>
             <visual name="crazyflie/m1_visual">
-                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
-                        <scale>1 1 1</scale>
                         <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
                     </mesh>
                 </geometry>
@@ -78,16 +65,11 @@ Copyright (c) 2022 Bitcraze
                     <ixx>8.33333E-09</ixx>
                     <iyy>1.08333E-07</iyy>
                     <izz>1.13333E-07</izz>
-                    <ixy>0</ixy>
-                    <ixz>0</ixz>
-                    <iyz>0</iyz>
                 </inertia>
             </inertial>
             <visual name="crazyflie/m2_visual">
-                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
-                        <scale>1 1 1</scale>
                         <uri>../../../meshes/collada_files/cw_prop.dae</uri>
                     </mesh>
                 </geometry>
@@ -96,22 +78,16 @@ Copyright (c) 2022 Bitcraze
         <link name="crazyflie/m3_prop">
             <pose >-0.031 0.031 0.021 0 0 0</pose>
             <inertial>
-                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
                     <ixx>8.33333E-09</ixx>
                     <iyy>1.08333E-07</iyy>
                     <izz>1.13333E-07</izz>
-                    <ixy>0</ixy>
-                    <ixz>0</ixz>
-                    <iyz>0</iyz>
                 </inertia>
             </inertial>
             <visual name="crazyflie/m3_visual">
-                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
-                        <scale>1 1 1</scale>
                         <uri>../../../meshes/collada_files/ccw_prop.dae</uri>
                     </mesh>
                 </geometry>
@@ -120,22 +96,16 @@ Copyright (c) 2022 Bitcraze
         <link name="crazyflie/m4_prop">
             <pose>0.031 0.031 0.021 0 0 0</pose>
             <inertial>
-                <pose>0 0 0 0 -0 0</pose>
                 <mass>0.0008</mass>
                 <inertia>
                     <ixx>8.33333E-09</ixx>
                     <iyy>1.08333E-07</iyy>
                     <izz>1.13333E-07</izz>
-                    <ixy>0</ixy>
-                    <ixz>0</ixz>
-                    <iyz>0</iyz>
                 </inertia>
             </inertial>
             <visual name="crazyflie/m4_visual">
-                <pose>0 0 0 0 -0 0</pose>
                 <geometry>
                     <mesh>
-                        <scale>1 1 1</scale>
                         <uri>../../../meshes/collada_files/cw_prop.dae</uri>
                     </mesh>
                 </geometry>
@@ -146,14 +116,6 @@ Copyright (c) 2022 Bitcraze
             <parent>crazyflie/body</parent>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1e+16</lower>
-                    <upper>1e+16</upper>
-                </limit>
-                <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
-                </dynamics>
             </axis>
         </joint>
                 <joint name="crazyflie/m2_joint" type="revolute">
@@ -161,14 +123,6 @@ Copyright (c) 2022 Bitcraze
             <parent>crazyflie/body</parent>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1e+16</lower>
-                    <upper>1e+16</upper>
-                </limit>
-                <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
-                </dynamics>
             </axis>
         </joint>
         <joint name="crazyflie/m3_joint" type="revolute">
@@ -176,14 +130,6 @@ Copyright (c) 2022 Bitcraze
             <parent>crazyflie/body</parent>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1e+16</lower>
-                    <upper>1e+16</upper>
-                </limit>
-                <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
-                </dynamics>
             </axis>
         </joint>
         <joint name="crazyflie/m4_joint" type="revolute">
@@ -191,14 +137,6 @@ Copyright (c) 2022 Bitcraze
             <parent>crazyflie/body</parent>
             <axis>
                 <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-1e+16</lower>
-                    <upper>1e+16</upper>
-                </limit>
-                <dynamics>
-                    <spring_reference>0</spring_reference>
-                    <spring_stiffness>0</spring_stiffness>
-                </dynamics>
             </axis>
         </joint>
     <plugin
@@ -208,15 +146,11 @@ Copyright (c) 2022 Bitcraze
         <jointName>crazyflie/m1_joint</jointName>
         <linkName>crazyflie/m1_prop</linkName>
         <turningDirection>ccw</turningDirection>
-        <timeConstantUp>0.0125</timeConstantUp>
-        <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>9.6e-8</motorConstant>
         <momentConstant>0.04</momentConstant>
-        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>0</motorNumber>
-        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
-        <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
+        <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim>
+        <actuator_number>0</actuator_number>
         <motorType>velocity</motorType>
       </plugin>
       <plugin
@@ -226,15 +160,11 @@ Copyright (c) 2022 Bitcraze
         <jointName>crazyflie/m2_joint</jointName>
         <linkName>crazyflie/m2_prop</linkName>
         <turningDirection>cw</turningDirection>
-        <timeConstantUp>0.0125</timeConstantUp>
-        <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>9.6e-8</motorConstant>
         <momentConstant>0.04</momentConstant>
-        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>1</motorNumber>
-        <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
-        <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
+        <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim>
+        <actuator_number>1</actuator_number>
         <motorType>velocity</motorType>
       </plugin>
       <plugin
@@ -244,15 +174,11 @@ Copyright (c) 2022 Bitcraze
         <jointName>crazyflie/m3_joint</jointName>
         <linkName>crazyflie/m3_prop</linkName>
         <turningDirection>ccw</turningDirection>
-        <timeConstantUp>0.0125</timeConstantUp>
-        <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>9.6e-8</motorConstant>
         <momentConstant>0.04</momentConstant>
-        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>2</motorNumber>
-        <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
-        <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
+        <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim>
+        <actuator_number>2</actuator_number>
         <motorType>velocity</motorType>
       </plugin>
       <plugin
@@ -262,15 +188,11 @@ Copyright (c) 2022 Bitcraze
         <jointName>crazyflie/m4_joint</jointName>
         <linkName>crazyflie/m4_prop</linkName>
         <turningDirection>cw</turningDirection>
-        <timeConstantUp>0.0125</timeConstantUp>
-        <timeConstantDown>0.025</timeConstantDown>
         <maxRotVelocity>2618</maxRotVelocity>
         <motorConstant>9.6e-8</motorConstant>
         <momentConstant>0.04</momentConstant>
-        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
-        <motorNumber>3</motorNumber>
-        <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
-        <rotorVelocitySlowdownSim>150</rotorVelocitySlowdownSim>
+        <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim>
+        <actuator_number>3</actuator_number>
         <motorType>velocity</motorType>
       </plugin> 
       <plugin
@@ -280,10 +202,9 @@ Copyright (c) 2022 Bitcraze
       <commandSubTopic>gazebo/command/twist</commandSubTopic>
       <enableSubTopic>enable</enableSubTopic>
       <comLinkName>crazyflie/body</comLinkName>
-      <velocityGain>1.25 1.25 0.15</velocityGain>
+      <velocityGain>1.25 1.25 0.197</velocityGain>
       <attitudeGain>0.02 0.02 0.02</attitudeGain>
       <angularRateGain>0.005 0.005 0.005</angularRateGain>
-
       <rotorConfiguration>
         <rotor>
           <jointName>crazyflie/m1_joint</jointName>
