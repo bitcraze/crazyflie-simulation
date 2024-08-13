@@ -1,4 +1,4 @@
-# crazyflie_simulation
+# crazyflie-simulation
 
 Hi! Welkom to the crazyflie simulation repo. This repo is still at the early stages and still in development so just ask if you are looking for anything in particular.
 
