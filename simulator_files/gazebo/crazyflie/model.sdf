@@ -18,9 +18,12 @@ Copyright (c) 2024 Bitcraze
       <inertial>
         <mass>0.025</mass>
         <inertia>
-          <ixx>0.000016572</ixx>
-          <iyy>0.000016656</iyy>
-          <izz>0.000029262</izz>
+          <ixx>16.571710E-06</ixx>
+          <iyy>16.655602E-06</iyy>
+          <izz>29.261652E-06</izz>
+          <ixy>0.830806E-06</ixy>
+          <ixz>0.718277E-06</ixz>
+          <iyz>1.800197E-06</iyz>
         </inertia>
       </inertial>
       <collision name="crazyflie/body_collision">
