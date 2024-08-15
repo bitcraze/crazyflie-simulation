@@ -96,13 +96,13 @@ PROTO Crazyflie [
       DEF M1 Propeller {
         shaftAxis 0 0 1
         centerOfThrust 0.031 -0.031 0.008
-        thrustConstants -4e-05 0
-        torqueConstants 2.4e-06 0
+        thrustConstants -1.3e-08 1e-06
+        torqueConstants 7.6e-11 1e-07
         fastHelixThreshold 50
         device RotationalMotor {
           name "m1_motor"
-          maxVelocity 600
-          maxTorque 30
+          maxVelocity 5000
+          maxTorque 10000
         }
         fastHelix Solid {
           translation 0.031 -0.031 0.008
@@ -144,13 +144,13 @@ PROTO Crazyflie [
       DEF M2 Propeller {
         shaftAxis 0 0 1
         centerOfThrust -0.031 -0.031 0.008
-        thrustConstants 4e-05 0
-        torqueConstants 2.4e-06 0
+        thrustConstants 1.3e-08 1e-06
+        torqueConstants 7.6e-11 1e-07
         fastHelixThreshold 50
         device RotationalMotor {
           name "m2_motor"
-          maxVelocity 600
-          maxTorque 30
+          maxVelocity 5000
+          maxTorque 10000
         }
         fastHelix Solid {
           translation -0.031 -0.031 0.008
@@ -168,13 +168,13 @@ PROTO Crazyflie [
       DEF M3 Propeller {
         shaftAxis 0 0 1
         centerOfThrust -0.031 0.031 0.008
-        thrustConstants -4e-05 0
-        torqueConstants 2.4e-06 0
+        thrustConstants -1.3e-08 1e-06
+        torqueConstants 7.6e-11 1e-07
         fastHelixThreshold 50
         device RotationalMotor {
           name "m3_motor"
-          maxVelocity 600
-          maxTorque 30
+          maxVelocity 5000
+          maxTorque 10000
         }
         fastHelix Solid {
           translation -0.031 0.031 0.008
@@ -192,13 +192,13 @@ PROTO Crazyflie [
       DEF M4 Propeller {
         shaftAxis 0 0 1
         centerOfThrust 0.031 0.031 0.008
-        thrustConstants 4e-05 0
-        torqueConstants 2.4e-06 0
+        thrustConstants 1.3e-08 1e-06
+        torqueConstants 7.6e-11 1e-07
         fastHelixThreshold 50
         device RotationalMotor {
           name "m4_motor"
-          maxVelocity 600
-          maxTorque 30
+          maxVelocity 5000
+          maxTorque 10000
         }
         fastHelix Solid {
           translation 0.031 0.031 0.008
