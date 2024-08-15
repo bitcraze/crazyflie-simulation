@@ -27,7 +27,7 @@ from math import cos, sin, degrees, radians
 
 import sys
 # Change this path to your crazyflie-firmware folder
-sys.path.append('../../../../../c/crazyflie-firmware')
+sys.path.append('../crazyflie-firmware/build/')
 import cffirmware
 
 robot = Robot()
@@ -175,7 +175,9 @@ while robot.step(timestep) != -1:
     motorPower_m3 =  cmd_thrust + cmd_roll - cmd_pitch + cmd_yaw
     motorPower_m4 =  cmd_thrust + cmd_roll + cmd_pitch - cmd_yaw
 
-    scaling = 1000 ##Todo, remove necessity of this scaling (SI units in firmware)
+    print('Motor Powers: ', motorPower_m1, motorPower_m2, motorPower_m3, motorPower_m4)
+
+    scaling = 20 ##Todo, remove necessity of this scaling (SI units in firmware)
     m1_motor.setVelocity(-motorPower_m1/scaling)
     m2_motor.setVelocity(motorPower_m2/scaling)
     m3_motor.setVelocity(-motorPower_m3/scaling)

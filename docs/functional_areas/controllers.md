@@ -21,7 +21,7 @@ As of this [Pull request in the Crazyflie firmware repo](https://github.com/bitc
 
 Change the controller in the crazyflie robot model in webots to crazyflie_controller_py_firmware_pid, and adjust the following line to point to your crazyflie-firmware repo:
 
-    sys.path.append('../../../../../C/crazyflie-firmware')
+    sys.path.append('../../../../../C/crazyflie-firmware/build')
 
 Press play with the simulator and use your keyboard to  control it.
 
