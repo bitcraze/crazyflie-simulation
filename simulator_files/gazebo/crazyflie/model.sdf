@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
-<!-- 
+<!--
  ...........       ____  _ __
  |  ,-^-,  |      / __ )(_) /_______________ _____  ___
  | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
     +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
- 
+
 MIT License
 
 Copyright (c) 2024 Bitcraze
@@ -37,6 +37,34 @@ Copyright (c) 2024 Bitcraze
           </mesh>
         </geometry>
       </visual>
+      <sensor name='multiranger' type='gpu_lidar'>"
+        <pose relative_to='crazyflie/base_link'>0 0 0.1 0 0 0</pose>
+        <topic>lidar</topic>
+        <update_rate>10</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+                <samples>4</samples>
+                <resolution>1</resolution>
+                <min_angle>-3.14</min_angle>
+                <max_angle>1.57</max_angle>
+            </horizontal>
+            <vertical>
+                <samples>1</samples>
+                <resolution>0.01</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.01</min>
+            <max>3.49</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <always_on>1</always_on>
+        <visualize>true</visualize>
+      </sensor>
     </link>
     <link name="crazyflie/m1_prop">
       <pose>0.031 -0.031 0.021 0 0 0</pose>
