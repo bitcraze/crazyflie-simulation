@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+ ...........       ____  _ __
+ |  ,-^-,  |      / __ )(_) /_______________ _____  ___
+ | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ | / ,..´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+    +.......   /_____/_/\__/\___/_/   \__,_/ /___/\___/
+
+MIT License
+
+Copyright (c) 2024 Bitcraze
+
+2022-02-25 by K McGuire, initial collada file
+2024-08-13 by R Bouwmeester, move model origin to center of mass
+-->
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <asset>
     <contributor>
       <author>Kimberly McGuire (Bitcraze AB)</author>
       <authoring_tool>Blender 3.0.1 commit date:2022-01-25, commit time:17:19, hash:dc2d18018171</authoring_tool>
+      <comments>Initial collada file</comments>
     </contributor>
     <created>2022-02-25T11:02:12</created>
     <modified>2024-08-13T13:41:17</modified>
