@@ -99,15 +99,15 @@ int main(int argc, char **argv) {
 
   // Initialize PID gains.
   gains_pid_t gains_pid;
-  gains_pid.kp_att_y = 1;
-  gains_pid.kd_att_y = 0.5;
-  gains_pid.kp_att_rp = 0.5;
-  gains_pid.kd_att_rp = 0.1;
-  gains_pid.kp_vel_xy = 2;
-  gains_pid.kd_vel_xy = 0.5;
-  gains_pid.kp_z = 10;
-  gains_pid.ki_z = 5;
-  gains_pid.kd_z = 5;
+  gains_pid.kp_att_y = 200;
+  gains_pid.kd_att_y = 20;
+  gains_pid.kp_att_rp = 100;
+  gains_pid.kd_att_rp = 20;
+  gains_pid.kp_vel_xy = 0.1;
+  gains_pid.kd_vel_xy = 0.01;
+  gains_pid.kp_z = 1000;
+  gains_pid.ki_z = 500;
+  gains_pid.kd_z = 500;
   init_pid_attitude_fixed_height_controller();
 
   double height_desired = FLYING_ALTITUDE;
@@ -204,6 +204,8 @@ int main(int argc, char **argv) {
     desired_state.altitude = height_desired;
     pid_velocity_fixed_height_controller(actual_state, &desired_state, gains_pid, dt, &motor_power);
 
+
+    printf("motor_power: %f %f %f %f\n", motor_power.m1, motor_power.m2, motor_power.m3, motor_power.m4);
     // Setting motorspeed
     wb_motor_set_velocity(m1_motor, -motor_power.m1);
     wb_motor_set_velocity(m2_motor, motor_power.m2);
