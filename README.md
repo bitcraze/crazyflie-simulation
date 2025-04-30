@@ -1,8 +1,8 @@
 # crazyflie-simulation
 
-Hi! Welkom to the crazyflie simulation repo. This repo is still at the early stages and still in development so just ask if you are looking for anything in particular.
+This repo contains a very minimal simulation setup for the Crazyflie. It's not actively maintained, and not very realistic in terms of dynamics. That said, it might still be useful for simple tests, demos, or inspiration.
 
-Currently it contains low resolution meshes based on the design of the actual [crazyflie 2.1](https://www.bitcraze.io/products/crazyflie-2-1/) but heavily simplified to contain as little vertices as possible, so it can be used to simulate a lot of them.
+It includes low-resolution meshes based on the Crazyflie 2.1. These are intentionally simplified to reduce vertex count, making them lightweight enough to simulate many units at once.
 
 
 ## Installation
@@ -11,8 +11,17 @@ See the  [installation instructions](/docs/installing/) in the Github docs folde
 
 ## Official documentation
 
-Check out the [Bitcraze crazyflie-simulation documentation](https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/) on our website.
+More details can be found in the [Bitcraze crazyflie-simulation documentation](https://www.bitcraze.io/documentation/repository/crazyflie-simulation/main/).
 
 ## Contribute
 
-Go to the [contribute page](https://www.bitcraze.io/development/contribute/) on our website to learn more.
+Contributions are welcome! See the [contribute page](https://www.bitcraze.io/development/contribute/) on our website for how to get involved.
+
+## Alternatives
+
+Looking for more capable or realistic simulation options? Here are a few options:
+
+* [CrazySim](https://github.com/gtfactslab/CrazySim)
+* [sim_cf2](https://github.com/CrazyflieTHI/sim_cf2)
+
+Feel free to open a PR to add to this list!
