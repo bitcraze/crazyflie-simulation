@@ -19,9 +19,6 @@ Contributions are welcome! See the [contribute page](https://www.bitcraze.io/dev
 
 ## Alternatives
 
-Looking for more capable or realistic simulation options? Here are a few options:
+Looking for more capable or realistic simulation options? Options can be found [here](https://www.bitcraze.io/development/external-projects/#crazyflie-simulators).
 
-* [CrazySim](https://github.com/gtfactslab/CrazySim)
-* [sim_cf2](https://github.com/CrazyflieTHI/sim_cf2)
-
-Feel free to open a PR to add to this list!
+Feel free to modify [the source file](https://github.com/bitcraze/bitcraze-website/blob/198dc2e6059a9877c7abfafdded77e601569f078/src/development/external-projects.md#crazyflie-simulators) and open a PR to add to this list!
