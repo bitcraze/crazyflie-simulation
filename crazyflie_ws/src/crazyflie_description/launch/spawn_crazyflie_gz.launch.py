@@ -7,10 +7,12 @@ from ament_index_python.packages import get_package_share_directory
 import os
 import xacro
 
+
 def generate_launch_description():
     # Package and xacro path
     pkg_share = get_package_share_directory("crazyflie_description")
     xacro_file = os.path.join(pkg_share, "urdf", "crazyflie_body.xacro")
+
     # Process xacro → urdf
     robot_description_config = xacro.process_file(xacro_file).toxml()
 
@@ -23,20 +25,12 @@ def generate_launch_description():
 
     # Start Gazebo Harmonic (empty world)
     gazebo_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
+        PythonLaunchDescriptionSource(
             os.path.join(
                 get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py"
             )
-        ]),
+        ),
         launch_arguments={"gz_args": "-r empty.sdf"}.items(),
-    )
-
-    # Load URDF to robot_state_publisher
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[{"robot_description": robot_description_config}]
     )
 
     # Spawn robot in Gazebo
@@ -46,14 +40,26 @@ def generate_launch_description():
         arguments=[
             "-name", LaunchConfiguration("robot_name"),
             "-string", robot_description_config,
+            "-x", "0.0",   # X position
+            "-y", "0.0",   # Y position
+            "-z", "0.5",   # Z position (height)
         ],
-        output="screen"
+        output="screen",
+    )
+
+    # ROS-Gazebo bridge
+    bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        parameters=[{
+            "config_file": os.path.join(pkg_share, "config", "ros_gz_crazyflie_bridge.yaml"),
+        }],
+        output="screen",
     )
 
     return LaunchDescription([
         robot_name_arg,
         gazebo_launch,
-        robot_state_publisher,
-        spawn_robot
+        spawn_robot,
+        bridge,
     ])
-

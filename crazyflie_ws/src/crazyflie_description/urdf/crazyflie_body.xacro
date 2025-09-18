@@ -102,7 +102,7 @@
     <child link="m1_prop"/>
     <origin xyz="0.031 -0.031 0.021" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="1.0" velocity="100.0"/>
+    <limit effort="1.0" velocity="120.0"/>
   </joint>
 
   <joint name="body_to_m2_prop" type="continuous">
@@ -110,7 +110,7 @@
     <child link="m2_prop"/>
     <origin xyz="-0.031 -0.031 0.021" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="1.0" velocity="100.0"/>
+    <limit effort="1.0" velocity="120.0"/>
   </joint>
 
   <joint name="body_to_m3_prop" type="continuous">
@@ -118,7 +118,7 @@
     <child link="m3_prop"/>
     <origin xyz="-0.031 0.031 0.021" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="1.0" velocity="100.0"/>
+    <limit effort="1.0" velocity="120.0"/>
   </joint>
 
   <joint name="body_to_m4_prop" type="continuous">
@@ -126,7 +126,7 @@
     <child link="m4_prop"/>
     <origin xyz="0.031 0.031 0.021" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="1.0" velocity="100.0"/>
+    <limit effort="1.0" velocity="120.0"/>
   </joint>
 
   <gazebo>
