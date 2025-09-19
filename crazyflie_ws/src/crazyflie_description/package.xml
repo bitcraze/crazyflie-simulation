@@ -3,9 +3,12 @@
 <package format="3">
   <name>crazyflie_description</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>
+    URDF and mesh files for the Crazyflie micro quadcopter, providing its physical description 
+    for simulation and visualization in ROS 2.
+  </description>
   <maintainer email="haroon300@hotmail.com">Haroon Rasheed</maintainer>
-  <license>TODO: License declaration</license>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -16,4 +19,3 @@
     <build_type>ament_cmake</build_type>
   </export>
 </package>
-<!-- This package was generated using the Turtle Nest ROS 2 package creator -->
