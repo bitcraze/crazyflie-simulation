@@ -1,0 +1,227 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="crazyflie">
+
+  <!-- Base footprint link (dummy root) -->
+  <link name="base_footprint"/>
+
+  <!-- Crazyflie body macro -->
+  <xacro:macro name="base_link" params="mesh_package mass box_size_x box_size_y box_size_z">
+    <link name="base_link">
+      <!-- Inertial properties -->
+      <inertial>
+        <origin xyz="0 0 0.017425" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <inertia 
+          ixx="1.6571710e-05" iyy="1.6655602e-05" izz="2.9261652e-05"
+          ixy="8.30806e-07" ixz="7.18277e-07" iyz="1.800197e-06"/>
+      </inertial>
+
+      <!-- Collision geometry -->
+      <collision name="body_collision">
+        <origin xyz="0 0 0.017425" rpy="0 0 0"/>
+        <geometry>
+          <box size="${box_size_x} ${box_size_y} ${box_size_z}"/>
+        </geometry>
+      </collision>
+
+      <!-- Visual geometry -->
+      <visual name="body_visual">
+        <origin xyz="0 0 0.017425" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find crazyflie_description)/meshes/collada_files/cf2_assembly.dae"/>
+        </geometry>
+      </visual>
+    </link>
+  </xacro:macro>
+
+  <!-- Propeller macro -->
+  <xacro:macro name="crazyflie_prop" params="prop_name mesh_package mass mesh_file">
+    <link name="${prop_name}">
+      <inertial>
+        <mass value="${mass}"/>
+        <inertia ixx="8.33333e-09" iyy="1.08333e-07" izz="1.13333e-07" ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find crazyflie_description)/meshes/collada_files/${mesh_file}"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://$(find crazyflie_description)/meshes/collada_files/${mesh_file}"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <!-- Motor plugin parameters as xacro properties -->
+  <xacro:property name="robot_ns" value="crazyflie"/>
+  <xacro:property name="max_rot_velocity" value="2618"/>
+  <xacro:property name="motor_constant" value="1.28192e-08"/>
+  <xacro:property name="moment_constant" value="0.005964552"/>
+  <xacro:property name="rotor_drag_coefficient" value="8.06428e-05"/>
+  <xacro:property name="rolling_moment_coefficient" value="0.0000001"/>
+  <xacro:property name="rotor_velocity_slowdown_sim" value="20"/>
+
+  <!-- Multicopter Velocity Control Plugin Parameters -->
+  <xacro:property name="control_command_topic" value="gazebo/command/twist"/>
+  <xacro:property name="control_enable_topic" value="enable"/>
+  <xacro:property name="control_velocity_gain" value="1.25 1.25 0.2425"/>
+  <xacro:property name="control_attitude_gain" value="0.02 0.02 0.02"/>
+  <xacro:property name="control_angular_rate_gain" value="0.005 0.005 0.005"/>
+  <xacro:property name="control_force_constant" value="1.28192e-08"/>
+  <xacro:property name="control_moment_constant" value="0.005964552"/>
+
+  <!-- Instantiate body -->
+  <xacro:base_link 
+    mesh_package="crazyflie_description" 
+    mass="0.025" 
+    box_size_x="0.10" 
+    box_size_y="0.10" 
+    box_size_z="0.03485"/>
+
+  <!-- Instantiate propellers -->
+  <xacro:crazyflie_prop prop_name="m1_prop" mesh_package="crazyflie_description" mass="0.0008" mesh_file="ccw_prop.dae"/>
+  <xacro:crazyflie_prop prop_name="m2_prop" mesh_package="crazyflie_description" mass="0.0008" mesh_file="cw_prop.dae"/>
+  <xacro:crazyflie_prop prop_name="m3_prop" mesh_package="crazyflie_description" mass="0.0008" mesh_file="ccw_prop.dae"/>
+  <xacro:crazyflie_prop prop_name="m4_prop" mesh_package="crazyflie_description" mass="0.0008" mesh_file="cw_prop.dae"/>
+
+  <!-- Fixed joint between base_footprint and body -->
+  <joint name="base_to_body" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!-- Joints between body and props -->
+  <joint name="body_to_m1_prop" type="continuous">
+    <parent link="base_link"/>
+    <child link="m1_prop"/>
+    <origin xyz="0.031 -0.031 0.021" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1.0" velocity="120.0"/>
+  </joint>
+
+  <joint name="body_to_m2_prop" type="continuous">
+    <parent link="base_link"/>
+    <child link="m2_prop"/>
+    <origin xyz="-0.031 -0.031 0.021" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1.0" velocity="120.0"/>
+  </joint>
+
+  <joint name="body_to_m3_prop" type="continuous">
+    <parent link="base_link"/>
+    <child link="m3_prop"/>
+    <origin xyz="-0.031 0.031 0.021" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1.0" velocity="120.0"/>
+  </joint>
+
+  <joint name="body_to_m4_prop" type="continuous">
+    <parent link="base_link"/>
+    <child link="m4_prop"/>
+    <origin xyz="0.031 0.031 0.021" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1.0" velocity="120.0"/>
+  </joint>
+
+  <gazebo>
+    <plugin
+      filename="gz-sim-multicopter-control-system"
+      name="gz::sim::systems::MulticopterVelocityControl">
+      <robotNamespace>${robot_ns}</robotNamespace>
+      <commandSubTopic>${control_command_topic}</commandSubTopic>
+      <enableSubTopic>${control_enable_topic}</enableSubTopic>
+      <comLinkName>base_footprint</comLinkName>
+      <velocityGain>${control_velocity_gain}</velocityGain>
+      <attitudeGain>${control_attitude_gain}</attitudeGain>
+      <angularRateGain>${control_angular_rate_gain}</angularRateGain>
+      <rotorConfiguration>
+        <rotor>
+          <jointName>body_to_m1_prop</jointName>
+          <forceConstant>${control_force_constant}</forceConstant>
+          <momentConstant>${control_moment_constant}</momentConstant>
+          <direction>1</direction>
+        </rotor>
+        <rotor>
+          <jointName>body_to_m2_prop</jointName>
+          <forceConstant>${control_force_constant}</forceConstant>
+          <momentConstant>${control_moment_constant}</momentConstant>
+          <direction>-1</direction>
+        </rotor>
+        <rotor>
+          <jointName>body_to_m3_prop</jointName>
+          <forceConstant>${control_force_constant}</forceConstant>
+          <momentConstant>${control_moment_constant}</momentConstant>
+          <direction>1</direction>
+        </rotor>
+        <rotor>
+          <jointName>body_to_m4_prop</jointName>
+          <forceConstant>${control_force_constant}</forceConstant>
+          <momentConstant>${control_moment_constant}</momentConstant>
+          <direction>-1</direction>
+        </rotor>
+      </rotorConfiguration>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>${robot_ns}</robotNamespace>
+      <jointName>body_to_m1_prop</jointName>
+      <linkName>m1_prop</linkName>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>${max_rot_velocity}</maxRotVelocity>
+      <motorConstant>${motor_constant}</motorConstant>
+      <momentConstant>${moment_constant}</momentConstant>
+      <rotorDragCoefficient>${rotor_drag_coefficient}</rotorDragCoefficient>
+      <rollingMomentCoefficient>${rolling_moment_coefficient}</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
+      <actuator_number>0</actuator_number>
+      <motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>${robot_ns}</robotNamespace>
+      <jointName>body_to_m2_prop</jointName>
+      <linkName>m2_prop</linkName>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>${max_rot_velocity}</maxRotVelocity>
+      <motorConstant>${motor_constant}</motorConstant>
+      <momentConstant>${moment_constant}</momentConstant>
+      <rotorDragCoefficient>${rotor_drag_coefficient}</rotorDragCoefficient>
+      <rollingMomentCoefficient>${rolling_moment_coefficient}</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
+      <actuator_number>1</actuator_number>
+      <motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>${robot_ns}</robotNamespace>
+      <jointName>body_to_m3_prop</jointName>
+      <linkName>m3_prop</linkName>
+      <turningDirection>ccw</turningDirection>
+      <maxRotVelocity>${max_rot_velocity}</maxRotVelocity>
+      <motorConstant>${motor_constant}</motorConstant>
+      <momentConstant>${moment_constant}</momentConstant>
+      <rotorDragCoefficient>${rotor_drag_coefficient}</rotorDragCoefficient>
+      <rollingMomentCoefficient>${rolling_moment_coefficient}</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
+      <actuator_number>2</actuator_number>
+      <motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>${robot_ns}</robotNamespace>
+      <jointName>body_to_m4_prop</jointName>
+      <linkName>m4_prop</linkName>
+      <turningDirection>cw</turningDirection>
+      <maxRotVelocity>${max_rot_velocity}</maxRotVelocity>
+      <motorConstant>${motor_constant}</motorConstant>
+      <momentConstant>${moment_constant}</momentConstant>
+      <rotorDragCoefficient>${rotor_drag_coefficient}</rotorDragCoefficient>
+      <rollingMomentCoefficient>${rolling_moment_coefficient}</rollingMomentCoefficient>
+      <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
+      <actuator_number>3</actuator_number>
+      <motorType>velocity</motorType>
+    </plugin>
+  </gazebo>
+</robot>
