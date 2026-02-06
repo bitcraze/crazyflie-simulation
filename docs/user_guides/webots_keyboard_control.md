@@ -10,7 +10,7 @@ First you have to build the controller. From the command line:
 
     WEBOTS_HOME=/usr/local/webots make
 
-Or from within Webots: Open the text file `crazyflie_controller.c` and the run Build-> Build (F7).
+Or from within Webots: Open the text file `crazyflie_controller.c` and the run the menu item `Build`>`Build` (F7).
 
 
 Then run the following:
