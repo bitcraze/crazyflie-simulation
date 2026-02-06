@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 
   double height_desired = FLYING_ALTITUDE;
 
-  data_logger_init("../../../../logs/sensor_data.json", "../../../../logs/pose_data.json");
+  data_logger_init();
 
   // Initialize struct for motor power
   motor_power_t motor_power;

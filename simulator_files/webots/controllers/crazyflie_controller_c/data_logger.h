@@ -1,7 +1,7 @@
 #ifndef DATA_LOGGER_H
 #define DATA_LOGGER_H
 
-void data_logger_init(const char *sensor_file, const char *pose_file);
+void data_logger_init(void);
 
 void data_logger_log_sensor(double timestamp,
                             double range_front, double range_left,

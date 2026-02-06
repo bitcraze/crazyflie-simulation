@@ -1,15 +1,27 @@
 #include "data_logger.h"
 
 #include <stdio.h>
+#include <time.h>
+
+#define LOG_DIR "../../../../logs/"
 
 static FILE *sensor_fp = NULL;
 static FILE *pose_fp = NULL;
 static int sensor_count = 0;
 static int pose_count = 0;
 
-void data_logger_init(const char *sensor_file, const char *pose_file) {
-  sensor_fp = fopen(sensor_file, "w");
-  pose_fp = fopen(pose_file, "w");
+void data_logger_init(void) {
+  char timestamp[18];
+  time_t now = time(NULL);
+  strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S_", localtime(&now));
+
+  char sensor_path[256];
+  char pose_path[256];
+  snprintf(sensor_path, sizeof(sensor_path), "%s%ssensor_data.json", LOG_DIR, timestamp);
+  snprintf(pose_path, sizeof(pose_path), "%s%spose_data.json", LOG_DIR, timestamp);
+
+  sensor_fp = fopen(sensor_path, "w");
+  pose_fp = fopen(pose_path, "w");
   if (sensor_fp)
     fprintf(sensor_fp, "[\n");
   if (pose_fp)
