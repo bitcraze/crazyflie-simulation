@@ -4,9 +4,16 @@ page_id: webots_keyboard_control
 sort_order: 1
 ---
 
->This example runs in Webots 2023b.
+>This example runs in Webots 2025a
 
-Then just run the following
+First you have to build the controller. From the command line:
+
+    WEBOTS_HOME=/usr/local/webots make
+
+Or from within Webots: Open the text file `crazyflie_controller.c` and the run Build-> Build (F7).
+
+
+Then run the following:
 
     webots webots/worlds/crazyflie_world.wbt
 
@@ -14,7 +21,7 @@ Then just run the following
 Or open up the world by the menu item `file`>`open world...`.
 
 
-You'll see a crazyflie take off. You can now click the 3d world to make sure it is active, and use the arrow keys on your keyboard to control it.
+You'll see a crazyflie take off. You can now click the 3d world to make sure it is active, and use your keyboard to control it.
 The script in the console should provide further instructions. 
 
 
