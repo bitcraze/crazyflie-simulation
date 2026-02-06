@@ -30,6 +30,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <webots/accelerometer.h>
 #include <webots/camera.h>
 #include <webots/distance_sensor.h>
 #include <webots/gps.h>
@@ -42,6 +43,7 @@
 // Add external controller
 // #include "pid_controller.h"
 #include "../../../../controllers_shared/c_based/pid_controller.h"
+#include "data_logger.h"
 
 
 #define FLYING_ALTITUDE 1.0
@@ -73,6 +75,8 @@ int main(int argc, char **argv) {
   wb_keyboard_enable(timestep);
   WbDeviceTag gyro = wb_robot_get_device("gyro");
   wb_gyro_enable(gyro, timestep);
+  WbDeviceTag accelerometer = wb_robot_get_device("accelerometer");
+  wb_accelerometer_enable(accelerometer, timestep);
   WbDeviceTag camera = wb_robot_get_device("camera");
   wb_camera_enable(camera, timestep);
   WbDeviceTag range_front = wb_robot_get_device("range_front");
@@ -112,6 +116,8 @@ int main(int argc, char **argv) {
 
   double height_desired = FLYING_ALTITUDE;
 
+  data_logger_init("sensor_data.json", "pose_data.json");
+
   // Initialize struct for motor power
   motor_power_t motor_power;
 
@@ -144,6 +150,20 @@ int main(int argc, char **argv) {
     double sinyaw = sin(actualYaw);
     actual_state.vx = vx_global * cosyaw + vy_global * sinyaw;
     actual_state.vy = -vx_global * sinyaw + vy_global * cosyaw;
+
+    double timestamp = wb_robot_get_time();
+    const double *gyro_values = wb_gyro_get_values(gyro);
+    const double *accel_values = wb_accelerometer_get_values(accelerometer);
+    data_logger_log_sensor(timestamp,
+                           wb_distance_sensor_get_value(range_front),
+                           wb_distance_sensor_get_value(range_left),
+                           wb_distance_sensor_get_value(range_back),
+                           wb_distance_sensor_get_value(range_right),
+                           gyro_values[0], gyro_values[1], gyro_values[2],
+                           accel_values[0], accel_values[1], accel_values[2]);
+    data_logger_log_pose(timestamp,
+                         x_global, y_global, actual_state.altitude,
+                         actual_state.roll, actual_state.pitch, actualYaw);
 
     // Initialize values
     desired_state.roll = 0;
@@ -216,6 +236,7 @@ int main(int argc, char **argv) {
     past_y_global = y_global;
   };
 
+  data_logger_close();
   wb_robot_cleanup();
 
   return 0;

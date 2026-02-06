@@ -88,6 +88,8 @@ PROTO Crazyflie [
       }
       GPS {
       }
+      Accelerometer {
+      }
       Gyro {
       }
       InertialUnit {
