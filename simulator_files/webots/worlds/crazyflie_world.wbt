@@ -6,6 +6,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "../protos/Crazyflie.proto"
 
 WorldInfo {
+  basicTimeStep 50
+  FPS 50
 }
 Viewpoint {
   orientation -0.07385539700858673 0.9327769938687757 0.3528065476175779 0.7219789445158288
