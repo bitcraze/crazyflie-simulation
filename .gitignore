@@ -1,3 +1,4 @@
 *.blend1
 *.pyc
 logs/*
+!logs/.gitkeep
