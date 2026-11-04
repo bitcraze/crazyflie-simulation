@@ -15,7 +15,9 @@ More details can be found in the [Bitcraze crazyflie-simulation documentation](h
 
 ## Contribute
 
-Contributions are welcome! See the [contribute page](https://www.bitcraze.io/development/contribute/) on our website for how to get involved.
+Before you open a pull request, please read our [General guidelines for code contributions](https://www.bitcraze.io/development/contribute/general-guidelines/).
+
+For other ways to contribute, see the [contribute page](https://www.bitcraze.io/development/contribute/).
 
 ## Alternatives
 
